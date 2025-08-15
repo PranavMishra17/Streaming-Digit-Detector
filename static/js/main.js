@@ -53,7 +53,10 @@ class AudioDigitApp {
             selectedMethod: 'external_api',
             totalPredictions: 0,
             methodStats: {},
-            sessionStartTime: Date.now()
+            sessionStartTime: Date.now(),
+            streamingErrors: 0,
+            maxStreamingErrors: 5,
+            lastErrorTime: 0
         };
         
         // Initialize
@@ -118,8 +121,10 @@ class AudioDigitApp {
             this.updateRecordingState();
         };
         
-        this.audioRecorder.onSilenceDetected = () => {
-            addLogEntry('[INFO] Silence detected - Auto-stopping', 'info');
+        this.audioRecorder.onChunkReady = (audioBlob, duration) => {
+            this.state.currentAudioBlob = audioBlob;
+            this.processAudioChunk(audioBlob, duration);
+            addLogEntry(`[INFO] Streaming chunk ready - ${(duration/1000).toFixed(1)}s`, 'info');
         };
         
         // Initialize audio visualizer
@@ -152,13 +157,14 @@ class AudioDigitApp {
         this.elements.getStats.addEventListener('click', () => this.showStats());
         this.elements.testConnection.addEventListener('click', () => this.testAPIConnection());
         
-        // Method selection
+        // Method selection with lazy loading
         const methodRadios = document.querySelectorAll('input[name=\"method\"]');
         methodRadios.forEach(radio => {
             radio.addEventListener('change', (e) => {
                 if (e.target.checked) {
                     this.state.selectedMethod = e.target.value;
                     this.updateMethodSelection();
+                    this.initializeSelectedMethod(e.target.value);
                     addLogEntry(`[INFO] Selected method: ${this.getMethodName(e.target.value)}`, 'info');
                 }
             });
@@ -202,11 +208,68 @@ class AudioDigitApp {
     }
     
     /**
+     * Initialize selected method (lazy loading)
+     */
+    async initializeSelectedMethod(method) {
+        try {
+            addLogEntry(`[INFO] Initializing ${this.getMethodName(method)}...`, 'info');
+            
+            // Show loading indicator
+            const cabinet = document.querySelector(`[data-method="${method}"]`);
+            if (cabinet) {
+                cabinet.classList.add('loading');
+            }
+            
+            // Pre-warm the model by making a test request
+            const testAudio = new ArrayBuffer(1000); // Minimal audio data
+            const testBlob = new Blob([testAudio], { type: 'audio/wav' });
+            
+            const formData = new FormData();
+            formData.append('audio', testBlob, 'init_test.wav');
+            formData.append('method', method);
+            
+            const response = await fetch('/process_audio', {
+                method: 'POST',
+                body: formData
+            });
+            
+            // Remove loading indicator
+            if (cabinet) {
+                cabinet.classList.remove('loading');
+            }
+            
+            if (response.ok) {
+                addLogEntry(`[SUCCESS] ${this.getMethodName(method)} ready`, 'success');
+                this.updateCabinetStatus(method, 'ready');
+            } else {
+                addLogEntry(`[WARNING] ${this.getMethodName(method)} may have issues`, 'warning');
+                this.updateCabinetStatus(method, 'error');
+            }
+            
+        } catch (error) {
+            console.error(`Failed to initialize ${method}:`, error);
+            addLogEntry(`[ERROR] Failed to initialize ${this.getMethodName(method)}`, 'error');
+            
+            const cabinet = document.querySelector(`[data-method="${method}"]`);
+            if (cabinet) {
+                cabinet.classList.remove('loading');
+            }
+            this.updateCabinetStatus(method, 'error');
+        }
+    }
+    
+    /**
      * Start audio recording
      */
     async startRecording() {
         try {
             if (this.state.isRecording) return;
+            
+            // Check if selected method is initialized
+            if (!this.isMethodReady(this.state.selectedMethod)) {
+                addLogEntry(`[INFO] Initializing ${this.getMethodName(this.state.selectedMethod)} first...`, 'info');
+                await this.initializeSelectedMethod(this.state.selectedMethod);
+            }
             
             // Start recording
             await this.audioRecorder.startRecording();
@@ -223,6 +286,17 @@ class AudioDigitApp {
                 this.showMicrophonePermissionHelp();
             }
         }
+    }
+    
+    /**
+     * Check if method is ready for use
+     */
+    isMethodReady(method) {
+        const cabinet = document.querySelector(`[data-method="${method}"]`);
+        if (!cabinet) return false;
+        
+        const indicator = cabinet.querySelector('.status-indicator');
+        return indicator && (indicator.classList.contains('ready') || indicator.classList.contains('working'));
     }
     
     /**
@@ -244,7 +318,79 @@ class AudioDigitApp {
     }
     
     /**
-     * Process recorded audio with selected method
+     * Process audio chunk automatically (streaming mode)
+     */
+    async processAudioChunk(audioBlob, duration) {
+        // Check for error backoff
+        const now = Date.now();
+        if (this.state.streamingErrors >= this.state.maxStreamingErrors) {
+            const timeSinceLastError = now - this.state.lastErrorTime;
+            if (timeSinceLastError < 10000) { // 10 second backoff
+                console.log('Skipping chunk due to error backoff');
+                return;
+            } else {
+                // Reset error count after backoff period
+                this.state.streamingErrors = 0;
+                addLogEntry('[INFO] Resuming streaming after error backoff', 'info');
+            }
+        }
+        
+        try {
+            // Apply noise if configured
+            const noiseType = this.elements.noiseType.value;
+            const noiseLevel = parseFloat(this.elements.noiseLevel.value);
+            
+            let processedBlob = audioBlob;
+            if (noiseType !== 'none' && noiseLevel > 0) {
+                processedBlob = await this.noiseGenerator.mixNoiseWithAudio(audioBlob, noiseType, noiseLevel);
+            }
+            
+            // Use the selected method from UI
+            let selectedMethod = this.state.selectedMethod;
+
+            // Prepare form data
+            const formData = new FormData();
+            formData.append('audio', processedBlob, 'streaming_chunk.wav');
+            formData.append('method', selectedMethod);
+            formData.append('noise_type', noiseType);
+            formData.append('noise_level', noiseLevel.toString());
+            
+            // Send to server
+            const response = await fetch('/process_audio', {
+                method: 'POST',
+                body: formData
+            });
+            
+            const result = await response.json();
+            
+            if (response.ok && result.success !== false) {
+                // Reset error count on success
+                this.state.streamingErrors = 0;
+                
+                // Display streaming result
+                this.displayStreamingResult(result);
+                this.updateStats(result);
+                
+                addLogEntry(`[SUCCESS] Streaming: ${result.predicted_digit} (${result.inference_time}s)`, 'success');
+            } else {
+                throw new Error(result.error || `HTTP ${response.status}`);
+            }
+            
+        } catch (error) {
+            this.state.streamingErrors++;
+            this.state.lastErrorTime = now;
+            
+            console.error('Streaming chunk processing failed:', error);
+            addLogEntry(`[ERROR] Streaming error (${this.state.streamingErrors}/${this.state.maxStreamingErrors}): ${error.message}`, 'error');
+            
+            if (this.state.streamingErrors >= this.state.maxStreamingErrors) {
+                addLogEntry('[WARNING] Too many streaming errors - entering backoff mode', 'warning');
+            }
+        }
+    }
+    
+    /**
+     * Process recorded audio with selected method (manual mode)
      */
     async processAudio() {
         if (!this.state.hasRecordedAudio || !this.state.currentAudioBlob) {
@@ -254,7 +400,7 @@ class AudioDigitApp {
         
         try {
             // Update UI for processing state
-            this.elements.processAudio.textContent = '🧠 Processing...';
+            this.elements.processAudio.textContent = 'Processing...';
             this.elements.processAudio.disabled = true;
             
             // Apply noise if configured
@@ -304,9 +450,34 @@ class AudioDigitApp {
             
         } finally {
             // Reset processing button
-            this.elements.processAudio.textContent = '🧠 Analyze Audio';
+            this.elements.processAudio.textContent = 'Analyze Audio';
             this.elements.processAudio.disabled = false;
         }
+    }
+    
+    /**
+     * Display streaming result (non-intrusive)
+     */
+    displayStreamingResult(result) {
+        // Update prediction with streaming indicator
+        this.elements.predictedDigit.textContent = result.predicted_digit;
+        this.elements.predictedDigit.style.color = result.predicted_digit === 'ERROR' ? '#ff0000' : '#ffe66d';
+        
+        // Update method and timing info
+        this.elements.methodUsed.textContent = this.getMethodName(result.method);
+        this.elements.inferenceTime.textContent = `${result.inference_time}s`;
+        if (result.audio_duration) {
+            this.elements.audioDuration.textContent = `${result.audio_duration}s`;
+        }
+        if (result.average_time) {
+            this.elements.averageTime.textContent = `${result.average_time}s`;
+        }
+        
+        // Brief visual feedback for method cabinet
+        this.updateCabinetStatus(result.method, 'working');
+        setTimeout(() => {
+            this.updateCabinetStatus(result.method, 'ready');
+        }, 1000);
     }
     
     /**
@@ -441,7 +612,7 @@ class AudioDigitApp {
         if (this.state.isRecording) {
             this.elements.startRecording.disabled = true;
             this.elements.stopRecording.disabled = false;
-            this.elements.recordingStatus.textContent = 'Recording... (Press SPACE or click stop)';
+            this.elements.recordingStatus.textContent = 'Streaming... (Press SPACE or click stop)';
             this.elements.recordingStatus.style.color = '#ff0000';
             
             // Add recording class for visual effects
@@ -449,7 +620,7 @@ class AudioDigitApp {
         } else {
             this.elements.startRecording.disabled = false;
             this.elements.stopRecording.disabled = true;
-            this.elements.recordingStatus.textContent = 'Ready to record... (Press SPACE or click start)';
+            this.elements.recordingStatus.textContent = 'Ready to stream... (Press SPACE or click start)';
             this.elements.recordingStatus.style.color = '#00ff00';
             
             // Remove recording class

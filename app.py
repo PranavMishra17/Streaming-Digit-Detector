@@ -12,12 +12,14 @@ from dotenv import load_dotenv
 
 # Import audio processors
 from audio_processors.external_api import ExternalAPIProcessor
+from audio_processors.local_whisper import LocalWhisperProcessor
+from audio_processors.wav2vec2_processor import Wav2Vec2Processor
 from audio_processors.raw_spectrogram import RawSpectrogramProcessor  
 from audio_processors.mel_spectrogram import MelSpectrogramProcessor
 from audio_processors.mfcc_processor import MFCCProcessor
 
 # Import utilities
-from utils.audio_utils import validate_audio_format, convert_to_mono_16khz, get_audio_duration
+from utils.audio_utils import validate_audio_format, convert_audio_format, get_audio_duration
 from utils.logging_utils import performance_logger, setup_flask_logging
 from utils.noise_utils import noise_generator
 
@@ -31,18 +33,54 @@ app.secret_key = os.getenv('SECRET_KEY', 'dev_key_change_in_production')
 # Setup logging
 setup_flask_logging(app)
 
-# Initialize audio processors
-processors = {
-    'external_api': ExternalAPIProcessor(),
-    'raw_spectrogram': RawSpectrogramProcessor(),
-    'mel_spectrogram': MelSpectrogramProcessor(),
-    'mfcc': MFCCProcessor()
-}
+# Initialize audio processors with dynamic fallback
+def initialize_processors():
+    """Initialize audio processors with intelligent fallback system."""
+    procs = {}
+    
+    # Try to initialize speech recognition processors in order of preference
+    speech_processors = [
+        ('wav2vec2', Wav2Vec2Processor, 'Wav2Vec2 (Facebook)'),
+        ('external_api', ExternalAPIProcessor, 'External API (Whisper)'),
+        ('local_whisper', LocalWhisperProcessor, 'Local Whisper (Tiny)')
+    ]
+    
+    working_speech_processor = None
+    
+    for proc_key, proc_class, proc_name in speech_processors:
+        try:
+            processor = proc_class()
+            if processor.is_configured():
+                procs[proc_key] = processor
+                if working_speech_processor is None:
+                    working_speech_processor = proc_key
+                app.logger.info(f"[OK] {proc_name} initialized and configured")
+            else:
+                app.logger.warning(f"[WARN] {proc_name} not configured (missing dependencies/tokens)")
+        except Exception as e:
+            app.logger.error(f"[FAIL] Failed to initialize {proc_name}: {str(e)}")
+    
+    # Set primary speech processor if available
+    if working_speech_processor:
+        procs['primary_speech'] = procs[working_speech_processor]
+        app.logger.info(f"Primary speech processor: {working_speech_processor}")
+    
+    # Add placeholder processors (always available)
+    procs.update({
+        'raw_spectrogram': RawSpectrogramProcessor(),
+        'mel_spectrogram': MelSpectrogramProcessor(),
+        'mfcc': MFCCProcessor()
+    })
+    
+    app.logger.info(f"Initialized {len(procs)} audio processors")
+    return procs
+
+processors = initialize_processors()
 
 # Configuration
 MAX_AUDIO_DURATION = int(os.getenv('MAX_AUDIO_DURATION', 10))  # seconds
 MAX_FILE_SIZE = 10 * 1024 * 1024  # 10MB
-ALLOWED_EXTENSIONS = {'wav', 'mp3', 'ogg', 'm4a'}
+ALLOWED_EXTENSIONS = {'wav', 'mp3', 'ogg', 'm4a', 'webm'}
 
 def allowed_file(filename: str) -> bool:
     """Check if file extension is allowed."""
@@ -107,33 +145,55 @@ def process_audio():
         if len(audio_data) > MAX_FILE_SIZE:
             return jsonify({'error': 'Audio file too large'}), 400
         
-        # Validate audio format
-        if not validate_audio_format(audio_data):
-            return jsonify({'error': 'Invalid or corrupted audio file'}), 400
+        # Try to validate and convert audio format
+        # For streaming chunks, we may get WebM/OGG format from MediaRecorder
+        audio_is_valid = validate_audio_format(audio_data)
         
-        # Check audio duration
-        duration = get_audio_duration(audio_data)
+        if not audio_is_valid:
+            # Check if it might be a different format (WebM, OGG)
+            try:
+                # Try to convert using audio utilities
+                app.logger.debug(f"Audio format validation failed, attempting conversion. File type from header: {audio_data[:8]}")
+                if len(audio_data) < 8:
+                    return jsonify({'error': 'Audio file too small or corrupted'}), 400
+                
+                # For WebM/OGG files, we'll need special handling
+                # Let's try the conversion anyway and see if it works
+                pass  # Will be handled in conversion step
+                
+            except Exception as e:
+                app.logger.error(f"Audio format detection failed: {str(e)}")
+                return jsonify({'error': 'Invalid or corrupted audio file'}), 400
+        
+        # Convert to standard format for processing first
+        try:
+            app.logger.debug(f"Converting audio format. Original size: {len(audio_data)} bytes")
+            standardized_audio = convert_audio_format(audio_data)
+            app.logger.debug(f"Converted audio size: {len(standardized_audio)} bytes")
+        except Exception as e:
+            app.logger.error(f"Audio conversion failed: {str(e)}")
+            return jsonify({'error': 'Failed to process audio format - unsupported format or corrupted file'}), 400
+        
+        # Check audio duration using the converted audio
+        duration = get_audio_duration(standardized_audio)
         if duration > MAX_AUDIO_DURATION:
             return jsonify({
                 'error': f'Audio too long: {duration:.1f}s (max: {MAX_AUDIO_DURATION}s)'
             }), 400
         
         if duration < 0.1:
-            return jsonify({'error': 'Audio too short (minimum: 0.1s)'}), 400
+            # For streaming chunks, be more lenient with minimum duration
+            min_duration = 0.05 if 'streaming' in audio_file.filename.lower() else 0.1
+            if duration < min_duration:
+                return jsonify({'error': f'Audio too short (minimum: {min_duration}s)'}), 400
         
         # Log audio input info
         performance_logger.log_audio_info(duration, {
             'filename': audio_file.filename,
             'size_bytes': len(audio_data),
+            'converted_size': len(standardized_audio),
             'method': method
         })
-        
-        # Convert to standard format for processing
-        try:
-            standardized_audio = convert_to_mono_16khz(audio_data)
-        except Exception as e:
-            app.logger.error(f"Audio conversion failed: {str(e)}")
-            return jsonify({'error': 'Failed to process audio format'}), 400
         
         # Apply noise injection if requested
         noise_type = request.form.get('noise_type')
@@ -318,8 +378,8 @@ def static_files(filename):
 if __name__ == '__main__':
     # Log startup information
     try:
-        import flask
-        flask_version = getattr(flask, '__version__', 'unknown')
+        import importlib.metadata
+        flask_version = importlib.metadata.version('flask')
     except:
         flask_version = 'unknown'
         

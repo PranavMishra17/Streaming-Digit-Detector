@@ -12,7 +12,7 @@
     <div class="container">
         <!-- Header Section -->
         <div class="header">
-            <h1 class="title">🎮 Audio Digit Detective 🎮</h1>
+            <h1 class="title">Audio Digit Detective</h1>
             <p class="subtitle">Retro-Style Spoken Digit Recognition Challenge</p>
             <p style="font-size: 8px; margin-top: 15px;">
                 Speak digits 0-9 and watch AI methods compete! Choose your processor and test accuracy.
@@ -22,7 +22,7 @@
         <!-- Instructions Cabinet -->
         <div class="cabinet">
             <div class="cabinet-header">
-                <h2 class="cabinet-title">🎯 How to Play</h2>
+                <h2 class="cabinet-title">How to Play</h2>
             </div>
             <div style="font-size: 10px; line-height: 1.6;">
                 <p><strong>1.</strong> Click "Start Recording" and clearly say a digit (0-9)</p>
@@ -36,16 +36,16 @@
         <!-- Audio Visualizer Section -->
         <div class="cabinet">
             <div class="cabinet-header">
-                <h2 class="cabinet-title">📊 Audio Input Monitor</h2>
+                <h2 class="cabinet-title">Audio Input Monitor</h2>
             </div>
             <div class="visualizer-container">
                 <div class="visualizer-screen">
                     <canvas id="audioCanvas" width="800" height="200"></canvas>
                 </div>
                 <div class="visualizer-controls">
-                    <button id="startRecording" class="btn btn-success">🎤 Start Recording</button>
-                    <button id="stopRecording" class="btn btn-danger" disabled>⏹️ Stop Recording</button>
-                    <button id="clearCanvas" class="btn btn-info">🧹 Clear Screen</button>
+                    <button id="startRecording" class="btn btn-success">Start Recording</button>
+                    <button id="stopRecording" class="btn btn-danger" disabled>Stop Recording</button>
+                    <button id="clearCanvas" class="btn btn-info">Clear Screen</button>
                     <div style="margin-left: 20px; font-size: 8px;">
                         <span id="recordingStatus">Ready to record...</span>
                         <br>
@@ -58,13 +58,13 @@
         <!-- Processing Method Selection -->
         <div class="cabinet">
             <div class="cabinet-header">
-                <h2 class="cabinet-title">🔧 Processing Methods</h2>
+                <h2 class="cabinet-title">Processing Methods</h2>
             </div>
             <div class="method-selector">
                 <!-- External API Cabinet -->
                 <div class="radio-cabinet" data-method="external_api">
                     <input type="radio" name="method" value="external_api" id="method_external" checked>
-                    <label for="method_external" class="radio-label">🌐 External API</label>
+                    <label for="method_external" class="radio-label">External API</label>
                     <p class="radio-description">Hugging Face Whisper model for speech-to-text conversion with digit extraction</p>
                     <div class="status-indicator {% if processor_status.external_api.configured %}ready{% else %}{% endif %}"></div>
                 </div>
@@ -72,7 +72,7 @@
                 <!-- Raw Spectrogram Cabinet -->
                 <div class="radio-cabinet" data-method="raw_spectrogram">
                     <input type="radio" name="method" value="raw_spectrogram" id="method_raw">
-                    <label for="method_raw" class="radio-label">📈 Raw Spectrogram</label>
+                    <label for="method_raw" class="radio-label">Raw Spectrogram</label>
                     <p class="radio-description">STFT-based time-frequency analysis with CNN classifier (Placeholder)</p>
                     <div class="status-indicator"></div>
                 </div>
@@ -80,7 +80,7 @@
                 <!-- Mel Spectrogram Cabinet -->
                 <div class="radio-cabinet" data-method="mel_spectrogram">
                     <input type="radio" name="method" value="mel_spectrogram" id="method_mel">
-                    <label for="method_mel" class="radio-label">🎵 Mel Spectrogram</label>
+                    <label for="method_mel" class="radio-label">Mel Spectrogram</label>
                     <p class="radio-description">Perceptually-motivated mel-scale processing with deep learning (Placeholder)</p>
                     <div class="status-indicator"></div>
                 </div>
@@ -88,7 +88,7 @@
                 <!-- MFCC Cabinet -->
                 <div class="radio-cabinet" data-method="mfcc">
                     <input type="radio" name="method" value="mfcc" id="method_mfcc">
-                    <label for="method_mfcc" class="radio-label">🔊 MFCC Features</label>
+                    <label for="method_mfcc" class="radio-label">MFCC Features</label>
                     <p class="radio-description">Mel-Frequency Cepstral Coefficients with traditional ML (Placeholder)</p>
                     <div class="status-indicator"></div>
                 </div>
@@ -98,7 +98,7 @@
         <!-- Noise Injection Controls -->
         <div class="cabinet">
             <div class="cabinet-header">
-                <h2 class="cabinet-title">🎛️ Robustness Testing</h2>
+                <h2 class="cabinet-title">Robustness Testing</h2>
             </div>
             <div class="noise-controls">
                 <div class="control-group">
@@ -124,7 +124,7 @@
         <!-- Results Display -->
         <div class="cabinet">
             <div class="cabinet-header">
-                <h2 class="cabinet-title">🎯 Prediction Results</h2>
+                <h2 class="cabinet-title">Prediction Results</h2>
             </div>
             <div class="results-container">
                 <div class="result-display">
@@ -153,9 +153,9 @@
                 </div>
                 
                 <div style="margin-top: 15px;">
-                    <button id="processAudio" class="btn" disabled>🧠 Analyze Audio</button>
-                    <button id="getStats" class="btn btn-info" style="margin-left: 10px;">📊 View Stats</button>
-                    <button id="testConnection" class="btn btn-info" style="margin-left: 10px;">🔗 Test API</button>
+                    <button id="processAudio" class="btn" disabled>Analyze Audio</button>
+                    <button id="getStats" class="btn btn-info" style="margin-left: 10px;">View Stats</button>
+                    <button id="testConnection" class="btn btn-info" style="margin-left: 10px;">Test API</button>
                 </div>
             </div>
         </div>
@@ -163,7 +163,7 @@
         <!-- Live Activity Log -->
         <div class="cabinet">
             <div class="cabinet-header">
-                <h2 class="cabinet-title">📝 Activity Log</h2>
+                <h2 class="cabinet-title">Activity Log</h2>
             </div>
             <div class="log-container" id="activityLog">
                 <div class="log-entry log-info">[INFO] Audio Digit Classifier initialized - Ready for input</div>
@@ -174,7 +174,7 @@
         <!-- Performance Comparison -->
         <div class="cabinet">
             <div class="cabinet-header">
-                <h2 class="cabinet-title">⚡ Performance Monitor</h2>
+                <h2 class="cabinet-title">Performance Monitor</h2>
             </div>
             <div id="performanceStats" class="stats-grid">
                 <div class="stat-item">
@@ -226,10 +226,14 @@
         
         // Log initial processor status
         const processorStatus = {{ processor_status | tojson | safe }};
-        for (const [method, status] in Object.entries(processorStatus)) {
-            const logLevel = status.configured ? 'success' : 'warning';
-            const message = status.configured ? 'Ready' : 'Not configured';
-            addLogEntry(`[${logLevel.toUpperCase()}] ${status.method}: ${message}`, logLevel);
+        if (processorStatus && typeof processorStatus === 'object') {
+            for (const [method, status] of Object.entries(processorStatus)) {
+                if (status && typeof status === 'object') {
+                    const logLevel = status.configured ? 'success' : 'warning';
+                    const message = status.configured ? 'Ready' : 'Not configured';
+                    addLogEntry(`[${logLevel.toUpperCase()}] ${status.method}: ${message}`, logLevel);
+                }
+            }
         }
     </script>
 </body>

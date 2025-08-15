@@ -16,27 +16,122 @@ def validate_audio_format(audio_data: bytes) -> bool:
     Returns:
         True if format is supported, False otherwise
     """
+    # Check minimum size
+    if len(audio_data) < 44:  # WAV header is 44 bytes
+        logger.debug(f"Audio data too small: {len(audio_data)} bytes (minimum 44 for WAV header)")
+        return False
+    
+    # Check if it starts with RIFF header
+    if not audio_data.startswith(b'RIFF'):
+        logger.error(f"Audio data does not start with RIFF header. First 8 bytes: {audio_data[:8]}")
+        # Try to provide more diagnostic info
+        if len(audio_data) > 20:
+            logger.error(f"First 20 bytes as hex: {audio_data[:20].hex()}")
+        return False
+    
     try:
         with wave.open(io.BytesIO(audio_data), 'rb') as wav_file:
             # Check basic WAV properties
             channels = wav_file.getnchannels()
             sample_width = wav_file.getsampwidth()
             frame_rate = wav_file.getframerate()
+            frames = wav_file.getnframes()
             
-            logger.debug(f"Audio format: {channels} channels, {sample_width} bytes/sample, {frame_rate} Hz")
+            logger.debug(f"Audio format: {channels} channels, {sample_width} bytes/sample, {frame_rate} Hz, {frames} frames")
             
-            # Support mono or stereo, 16-bit, common sample rates
+            # Be more lenient with streaming chunks
             if channels not in [1, 2]:
+                logger.warning(f"Unusual channel count: {channels}")
                 return False
-            if sample_width not in [2]:  # 16-bit
+            if sample_width not in [1, 2, 4]:  # 8-bit, 16-bit, 32-bit
+                logger.warning(f"Unusual sample width: {sample_width}")
                 return False
-            if frame_rate not in [16000, 22050, 44100, 48000]:
+            if frame_rate < 8000 or frame_rate > 48000:  # Wider range
+                logger.warning(f"Unusual frame rate: {frame_rate}")
+                return False
+            if frames == 0:
+                logger.warning("No audio frames found")
                 return False
                 
             return True
+    except wave.Error as e:
+        logger.error(f"WAV format error: {str(e)}")
+        logger.error(f"Audio data size: {len(audio_data)} bytes")
+        if len(audio_data) > 44:
+            logger.error(f"WAV header bytes: {audio_data[:44].hex()}")
+        return False
     except Exception as e:
         logger.error(f"Audio validation failed: {str(e)}")
+        logger.error(f"Audio data size: {len(audio_data)} bytes")
         return False
+
+def convert_audio_format(audio_data: bytes) -> bytes:
+    """
+    Convert various audio formats (WebM, OGG, MP3, etc.) to WAV format.
+    
+    Args:
+        audio_data: Input audio bytes in any supported format
+        
+    Returns:
+        Converted audio bytes in WAV format
+        
+    Raises:
+        Exception: If conversion fails
+    """
+    try:
+        # First detect the audio format
+        from .webm_converter import detect_audio_format, convert_webm_to_wav
+        
+        audio_format = detect_audio_format(audio_data)
+        logger.debug(f"Detected audio format: {audio_format}")
+        
+        # Handle WebM specifically (common from MediaRecorder)
+        if audio_format == 'webm':
+            logger.info("Converting WebM audio to WAV (fallback method)")
+            converted = convert_webm_to_wav(audio_data)
+            if converted:
+                return converted
+            else:
+                raise Exception("WebM conversion failed")
+        
+        # Try using pydub for format conversion (handles WebM, OGG, MP3, etc.)
+        try:
+            from pydub import AudioSegment
+            import io
+            
+            # Load audio from bytes
+            audio = AudioSegment.from_file(io.BytesIO(audio_data))
+            
+            # Convert to mono and 16kHz
+            audio = audio.set_channels(1)  # Mono
+            audio = audio.set_frame_rate(16000)  # 16kHz
+            audio = audio.set_sample_width(2)  # 16-bit
+            
+            # Export as WAV
+            output_buffer = io.BytesIO()
+            audio.export(output_buffer, format="wav")
+            return output_buffer.getvalue()
+            
+        except ImportError:
+            logger.warning("pydub not installed, falling back to basic WAV conversion")
+            # Fall back to basic WAV processing
+            return convert_to_mono_16khz(audio_data)
+        except Exception as e:
+            logger.warning(f"pydub conversion failed: {str(e)}, trying fallback methods")
+            
+            # Try WebM converter as fallback
+            if audio_format in ['webm', 'unknown']:
+                logger.info("Trying WebM fallback converter")
+                converted = convert_webm_to_wav(audio_data)
+                if converted:
+                    return converted
+            
+            # Last resort: basic WAV processing
+            return convert_to_mono_16khz(audio_data)
+            
+    except Exception as e:
+        logger.error(f"All audio conversion methods failed: {str(e)}")
+        raise Exception(f"Failed to convert audio format: {str(e)}")
 
 def convert_to_mono_16khz(audio_data: bytes) -> bytes:
     """

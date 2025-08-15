@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Streaming Test</title>
+    <style>
+        body { font-family: monospace; padding: 20px; }
+        .status { margin: 10px 0; }
+        .error { color: red; }
+        .success { color: green; }
+        .warning { color: orange; }
+    </style>
+</head>
+<body>
+    <h1>Audio Streaming Test</h1>
+    
+    <div class="status" id="status">Initializing...</div>
+    <button id="testBtn" disabled>Start Test</button>
+    
+    <div id="results" style="margin-top: 20px;"></div>
+
+    <script>
+        class StreamingTest {
+            constructor() {
+                this.status = document.getElementById('status');
+                this.testBtn = document.getElementById('testBtn');
+                this.results = document.getElementById('results');
+                
+                this.init();
+            }
+            
+            async init() {
+                try {
+                    // Test if our classes load correctly
+                    this.log('Testing AudioRecorder initialization...', 'warning');
+                    
+                    // Import our modules (simulate)
+                    const audioRecorderScript = document.createElement('script');
+                    audioRecorderScript.src = '/static/js/audio-recorder.js';
+                    document.head.appendChild(audioRecorderScript);
+                    
+                    audioRecorderScript.onload = () => {
+                        this.log('AudioRecorder loaded successfully!', 'success');
+                        
+                        // Try creating instance
+                        try {
+                            const recorder = new AudioRecorder();
+                            this.log('AudioRecorder instance created successfully!', 'success');
+                            this.testBtn.disabled = false;
+                            this.testBtn.onclick = () => this.testStreaming();
+                        } catch (error) {
+                            this.log(`Error creating AudioRecorder: ${error.message}`, 'error');
+                        }
+                    };
+                    
+                    audioRecorderScript.onerror = () => {
+                        this.log('Failed to load AudioRecorder script', 'error');
+                    };
+                    
+                } catch (error) {
+                    this.log(`Initialization error: ${error.message}`, 'error');
+                }
+            }
+            
+            async testStreaming() {
+                this.log('Testing streaming functionality...', 'warning');
+                
+                try {
+                    // Test basic streaming setup
+                    const recorder = new AudioRecorder();
+                    
+                    // Set up callbacks
+                    recorder.onChunkReady = (blob, duration) => {
+                        this.log(`Chunk ready: ${blob.size} bytes, ${duration}ms`, 'success');
+                    };
+                    
+                    recorder.onError = (error) => {
+                        this.log(`Recording error: ${error.message}`, 'error');
+                    };
+                    
+                    this.log('Streaming test setup complete!', 'success');
+                    
+                } catch (error) {
+                    this.log(`Streaming test error: ${error.message}`, 'error');
+                }
+            }
+            
+            log(message, type = 'info') {
+                const div = document.createElement('div');
+                div.className = type;
+                div.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+                this.results.appendChild(div);
+                
+                this.status.textContent = message;
+                this.status.className = `status ${type}`;
+                
+                console.log(message);
+            }
+        }
+        
+        // Start test when page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            new StreamingTest();
+        });
+    </script>
+</body>
+</html>

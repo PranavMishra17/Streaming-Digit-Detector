@@ -44,12 +44,21 @@ class ExternalAPIProcessor(AudioProcessor):
                 self.api_url,
                 headers=self.headers,
                 data=audio_data,
-                timeout=10
+                timeout=15  # Increased timeout
             )
             
-            if response.status_code != 200:
+            if response.status_code == 401:
+                logger.error("Hugging Face API token is invalid or expired")
+                raise Exception("Invalid or expired API token - please update HUGGING_FACE_TOKEN")
+            elif response.status_code == 404:
+                logger.error(f"Model not found or unavailable: {self.api_url}")
+                raise Exception("API model unavailable - may be loading or deprecated")
+            elif response.status_code == 503:
+                logger.warning("Model is loading, this may take a few moments")
+                raise Exception("API model is loading - please try again in a moment")
+            elif response.status_code != 200:
                 logger.error(f"API request failed: {response.status_code} - {response.text}")
-                raise Exception(f"API error: {response.status_code}")
+                raise Exception(f"API error {response.status_code}: {response.text[:100]}")
             
             # Parse response
             result = response.json()
@@ -71,7 +80,7 @@ class ExternalAPIProcessor(AudioProcessor):
             return predicted_digit
             
         except requests.exceptions.Timeout:
-            raise Exception("API request timeout")
+            raise Exception("API request timeout (15s) - service may be slow")
         except requests.exceptions.RequestException as e:
             raise Exception(f"API request failed: {str(e)}")
         except Exception as e:
@@ -134,7 +143,7 @@ class ExternalAPIProcessor(AudioProcessor):
         try:
             # Test with minimal audio data
             test_response = requests.get(
-                "https://api-inference.huggingface.co/models/openai/whisper-base",
+                self.api_url,
                 headers=self.headers,
                 timeout=5
             )
