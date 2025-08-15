@@ -1,0 +1,28 @@
+2025-08-14 21:58:45,601 - app - INFO - Audio Digit Classifier startup
+2025-08-14 21:58:45,601 - audio_processors.raw_spectrogram - INFO - Raw Spectrogram processor initialized (PLACEHOLDER MODE)
+2025-08-14 21:58:45,601 - audio_processors.mel_spectrogram - INFO - Mel Spectrogram processor initialized (PLACEHOLDER MODE)
+2025-08-14 21:58:45,601 - audio_processors.mfcc_processor - INFO - MFCC processor initialized (PLACEHOLDER MODE)
+2025-08-14 21:59:17,886 - app - INFO - Audio Digit Classifier startup
+2025-08-14 21:59:17,886 - audio_processors.raw_spectrogram - INFO - Raw Spectrogram processor initialized (PLACEHOLDER MODE)
+2025-08-14 21:59:17,886 - audio_processors.mel_spectrogram - INFO - Mel Spectrogram processor initialized (PLACEHOLDER MODE)
+2025-08-14 21:59:17,890 - audio_processors.mfcc_processor - INFO - MFCC processor initialized (PLACEHOLDER MODE)
+2025-08-14 21:59:17,895 - utils.logging_utils - INFO - {"event": "system_info", "timestamp": 1755223157.895216, "python_version": "3.12.6 (tags/v3.12.6:a4a2d2b, Sep  6 2024, 20:11:23) [MSC v.1940 64 bit (AMD64)]", "flask_version": "3.1.0", "processors_loaded": ["external_api", "raw_spectrogram", "mel_spectrogram", "mfcc"], "max_audio_duration": 10, "max_file_size": 10485760}
+2025-08-14 21:59:17,895 - app - INFO - Starting Audio Digit Classifier on port 5000
+2025-08-14 21:59:17,895 - app - INFO - Debug mode: True
+2025-08-14 21:59:17,987 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.1.121:5000
+2025-08-14 21:59:17,987 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2025-08-14 21:59:17,989 - werkzeug - INFO -  * Restarting with stat
+2025-08-14 21:59:18,697 - app - INFO - Audio Digit Classifier startup
+2025-08-14 21:59:18,697 - audio_processors.raw_spectrogram - INFO - Raw Spectrogram processor initialized (PLACEHOLDER MODE)
+2025-08-14 21:59:18,697 - audio_processors.mel_spectrogram - INFO - Mel Spectrogram processor initialized (PLACEHOLDER MODE)
+2025-08-14 21:59:18,697 - audio_processors.mfcc_processor - INFO - MFCC processor initialized (PLACEHOLDER MODE)
+2025-08-14 21:59:18,703 - utils.logging_utils - INFO - {"event": "system_info", "timestamp": 1755223158.7032673, "python_version": "3.12.6 (tags/v3.12.6:a4a2d2b, Sep  6 2024, 20:11:23) [MSC v.1940 64 bit (AMD64)]", "flask_version": "3.1.0", "processors_loaded": ["external_api", "raw_spectrogram", "mel_spectrogram", "mfcc"], "max_audio_duration": 10, "max_file_size": 10485760}
+2025-08-14 21:59:18,703 - app - INFO - Starting Audio Digit Classifier on port 5000
+2025-08-14 21:59:18,703 - app - INFO - Debug mode: True
+2025-08-14 21:59:18,729 - werkzeug - WARNING -  * Debugger is active!
+2025-08-14 21:59:18,735 - werkzeug - INFO -  * Debugger PIN: 396-360-540
+2025-08-14 22:00:05,079 - werkzeug - INFO - 127.0.0.1 - - [14/Aug/2025 22:00:05] "GET /health HTTP/1.1" 200 -
+2025-08-14 22:00:10,839 - werkzeug - INFO - 127.0.0.1 - - [14/Aug/2025 22:00:10] "GET / HTTP/1.1" 200 -

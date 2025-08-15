@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>8-Bit Audio Digit Classifier</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/retro.css') }}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+</head>
+<body>
+    <div class="container">
+        <!-- Header Section -->
+        <div class="header">
+            <h1 class="title">🎮 Audio Digit Detective 🎮</h1>
+            <p class="subtitle">Retro-Style Spoken Digit Recognition Challenge</p>
+            <p style="font-size: 8px; margin-top: 15px;">
+                Speak digits 0-9 and watch AI methods compete! Choose your processor and test accuracy.
+            </p>
+        </div>
+
+        <!-- Instructions Cabinet -->
+        <div class="cabinet">
+            <div class="cabinet-header">
+                <h2 class="cabinet-title">🎯 How to Play</h2>
+            </div>
+            <div style="font-size: 10px; line-height: 1.6;">
+                <p><strong>1.</strong> Click "Start Recording" and clearly say a digit (0-9)</p>
+                <p><strong>2.</strong> Select a processing method from the cabinets below</p>
+                <p><strong>3.</strong> Watch the real-time audio visualization</p>
+                <p><strong>4.</strong> Compare inference times and accuracy across methods</p>
+                <p><strong>5.</strong> Add noise to test robustness!</p>
+            </div>
+        </div>
+
+        <!-- Audio Visualizer Section -->
+        <div class="cabinet">
+            <div class="cabinet-header">
+                <h2 class="cabinet-title">📊 Audio Input Monitor</h2>
+            </div>
+            <div class="visualizer-container">
+                <div class="visualizer-screen">
+                    <canvas id="audioCanvas" width="800" height="200"></canvas>
+                </div>
+                <div class="visualizer-controls">
+                    <button id="startRecording" class="btn btn-success">🎤 Start Recording</button>
+                    <button id="stopRecording" class="btn btn-danger" disabled>⏹️ Stop Recording</button>
+                    <button id="clearCanvas" class="btn btn-info">🧹 Clear Screen</button>
+                    <div style="margin-left: 20px; font-size: 8px;">
+                        <span id="recordingStatus">Ready to record...</span>
+                        <br>
+                        <span id="audioInfo">Duration: 0.0s</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Processing Method Selection -->
+        <div class="cabinet">
+            <div class="cabinet-header">
+                <h2 class="cabinet-title">🔧 Processing Methods</h2>
+            </div>
+            <div class="method-selector">
+                <!-- External API Cabinet -->
+                <div class="radio-cabinet" data-method="external_api">
+                    <input type="radio" name="method" value="external_api" id="method_external" checked>
+                    <label for="method_external" class="radio-label">🌐 External API</label>
+                    <p class="radio-description">Hugging Face Whisper model for speech-to-text conversion with digit extraction</p>
+                    <div class="status-indicator {% if processor_status.external_api.configured %}ready{% else %}{% endif %}"></div>
+                </div>
+
+                <!-- Raw Spectrogram Cabinet -->
+                <div class="radio-cabinet" data-method="raw_spectrogram">
+                    <input type="radio" name="method" value="raw_spectrogram" id="method_raw">
+                    <label for="method_raw" class="radio-label">📈 Raw Spectrogram</label>
+                    <p class="radio-description">STFT-based time-frequency analysis with CNN classifier (Placeholder)</p>
+                    <div class="status-indicator"></div>
+                </div>
+
+                <!-- Mel Spectrogram Cabinet -->
+                <div class="radio-cabinet" data-method="mel_spectrogram">
+                    <input type="radio" name="method" value="mel_spectrogram" id="method_mel">
+                    <label for="method_mel" class="radio-label">🎵 Mel Spectrogram</label>
+                    <p class="radio-description">Perceptually-motivated mel-scale processing with deep learning (Placeholder)</p>
+                    <div class="status-indicator"></div>
+                </div>
+
+                <!-- MFCC Cabinet -->
+                <div class="radio-cabinet" data-method="mfcc">
+                    <input type="radio" name="method" value="mfcc" id="method_mfcc">
+                    <label for="method_mfcc" class="radio-label">🔊 MFCC Features</label>
+                    <p class="radio-description">Mel-Frequency Cepstral Coefficients with traditional ML (Placeholder)</p>
+                    <div class="status-indicator"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Noise Injection Controls -->
+        <div class="cabinet">
+            <div class="cabinet-header">
+                <h2 class="cabinet-title">🎛️ Robustness Testing</h2>
+            </div>
+            <div class="noise-controls">
+                <div class="control-group">
+                    <label for="noiseType" class="control-label">Noise Type</label>
+                    <select id="noiseType" name="noiseType">
+                        <option value="none">No Noise</option>
+                        <option value="white">White Noise</option>
+                        <option value="pink">Pink Noise</option>
+                        <option value="brown">Brown Noise</option>
+                        <option value="background">Background Noise</option>
+                    </select>
+                </div>
+                <div class="control-group">
+                    <label for="noiseLevel" class="control-label">Noise Level: <span id="noiseLevelValue">0.0</span></label>
+                    <input type="range" id="noiseLevel" name="noiseLevel" min="0" max="0.5" step="0.05" value="0" class="slider">
+                </div>
+                <div style="font-size: 8px; margin-top: 10px; opacity: 0.7;">
+                    Add noise to test robustness of digit recognition methods
+                </div>
+            </div>
+        </div>
+
+        <!-- Results Display -->
+        <div class="cabinet">
+            <div class="cabinet-header">
+                <h2 class="cabinet-title">🎯 Prediction Results</h2>
+            </div>
+            <div class="results-container">
+                <div class="result-display">
+                    <div class="prediction-result">
+                        <span style="font-size: 14px;">Predicted Digit: </span>
+                        <span id="predictedDigit" style="font-size: 32px; color: #ffe66d;">?</span>
+                    </div>
+                    <div class="stats-grid">
+                        <div class="stat-item">
+                            <div class="stat-label">Method</div>
+                            <div class="stat-value" id="methodUsed">-</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-label">Inference Time</div>
+                            <div class="stat-value" id="inferenceTime">0.000s</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-label">Audio Duration</div>
+                            <div class="stat-value" id="audioDuration">0.000s</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-label">Average Time</div>
+                            <div class="stat-value" id="averageTime">0.000s</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div style="margin-top: 15px;">
+                    <button id="processAudio" class="btn" disabled>🧠 Analyze Audio</button>
+                    <button id="getStats" class="btn btn-info" style="margin-left: 10px;">📊 View Stats</button>
+                    <button id="testConnection" class="btn btn-info" style="margin-left: 10px;">🔗 Test API</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Live Activity Log -->
+        <div class="cabinet">
+            <div class="cabinet-header">
+                <h2 class="cabinet-title">📝 Activity Log</h2>
+            </div>
+            <div class="log-container" id="activityLog">
+                <div class="log-entry log-info">[INFO] Audio Digit Classifier initialized - Ready for input</div>
+                <div class="log-entry log-info">[INFO] Select a processing method and start recording</div>
+            </div>
+        </div>
+
+        <!-- Performance Comparison -->
+        <div class="cabinet">
+            <div class="cabinet-header">
+                <h2 class="cabinet-title">⚡ Performance Monitor</h2>
+            </div>
+            <div id="performanceStats" class="stats-grid">
+                <div class="stat-item">
+                    <div class="stat-label">Total Predictions</div>
+                    <div class="stat-value" id="totalPredictions">0</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">Fastest Method</div>
+                    <div class="stat-value" id="fastestMethod">-</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">Last Success Rate</div>
+                    <div class="stat-value" id="successRate">-</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">Session Time</div>
+                    <div class="stat-value" id="sessionTime">00:00</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript Files -->
+    <script src="{{ url_for('static', filename='js/audio-recorder.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/audio-visualizer.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/noise-generator.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+
+    <!-- Initialize Application -->
+    <script>
+        // Initialize global variables
+        window.APP_CONFIG = {
+            maxDuration: 10,
+            sampleRate: 16000,
+            processorStatus: {{ processor_status | tojson | safe }},
+            startTime: Date.now()
+        };
+        
+        // Start session timer
+        function updateSessionTime() {
+            const elapsed = Math.floor((Date.now() - window.APP_CONFIG.startTime) / 1000);
+            const minutes = Math.floor(elapsed / 60);
+            const seconds = elapsed % 60;
+            document.getElementById('sessionTime').textContent = 
+                `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        }
+        
+        setInterval(updateSessionTime, 1000);
+        
+        // Log initial processor status
+        const processorStatus = {{ processor_status | tojson | safe }};
+        for (const [method, status] in Object.entries(processorStatus)) {
+            const logLevel = status.configured ? 'success' : 'warning';
+            const message = status.configured ? 'Ready' : 'Not configured';
+            addLogEntry(`[${logLevel.toUpperCase()}] ${status.method}: ${message}`, logLevel);
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Error - 8-Bit Audio Digit Classifier</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/retro.css') }}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+</head>
+<body>
+    <div class="container">
+        <!-- Header Section -->
+        <div class="header">
+            <h1 class="title">💥 System Error 💥</h1>
+            <p class="subtitle">Something went wrong in the retro-verse!</p>
+        </div>
+
+        <!-- Error Cabinet -->
+        <div class="cabinet">
+            <div class="cabinet-header">
+                <h2 class="cabinet-title">🚨 Error Details</h2>
+            </div>
+            
+            <div class="result-display" style="background: #330000; border-color: var(--pixel-red);">
+                <div style="text-align: center; margin: 20px 0;">
+                    <div style="font-size: 48px; color: var(--pixel-red); margin-bottom: 15px;">
+                        {{ error_code or '500' }}
+                    </div>
+                    <div style="font-size: 14px; color: var(--pixel-light); margin-bottom: 15px;">
+                        {{ error or 'An unexpected error occurred' }}
+                    </div>
+                </div>
+                
+                <div style="font-size: 10px; color: var(--pixel-gray); text-align: center;">
+                    <p>Don't panic! This is just a temporary glitch in the matrix.</p>
+                    {% if error_code == '404' %}
+                    <p>The page you're looking for has been teleported to another dimension.</p>
+                    {% elif error_code == '500' %}
+                    <p>Our retro servers are having a moment. Please try again.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Recovery Options -->
+        <div class="cabinet">
+            <div class="cabinet-header">
+                <h2 class="cabinet-title">🛠️ Recovery Options</h2>
+            </div>
+            
+            <div style="text-align: center; padding: 20px;">
+                <a href="{{ url_for('index') }}" class="btn btn-success" style="margin: 10px;">
+                    🏠 Return Home
+                </a>
+                
+                <button onclick="history.back()" class="btn btn-info" style="margin: 10px;">
+                    ⬅️ Go Back
+                </button>
+                
+                <button onclick="location.reload()" class="btn" style="margin: 10px;">
+                    🔄 Retry
+                </button>
+            </div>
+            
+            <div style="font-size: 8px; text-align: center; opacity: 0.7; margin-top: 15px;">
+                If the problem persists, check your browser console for more details or contact support.
+            </div>
+        </div>
+
+        <!-- Debug Info (only in development) -->
+        {% if config.DEBUG %}
+        <div class="cabinet">
+            <div class="cabinet-header">
+                <h2 class="cabinet-title">🐛 Debug Information</h2>
+            </div>
+            
+            <div class="log-container" style="height: auto; max-height: 200px;">
+                <div class="log-entry log-error">Error Code: {{ error_code or 'Unknown' }}</div>
+                <div class="log-entry log-error">Error Message: {{ error or 'No details available' }}</div>
+                <div class="log-entry log-info">Timestamp: {{ moment().format('YYYY-MM-DD HH:mm:ss') if moment else 'N/A' }}</div>
+                <div class="log-entry log-info">Request Path: {{ request.path if request else 'N/A' }}</div>
+                <div class="log-entry log-info">User Agent: {{ request.headers.get('User-Agent', 'N/A')[:100] if request else 'N/A' }}</div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Retro ASCII Art -->
+        <div class="cabinet">
+            <div class="cabinet-header">
+                <h2 class="cabinet-title">🎨 Error Art</h2>
+            </div>
+            
+            <div style="font-family: 'Courier New', monospace; font-size: 8px; text-align: center; color: var(--pixel-red); line-height: 1;">
+                <pre>
+    ████████╗██████╗ ██████╗  ██████╗ ██████╗ 
+    ██╔══════██╔══██╗██╔══██╗██╔═══██╗██╔══██╗
+    ██████╗  ██████╔╝██████╔╝██║   ██║██████╔╝
+    ██╔═══╝  ██╔══██╗██╔══██╗██║   ██║██╔══██╗
+    ███████╗ ██║  ██║██║  ██║╚██████╔╝██║  ██║
+    ╚══════╝ ╚═╝  ╚═╝╚═╝  ╚═╝ ╚═════╝ ╚═╝  ╚═╝
+
+                [SYSTEM MALFUNCTION]
+                   Please Stand By...
+                </pre>
+            </div>
+        </div>
+    </div>
+
+    <!-- Simple error page JavaScript -->
+    <script>
+        // Add some retro flair
+        let errorBlink = true;
+        setInterval(() => {
+            const errorElements = document.querySelectorAll('.cabinet-title');
+            errorElements.forEach(el => {
+                if (el.textContent.includes('Error')) {
+                    el.style.color = errorBlink ? 'var(--pixel-red)' : 'var(--pixel-accent)';
+                }
+            });
+            errorBlink = !errorBlink;
+        }, 500);
+
+        // Console message for developers
+        console.log(`
+🎮 Audio Digit Classifier Error Page
+Error: {{ error or 'Unknown' }}
+Code: {{ error_code or 'N/A' }}
+Time: ${new Date().toISOString()}
+        `);
+        
+        // Log client-side error details
+        if (typeof window.APP_CONFIG === 'undefined') {
+            window.APP_CONFIG = {};
+        }
+        
+        // Track error for debugging
+        if (window.localStorage) {
+            const errorLog = {
+                timestamp: Date.now(),
+                error: '{{ error or "Unknown" }}',
+                code: '{{ error_code or "N/A" }}',
+                url: window.location.href,
+                userAgent: navigator.userAgent
+            };
+            
+            try {
+                localStorage.setItem('lastError', JSON.stringify(errorLog));
+            } catch(e) {
+                console.warn('Could not save error to localStorage:', e);
+            }
+        }
+    </script>
+</body>
+</html>

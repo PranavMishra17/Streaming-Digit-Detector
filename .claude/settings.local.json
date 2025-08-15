@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(mkdir:*)",
+      "WebFetch(domain:unpkg.com)",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "Bash(python -m pip install:*)",
+      "Bash(python:*)",
+      "Bash(curl:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
