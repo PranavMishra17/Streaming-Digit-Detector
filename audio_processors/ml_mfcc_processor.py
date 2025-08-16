@@ -138,6 +138,16 @@ class MLMFCCProcessor(AudioProcessor):
             predicted_digit = str(result['predicted_digit'])
             confidence = result['confidence']
             
+            # Debug logging for predictions (temporary)
+            if hasattr(result, 'probabilities') or 'probabilities' in result:
+                probs = result.get('probabilities', [])
+                if len(probs) >= 10:
+                    top_predictions = [(i, p) for i, p in enumerate(probs)]
+                    top_predictions.sort(key=lambda x: x[1], reverse=True)
+                    logger.debug(f"MFCC Top 3 predictions: {[(str(d), f'{p:.3f}') for d, p in top_predictions[:3]]}")
+            
+            logger.debug(f"MFCC predicted '{predicted_digit}' with confidence {confidence:.3f} in {inference_time:.3f}s")
+            
             logger.debug(f"ML MFCC prediction: '{predicted_digit}' "
                         f"(confidence: {confidence:.3f}, time: {inference_time*1000:.1f}ms)")
             

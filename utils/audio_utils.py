@@ -137,6 +137,11 @@ def validate_audio_format(audio_data: bytes) -> bool:
         logger.debug(f"Audio data too small: {len(audio_data)} bytes (minimum 44 for WAV header)")
         return False
     
+    # Check for null/empty data
+    if audio_data[:20] == b'\x00' * 20:
+        logger.error("Audio data appears to be empty/null bytes")
+        return False
+    
     # Check if it starts with RIFF header
     if not audio_data.startswith(b'RIFF'):
         logger.error(f"Audio data does not start with RIFF header. First 8 bytes: {audio_data[:8]}")

@@ -22,25 +22,65 @@ def convert_webm_to_wav(webm_data: bytes) -> Optional[bytes]:
         WAV audio bytes or None if conversion fails
     """
     try:
-        # For now, create a minimal WAV file with silence
-        # This is a fallback when FFmpeg is not available
-        
-        sample_rate = 16000
-        duration = 2.0  # 2 seconds of audio
-        num_samples = int(sample_rate * duration)
-        
-        # Create silence (zeros)
-        audio_data = b'\x00\x00' * num_samples
-        
-        # Create WAV header
-        wav_header = create_wav_header(len(audio_data), sample_rate, 1, 16)
-        
-        logger.info(f"Created fallback WAV from WebM: {len(wav_header + audio_data)} bytes")
-        return wav_header + audio_data
+        return create_fallback_wav(webm_data)
         
     except Exception as e:
         logger.error(f"WebM conversion failed: {str(e)}")
         return None
+
+def create_fallback_wav(webm_data):
+    """Properly convert WebM to WAV using subprocess"""
+    import subprocess
+    import tempfile
+    import os
+    
+    webm_path = None
+    wav_path = None
+    
+    try:
+        # Write WebM data to temp file
+        with tempfile.NamedTemporaryFile(suffix='.webm', delete=False) as webm_file:
+            webm_file.write(webm_data)
+            webm_path = webm_file.name
+        
+        # Output WAV path
+        wav_path = webm_path.replace('.webm', '.wav')
+        
+        # Use ffmpeg directly via subprocess
+        cmd = [
+            'ffmpeg',
+            '-i', webm_path,
+            '-ar', '16000',
+            '-ac', '1',
+            '-f', 'wav',
+            '-acodec', 'pcm_s16le',
+            wav_path,
+            '-y'
+        ]
+        
+        result = subprocess.run(cmd, capture_output=True, timeout=5)
+        
+        if result.returncode == 0 and os.path.exists(wav_path):
+            with open(wav_path, 'rb') as f:
+                wav_data = f.read()
+            
+            logger.info(f"Successfully converted WebM to WAV: {len(wav_data)} bytes")
+            return wav_data
+        else:
+            logger.error(f"FFmpeg conversion failed: {result.stderr.decode()}")
+            return None
+            
+    except Exception as e:
+        logger.error(f"WebM conversion error: {e}")
+        return None
+    finally:
+        # Cleanup temp files
+        for path in [webm_path, wav_path]:
+            if path and os.path.exists(path):
+                try:
+                    os.unlink(path)
+                except:
+                    pass
 
 def create_wav_header(data_size: int, sample_rate: int = 16000, channels: int = 1, bits_per_sample: int = 16) -> bytes:
     """Create a standard WAV file header."""

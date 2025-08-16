@@ -1,11 +1,15 @@
 /**
  * Audio Recorder Module
  * Handles microphone access, audio recording, and pause detection
+ * Now using RecordRTC for more robust audio recording
  */
+
+// RecordRTC should be loaded via HTML script tag
 
 class AudioRecorder {
     constructor() {
         this.mediaRecorder = null;
+        this.recordRTC = null;
         this.audioContext = null;
         this.stream = null;
         this.isRecording = false;
@@ -25,14 +29,14 @@ class AudioRecorder {
         this.speechStartTime = null;
         this.silenceFrames = 0;
         this.speechFrames = 0;
-        this.minSpeechFrames = 3;     // Reduced for faster detection (300ms)
-        this.minSilenceFrames = 15;   // Increased for longer speech collection (1.5s)
-        this.energyThreshold = 0.015; // Lower threshold for better digit detection
+        this.minSpeechFrames = 2;      // 200ms minimum speech
+        this.minSilenceFrames = 8;     // 800ms silence to end
+        this.energyThreshold = 0.01;   // Lower threshold for better detection
         this.vadCheckInterval = 100;   // Check every 100ms
         
         // Audio collection settings for better digit recognition
-        this.minChunkDuration = 500;   // Minimum 500ms chunks
-        this.maxChunkDuration = 2000;  // Maximum 2s chunks
+        this.minChunkDuration = 300;   // Minimum 300ms chunks
+        this.maxChunkDuration = 3000;  // Maximum 3s chunks
         
         this.onDataAvailable = null;
         this.onRecordingStart = null;
@@ -50,10 +54,15 @@ class AudioRecorder {
         // Session management
         this.sessionId = null;
         
+        // Connection retry tracking
+        this.connectionFailures = 0;
+        this.maxConnectionFailures = 3;
+        this.lastFailureTime = 0;
+        this.backoffDelay = 5000; // 5 second backoff
+        
         // Bind methods
         this.startRecording = this.startRecording.bind(this);
         this.stopRecording = this.stopRecording.bind(this);
-        this.handleDataAvailable = this.handleDataAvailable.bind(this);
         this.startVADMonitoring = this.startVADMonitoring.bind(this);
         this.checkVoiceActivity = this.checkVoiceActivity.bind(this);
         this.processSpeechSegment = this.processSpeechSegment.bind(this);
@@ -64,7 +73,12 @@ class AudioRecorder {
      */
     async startRecording() {
         try {
-            // Request microphone access
+            // Wait for RecordRTC to load if needed
+            if (typeof RecordRTC === 'undefined') {
+                console.log('Waiting for RecordRTC to load...');
+                await this.waitForRecordRTC();
+            }
+            
             this.stream = await navigator.mediaDevices.getUserMedia({
                 audio: {
                     channelCount: 1,
@@ -75,52 +89,51 @@ class AudioRecorder {
                 }
             });
             
-            // Create audio context for analysis
-            this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            // Set up audio context for analysis
+            this.audioContext = new (window.AudioContext || window.webkitAudioContext)({
+                sampleRate: 16000
+            });
             const source = this.audioContext.createMediaStreamSource(this.stream);
             
-            // Set up analyser for real-time audio analysis
             this.analyser = this.audioContext.createAnalyser();
             this.analyser.fftSize = 2048;
-            this.analyser.smoothingTimeConstant = 0.3;
             source.connect(this.analyser);
+            this.dataArray = new Uint8Array(this.analyser.fftSize);
             
-            this.dataArray = new Uint8Array(this.analyser.frequencyBinCount);
-            
-            // Set up MediaRecorder
+            // Initialize RecordRTC with better options for chunked recording
             const options = {
-                mimeType: this.getSupportedMimeType(),
-                audioBitsPerSecond: 128000
+                type: 'audio',
+                mimeType: 'audio/webm', // Use WebM for proper chunk concatenation
+                recorderType: RecordRTC.MediaStreamRecorder,
+                sampleRate: 16000,
+                numberOfAudioChannels: 1,
+                disableLogs: false,
+                timeSlice: 2000, // 2 second chunks instead of 1 second
+                ondataavailable: (blob) => {
+                    if (blob && blob.size > 0) {
+                        console.log(`RecordRTC chunk received: ${blob.size} bytes`);
+                        this.audioChunks.push(blob);
+                        if (this.vadActive) {
+                            this.audioChunksBuffer.push(blob);
+                        }
+                    }
+                }
             };
             
-            this.mediaRecorder = new MediaRecorder(this.stream, options);
+            this.recordRTC = new RecordRTC(this.stream, options);
+            
+            // Initialize chunk arrays
             this.audioChunks = [];
+            this.audioChunksBuffer = [];
             
-            // Set up event handlers
-            this.mediaRecorder.addEventListener('dataavailable', this.handleDataAvailable);
-            this.mediaRecorder.addEventListener('start', () => {
-                this.isRecording = true;
-                this.recordingStartTime = Date.now();
-                this.startStreamingMode();
-                if (this.onRecordingStart) this.onRecordingStart();
-                console.log('Streaming recording started');
-            });
+            // Start recording
+            this.recordRTC.startRecording();
+            this.isRecording = true;
+            this.recordingStartTime = Date.now();
+            this.startStreamingMode();
             
-            this.mediaRecorder.addEventListener('stop', () => {
-                this.isRecording = false;
-                this.recordingDuration = Date.now() - this.recordingStartTime;
-                this.stopStreamingMode();
-                if (this.onRecordingStop) this.onRecordingStop(this.recordingDuration);
-                console.log(`Streaming recording stopped after ${this.recordingDuration}ms`);
-            });
-            
-            this.mediaRecorder.addEventListener('error', (event) => {
-                console.error('MediaRecorder error:', event.error);
-                if (this.onError) this.onError(event.error);
-            });
-            
-            // Start recording with streaming chunks optimized for speech
-            this.mediaRecorder.start(200); // Collect data every 200ms for better speech segments
+            if (this.onRecordingStart) this.onRecordingStart();
+            console.log('RecordRTC streaming recording started');
             
         } catch (error) {
             console.error('Failed to start recording:', error);
@@ -131,50 +144,57 @@ class AudioRecorder {
     }
     
     /**
+     * Wait for RecordRTC library to load
+     */
+    async waitForRecordRTC(maxWait = 5000) {
+        const startTime = Date.now();
+        while (typeof RecordRTC === 'undefined' && (Date.now() - startTime) < maxWait) {
+            await new Promise(resolve => setTimeout(resolve, 100));
+        }
+        if (typeof RecordRTC === 'undefined') {
+            throw new Error('RecordRTC failed to load within timeout');
+        }
+    }
+    
+    /**
      * Stop audio recording
      */
     stopRecording() {
-        if (this.mediaRecorder && this.isRecording) {
-            this.mediaRecorder.stop();
+        if (this.recordRTC && this.isRecording) {
+            this.recordRTC.stopRecording(() => {
+                this.isRecording = false;
+                this.recordingDuration = Date.now() - this.recordingStartTime;
+                this.stopStreamingMode();
+                if (this.onRecordingStop) this.onRecordingStop(this.recordingDuration);
+                console.log(`RecordRTC recording stopped after ${this.recordingDuration}ms`);
+            });
         }
         
         this.cleanup();
     }
     
     /**
-     * Handle recorded audio data chunks
-     */
-    handleDataAvailable(event) {
-        if (event.data.size > 0) {
-            this.audioChunks.push(event.data);
-        }
-    }
-    
-    /**
      * Process recorded audio and convert to appropriate format
      */
     async processRecordedAudio() {
-        if (this.audioChunks.length === 0) {
-            console.warn('No audio data recorded');
+        if (!this.recordRTC) {
+            console.warn('No RecordRTC instance available');
             return;
         }
         
         try {
-            // Create blob from recorded chunks
-            const audioBlob = new Blob(this.audioChunks, { 
-                type: this.getSupportedMimeType() 
-            });
+            // Get the recorded blob from RecordRTC
+            const audioBlob = this.recordRTC.getBlob();
             
-            // Convert to WAV if needed (for better compatibility)
-            let processedBlob = audioBlob;
-            
-            if (!this.getSupportedMimeType().includes('wav')) {
-                // Convert to WAV using Web Audio API
-                processedBlob = await this.convertToWAV(audioBlob);
+            if (!audioBlob || audioBlob.size === 0) {
+                console.warn('No audio data recorded');
+                return;
             }
             
+            console.log(`Processed audio blob: ${audioBlob.size} bytes, type: ${audioBlob.type}`);
+            
             if (this.onDataAvailable) {
-                this.onDataAvailable(processedBlob, this.recordingDuration);
+                this.onDataAvailable(audioBlob, this.recordingDuration);
             }
             
         } catch (error) {
@@ -188,9 +208,18 @@ class AudioRecorder {
      */
     async convertToWAV(audioBlob) {
         try {
+            // Ensure we have a valid AudioContext
             if (!this.audioContext || this.audioContext.state === 'closed') {
                 console.warn('AudioContext not available for WAV conversion');
-                return audioBlob;
+                // Try to create a new one if needed
+                if (!this.audioContext) {
+                    this.audioContext = new (window.AudioContext || window.webkitAudioContext)({
+                        sampleRate: 16000
+                    });
+                }
+                if (this.audioContext.state === 'suspended') {
+                    await this.audioContext.resume();
+                }
             }
             
             const arrayBuffer = await audioBlob.arrayBuffer();
@@ -335,102 +364,85 @@ class AudioRecorder {
     checkVoiceActivity() {
         if (!this.analyser || !this.dataArray) return;
         
-        // Get current audio energy
-        this.analyser.getByteFrequencyData(this.dataArray);
-        const energy = this.calculateAudioEnergy(this.dataArray);
+        // Get TIME DOMAIN data for proper VAD
+        const bufferLength = this.analyser.fftSize;
+        const timeData = new Uint8Array(bufferLength);
+        this.analyser.getByteTimeDomainData(timeData);
         
-        const isSpeech = energy > this.energyThreshold;
+        // Calculate RMS energy properly
+        let sumSquares = 0;
+        for (let i = 0; i < bufferLength; i++) {
+            const normalized = (timeData[i] - 128) / 128.0;
+            sumSquares += normalized * normalized;
+        }
+        const rms = Math.sqrt(sumSquares / bufferLength);
+        
+        // More sensitive threshold for speech
+        const isSpeech = rms > 0.01; // Lower threshold
         
         if (isSpeech) {
             this.speechFrames++;
             this.silenceFrames = 0;
             
-            // Start of speech detected
-            if (!this.vadActive && this.speechFrames >= this.minSpeechFrames) {
+            if (!this.vadActive && this.speechFrames >= 2) { // Faster activation
                 this.vadActive = true;
                 this.speechStartTime = Date.now();
-                console.log('Speech started - collecting audio...');
-                
-                // Clear buffer and start fresh
-                this.audioChunksBuffer = [...this.audioChunks];
+                this.audioChunksBuffer = []; // Start fresh
+                console.log(`Speech detected! RMS: ${rms.toFixed(4)}`);
             }
         } else {
             this.silenceFrames++;
             
-            // End of speech detected
-            if (this.vadActive && this.silenceFrames >= this.minSilenceFrames) {
-                const speechDuration = this.speechStartTime ? Date.now() - this.speechStartTime : 0;
-                
-                // Only process if we have collected enough speech
-                if (speechDuration >= this.minChunkDuration) {
-                    console.log('Speech ended - processing segment...');
+            if (this.vadActive && this.silenceFrames >= 8) { // Faster deactivation
+                const duration = Date.now() - this.speechStartTime;
+                if (duration >= 300 && this.audioChunksBuffer.length > 0) { // Minimum 300ms
+                    console.log(`Speech ended after ${duration}ms`);
                     this.processSpeechSegment();
-                } else {
-                    console.log(`Speech segment too short (${speechDuration}ms), ignoring...`);
                 }
-                
-                // Reset for next speech segment
                 this.vadActive = false;
                 this.speechFrames = 0;
-                this.silenceFrames = 0;
-                this.speechStartTime = null;
-            }
-            
-            // Force processing if speech is too long
-            if (this.vadActive && this.speechStartTime) {
-                const speechDuration = Date.now() - this.speechStartTime;
-                if (speechDuration >= this.maxChunkDuration) {
-                    console.log('Speech segment reached maximum duration, force processing...');
-                    this.processSpeechSegment();
-                    
-                    // Reset for next speech segment
-                    this.vadActive = false;
-                    this.speechFrames = 0;
-                    this.silenceFrames = 0;
-                    this.speechStartTime = null;
-                }
             }
         }
-    }
-    
-    /**
-     * Calculate audio energy from frequency data
-     */
-    calculateAudioEnergy(frequencyData) {
-        let sum = 0;
-        for (let i = 0; i < frequencyData.length; i++) {
-            sum += frequencyData[i] * frequencyData[i];
-        }
-        return Math.sqrt(sum / frequencyData.length) / 255.0;
     }
     
     /**
      * Process detected speech segment with WebRTC VAD
      */
     async processSpeechSegment() {
-        if (this.audioChunksBuffer.length === 0) return;
+        if (!this.audioChunksBuffer || this.audioChunksBuffer.length === 0) {
+            console.log('No audio chunks to process');
+            return;
+        }
         
         try {
-            // Create blob from speech segment
-            const speechBlob = new Blob([...this.audioChunksBuffer], { 
-                type: this.getSupportedMimeType() 
-            });
+            // For RecordRTC chunks, they should already be proper WAV blobs
+            let speechBlob;
             
-            // Check minimum size but be more lenient
-            if (speechBlob.size < 2000) { // Require at least 2KB for meaningful audio
-                console.log('Skipping small speech segment:', speechBlob.size, 'bytes');
+            if (this.audioChunksBuffer.length === 1) {
+                // Single chunk - use directly
+                speechBlob = this.audioChunksBuffer[0];
+            } else {
+                // Multiple chunks - combine them
+                // WebM chunks can be concatenated directly
+                speechBlob = new Blob(this.audioChunksBuffer, { type: 'audio/webm' });
+            }
+            
+            if (speechBlob.size < 1000) { // Minimum 1KB
+                console.log('Speech segment too small:', speechBlob.size);
                 return;
             }
             
-            const speechDuration = this.speechStartTime ? Date.now() - this.speechStartTime : 1000;
-            console.log(`Processing speech segment: ${speechBlob.size} bytes, ${speechDuration}ms duration`);
+            const duration = Date.now() - this.speechStartTime;
+            console.log(`Processing ${this.audioChunksBuffer.length} RecordRTC chunks, ${speechBlob.size} bytes, ${duration}ms`);
             
-            // Choose processing method based on configuration
+            // Clear buffer after creating blob
+            this.audioChunksBuffer = [];
+            
+            // Process the blob
             if (this.useWebRTCVAD) {
-                await this.processWithBackendVAD(speechBlob, speechDuration);
+                await this.processWithBackendVAD(speechBlob, duration);
             } else {
-                // Use original frontend processing
-                await this.processWithFrontendVAD(speechBlob, speechDuration);
+                await this.processWithFrontendVAD(speechBlob, duration);
             }
             
         } catch (error) {
@@ -466,6 +478,12 @@ class AudioRecorder {
             }
             
             const result = await response.json();
+            
+            // Reset connection failure counter on success
+            if (this.connectionFailures > 0) {
+                this.connectionFailures = 0;
+                console.log('Backend connection recovered, resetting failure counter');
+            }
             
             console.log('Backend VAD processing result:', result);
             
@@ -507,6 +525,25 @@ class AudioRecorder {
             
         } catch (error) {
             console.error('Backend VAD processing error:', error);
+            
+            // Track connection failures
+            this.connectionFailures++;
+            this.lastFailureTime = Date.now();
+            
+            // If too many failures, disable backend VAD temporarily
+            if (this.connectionFailures >= this.maxConnectionFailures) {
+                const timeSinceLastFailure = Date.now() - this.lastFailureTime;
+                if (timeSinceLastFailure < this.backoffDelay) {
+                    console.log(`Too many connection failures (${this.connectionFailures}), backing off for ${this.backoffDelay/1000}s`);
+                    this.useWebRTCVAD = false;
+                    // Re-enable after backoff period
+                    setTimeout(() => {
+                        this.connectionFailures = 0;
+                        this.useWebRTCVAD = true;
+                        console.log('Re-enabling backend VAD after backoff period');
+                    }, this.backoffDelay);
+                }
+            }
             
             // Fallback to frontend processing
             console.log('Falling back to frontend processing...');
@@ -632,6 +669,14 @@ class AudioRecorder {
      */
     cleanup() {
         this.stopStreamingMode();
+        
+        if (this.recordRTC) {
+            if (this.recordRTC.state === 'recording') {
+                this.recordRTC.stopRecording();
+            }
+            this.recordRTC.destroy();
+            this.recordRTC = null;
+        }
         
         if (this.stream) {
             this.stream.getTracks().forEach(track => track.stop());

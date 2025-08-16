@@ -213,6 +213,13 @@
     </div>
 
     <!-- JavaScript Files -->
+    <!-- VAD (Voice Activity Detection) Libraries -->
+    <script src="https://cdn.jsdelivr.net/npm/onnxruntime-web@1.14.0/dist/ort.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@ricky0123/vad-web@0.0.22/dist/bundle.min.js"></script>
+    
+    <!-- Legacy RecordRTC (keeping for fallback) -->
+    <script src="https://cdn.jsdelivr.net/gh/muaz-khan/RecordRTC@latest/RecordRTC.min.js"></script>
+    <script src="{{ url_for('static', filename='js/vad-audio-recorder.js') }}"></script>
     <script src="{{ url_for('static', filename='js/audio-recorder.js') }}"></script>
     <script src="{{ url_for('static', filename='js/audio-visualizer.js') }}"></script>
     <script src="{{ url_for('static', filename='js/noise-generator.js') }}"></script>

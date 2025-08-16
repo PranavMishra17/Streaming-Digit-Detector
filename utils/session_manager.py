@@ -63,7 +63,7 @@ class SessionManager:
             session = AudioSession(session_id, self.base_output_dir)
             self.active_sessions[session_id] = session
             
-            logger.info(f"✅ Created new session: {session_id}")
+            logger.info(f"Created new session: {session_id}")
             return session_id
     
     def get_session(self, session_id: str) -> Optional['AudioSession']:
@@ -90,7 +90,7 @@ class SessionManager:
             session.finalize()
             del self.active_sessions[session_id]
             
-            logger.info(f"✅ Closed session: {session_id} ({session.chunk_count} chunks saved)")
+            logger.info(f"Closed session: {session_id} ({session.chunk_count} chunks saved)")
             return True
     
     def cleanup_old_sessions(self, max_age_hours: int = 24) -> int:
@@ -199,7 +199,7 @@ class AudioSession:
         }
         
         self._save_metadata()
-        logger.info(f"📁 Session folder created: {self.session_dir}")
+        logger.info(f"Session folder created: {self.session_dir}")
     
     def save_audio_chunk(self, audio_data: bytes, prediction_result: Optional[Dict] = None, 
                         chunk_type: str = "speech") -> str:

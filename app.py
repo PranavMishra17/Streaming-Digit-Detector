@@ -3,6 +3,12 @@ Audio Digit Classification Web Application
 Retro game-inspired Flask app for spoken digit recognition (0-9)
 """
 
+# Fix Windows console encoding for emoji
+import sys
+import io
+sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
+sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding='utf-8')
+
 from flask import Flask, render_template, request, jsonify, send_from_directory
 import os
 import time
@@ -131,7 +137,7 @@ try:
         'aggressiveness': 1,
         'min_speech_duration': 0.4,  # Minimum 400ms for digit recognition
         'max_speech_duration': 3.0,  # Maximum 3s for longer digits
-        'silence_threshold': 0.01    # Low threshold for sensitivity
+        'silence_threshold': 0.02    # Adjusted to match frontend
     }
     
     enhanced_vad = create_enhanced_vad(vad_config)
@@ -218,7 +224,7 @@ def create_session():
             'message': f'Session created: {session_id}'
         }
         
-        app.logger.info(f"📁 Created new recording session: {session_id}")
+        app.logger.info(f"Created new recording session: {session_id}")
         return jsonify(response)
         
     except Exception as e:
@@ -404,8 +410,15 @@ def process_audio():
         
         app.logger.info(f"Processed audio with {method}: '{result['predicted_digit']}' in {result['inference_time']}s")
         
-        # Save audio chunk to session if session_id provided
+        # Save audio chunk to session if session_id provided or create debug session
         session_id = request.form.get('session_id')
+        if not session_id and app.debug:
+            # In debug mode, create a default debug session for saving audio chunks
+            session_id = "debug_session"
+            if not session_manager.get_session(session_id):
+                session_manager.create_session(session_id)
+                app.logger.info("Created debug session for audio chunk saving")
+        
         if session_id:
             try:
                 session = session_manager.get_session(session_id)

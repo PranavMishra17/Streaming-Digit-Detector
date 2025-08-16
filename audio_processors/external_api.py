@@ -15,7 +15,8 @@ class ExternalAPIProcessor(AudioProcessor):
     
     def __init__(self):
         super().__init__("External API (Whisper)")
-        self.api_url = "https://api-inference.huggingface.co/models/openai/whisper-base"
+        # Try alternative Whisper model that should be available
+        self.api_url = "https://api-inference.huggingface.co/models/openai/whisper-small"
         self.token = os.getenv('HUGGING_FACE_TOKEN')
         self.headers = {"Authorization": f"Bearer {self.token}"} if self.token else {}
         

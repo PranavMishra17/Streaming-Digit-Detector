@@ -433,6 +433,8 @@ class EnhancedVAD:
             threshold = max(self.silence_threshold, mean_energy * 0.3)
             
             # Find speech segments
+            if isinstance(energies, (list, np.ndarray)):
+                energies = np.array(energies)  # Ensure it's a numpy array
             speech_windows = energies > threshold
             
             # Group consecutive speech windows

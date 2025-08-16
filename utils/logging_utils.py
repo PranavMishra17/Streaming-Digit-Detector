@@ -40,7 +40,7 @@ class PerformanceLogger:
         
         # Configure root logger
         logging.basicConfig(
-            level=logging.INFO,
+            level=logging.DEBUG,
             handlers=[console_handler, file_handler]
         )
         

@@ -97,44 +97,40 @@ class AudioDigitApp {
      * Initialize core components
      */
     async initializeComponents() {
-        // Initialize audio recorder
-        this.audioRecorder = new AudioRecorder();
+        // Initialize VAD-based audio recorder
+        this.audioRecorder = new VADAudioRecorder();
         
-        // Set up audio recorder callbacks
-        this.audioRecorder.onRecordingStart = () => {
+        // Set up VAD audio recorder callbacks
+        this.audioRecorder.onSpeechStart = () => {
             this.state.isRecording = true;
             this.updateRecordingState();
-            addLogEntry('[INFO] Recording started', 'info');
+            addLogEntry('[INFO] Speech detected - recording started', 'info');
         };
         
-        this.audioRecorder.onRecordingStop = (duration) => {
-            this.state.isRecording = false;
-            this.updateRecordingState();
-            addLogEntry(`[INFO] Recording stopped - Duration: ${(duration/1000).toFixed(1)}s`, 'info');
-        };
-        
-        this.audioRecorder.onDataAvailable = (audioBlob, duration) => {
+        this.audioRecorder.onSpeechEnd = (audioBlob, duration) => {
             this.state.hasRecordedAudio = true;
             this.state.currentAudioBlob = audioBlob;
             this.updateAudioInfo(duration);
             this.updateUIState();
-            addLogEntry(`[SUCCESS] Audio captured - ${(audioBlob.size/1024).toFixed(1)}KB`, 'success');
+            addLogEntry(`[SUCCESS] Speech ended - ${(audioBlob.size/1024).toFixed(1)}KB captured`, 'success');
         };
         
         this.audioRecorder.onError = (error) => {
-            addLogEntry(`[ERROR] Recording error: ${error.message}`, 'error');
+            addLogEntry(`[ERROR] VAD Recording error: ${error.message}`, 'error');
             this.state.isRecording = false;
             this.updateRecordingState();
         };
         
         this.audioRecorder.onChunkReady = (audioBlob, duration) => {
+            console.log(`[DEBUG] Chunk received: ${audioBlob.size} bytes, ${duration}ms`);
             this.state.currentAudioBlob = audioBlob;
             this.processAudioChunk(audioBlob, duration);
             addLogEntry(`[INFO] Streaming chunk ready - ${(duration/1000).toFixed(1)}s`, 'info');
         };
         
-        // VAD result callback
-        this.audioRecorder.onVADResult = (vadResult) => {
+        // VAD result callback (optional for new VAD recorder)
+        if (this.audioRecorder.onVADResult !== undefined) {
+            this.audioRecorder.onVADResult = (vadResult) => {
             console.log('VAD Result:', vadResult);
             
             // Track chunks saved
@@ -148,9 +144,11 @@ class AudioDigitApp {
                 addLogEntry(`[VAD] ${vadResult.segments_detected} speech segments detected${chunkInfo}`, 'info');
             }
         };
+        }
         
-        // Digit detection callback
-        this.audioRecorder.onDigitDetected = (digitResult) => {
+        // Digit detection callback (optional for new VAD recorder)  
+        if (this.audioRecorder.onDigitDetected !== undefined) {
+            this.audioRecorder.onDigitDetected = (digitResult) => {
             console.log('Digit Detected:', digitResult);
             
             // Update UI with prediction
@@ -180,6 +178,7 @@ class AudioDigitApp {
                 addLogEntry(`[DETECTION] Unclear speech detected`, 'warning');
             }
         };
+        }
         
         // Initialize audio visualizer
         this.audioVisualizer = new AudioVisualizer(this.elements.audioCanvas, {
@@ -399,8 +398,8 @@ class AudioDigitApp {
                 cabinet.classList.add('loading');
             }
             
-            // Pre-warm the model by making a test request
-            const testAudio = new ArrayBuffer(1000); // Minimal audio data
+            // Pre-warm the model by making a test request with valid WAV header
+            const testAudio = this.createMinimalWAVData();
             const testBlob = new Blob([testAudio], { type: 'audio/wav' });
             
             const formData = new FormData();
@@ -458,8 +457,8 @@ class AudioDigitApp {
                 this.audioRecorder.setSessionId(this.state.sessionId);
             }
             
-            // Start recording
-            await this.audioRecorder.startRecording();
+            // Start VAD listening
+            await this.audioRecorder.startListening();
             
             // Start visualization
             this.audioVisualizer.start(this.audioRecorder);
@@ -492,7 +491,7 @@ class AudioDigitApp {
     stopRecording() {
         if (!this.state.isRecording) return;
         
-        this.audioRecorder.stopRecording();
+        this.audioRecorder.stopListening();
         this.audioVisualizer.stop();
     }
     
@@ -541,6 +540,11 @@ class AudioDigitApp {
             formData.append('method', selectedMethod);
             formData.append('noise_type', noiseType);
             formData.append('noise_level', noiseLevel.toString());
+            
+            // Add session ID if available
+            if (this.state.sessionId) {
+                formData.append('session_id', this.state.sessionId);
+            }
             
             // Send to server
             const response = await fetch('/process_audio', {
@@ -909,6 +913,51 @@ class AudioDigitApp {
         }
     }
     
+    /**
+     * Create minimal valid WAV data for testing
+     */
+    createMinimalWAVData() {
+        // Create a minimal WAV file with 0.1 second of silence
+        const sampleRate = 16000;
+        const numChannels = 1;
+        const bitsPerSample = 16;
+        const duration = 0.1; // 100ms
+        const numSamples = Math.floor(sampleRate * duration);
+        const dataSize = numSamples * numChannels * bitsPerSample / 8;
+        const totalSize = 36 + dataSize;
+        
+        const buffer = new ArrayBuffer(44 + dataSize);
+        const view = new DataView(buffer);
+        
+        // WAV header
+        const writeString = (offset, string) => {
+            for (let i = 0; i < string.length; i++) {
+                view.setUint8(offset + i, string.charCodeAt(i));
+            }
+        };
+        
+        writeString(0, 'RIFF');
+        view.setUint32(4, totalSize, true);
+        writeString(8, 'WAVE');
+        writeString(12, 'fmt ');
+        view.setUint32(16, 16, true);
+        view.setUint16(20, 1, true);
+        view.setUint16(22, numChannels, true);
+        view.setUint32(24, sampleRate, true);
+        view.setUint32(28, sampleRate * numChannels * bitsPerSample / 8, true);
+        view.setUint16(32, numChannels * bitsPerSample / 8, true);
+        view.setUint16(34, bitsPerSample, true);
+        writeString(36, 'data');
+        view.setUint32(40, dataSize, true);
+        
+        // Write silence (zeros) for audio data
+        for (let i = 44; i < buffer.byteLength; i += 2) {
+            view.setInt16(i, 0, true);
+        }
+        
+        return buffer;
+    }
+
     /**
      * Show microphone permission help
      */
