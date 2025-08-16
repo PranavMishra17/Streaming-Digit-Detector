@@ -56,7 +56,13 @@ class AudioDigitApp {
             sessionStartTime: Date.now(),
             streamingErrors: 0,
             maxStreamingErrors: 5,
-            lastErrorTime: 0
+            lastErrorTime: 0,
+            
+            // Session management
+            currentSession: null,
+            sessionId: null,
+            chunksRecorded: 0,
+            autoCreateSession: true
         };
         
         // Initialize
@@ -127,6 +133,54 @@ class AudioDigitApp {
             addLogEntry(`[INFO] Streaming chunk ready - ${(duration/1000).toFixed(1)}s`, 'info');
         };
         
+        // VAD result callback
+        this.audioRecorder.onVADResult = (vadResult) => {
+            console.log('VAD Result:', vadResult);
+            
+            // Track chunks saved
+            if (vadResult.chunks_saved && vadResult.chunks_saved > 0) {
+                this.state.chunksRecorded += vadResult.chunks_saved;
+                this.updateSessionDisplay();
+            }
+            
+            if (vadResult.segments_detected > 0) {
+                const chunkInfo = vadResult.chunks_saved ? ` (${vadResult.chunks_saved} saved)` : '';
+                addLogEntry(`[VAD] ${vadResult.segments_detected} speech segments detected${chunkInfo}`, 'info');
+            }
+        };
+        
+        // Digit detection callback
+        this.audioRecorder.onDigitDetected = (digitResult) => {
+            console.log('Digit Detected:', digitResult);
+            
+            // Update UI with prediction
+            this.updatePredictionDisplay({
+                predicted_digit: digitResult.predicted_digit,
+                confidence_score: digitResult.confidence_score || 1.0,
+                inference_time: digitResult.inference_time,
+                method: digitResult.method || 'whisper_digit',
+                success: digitResult.success,
+                timestamp: digitResult.timestamp
+            });
+            
+            // Track chunk if it has session info
+            if (digitResult.chunks_saved && digitResult.chunks_saved > 0) {
+                this.state.chunksRecorded += digitResult.chunks_saved;
+                this.updateSessionDisplay();
+            }
+            
+            // Log the detection
+            if (digitResult.success && digitResult.predicted_digit !== 'unknown') {
+                const sessionInfo = this.state.sessionId ? ` [Session: ${this.state.sessionId.split('_')[0]}...]` : '';
+                addLogEntry(`[DETECTION] Digit "${digitResult.predicted_digit}" detected (${(digitResult.inference_time * 1000).toFixed(0)}ms)${sessionInfo}`, 'success');
+                
+                // Visual feedback
+                this.showDigitDetectionEffect(digitResult.predicted_digit);
+            } else {
+                addLogEntry(`[DETECTION] Unclear speech detected`, 'warning');
+            }
+        };
+        
         // Initialize audio visualizer
         this.audioVisualizer = new AudioVisualizer(this.elements.audioCanvas, {
             waveColor: '#00ff00',
@@ -141,6 +195,131 @@ class AudioDigitApp {
         await this.noiseGenerator.initialize();
         
         addLogEntry('[INFO] Core components initialized', 'info');
+    }
+    
+    /**
+     * Session Management Methods
+     */
+    
+    /**
+     * Create a new recording session
+     */
+    async createSession(customSessionId = null) {
+        try {
+            const response = await fetch('/session/create', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    session_id: customSessionId,
+                    cleanup_old_sessions: 24 // Clean up sessions older than 24 hours
+                })
+            });
+            
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+            
+            const result = await response.json();
+            
+            this.state.sessionId = result.session_id;
+            this.state.currentSession = result;
+            this.state.chunksRecorded = 0;
+            
+            addLogEntry(`[SESSION] Created session: ${result.session_id}`, 'info');
+            this.updateSessionDisplay();
+            
+            return result.session_id;
+            
+        } catch (error) {
+            console.error('Failed to create session:', error);
+            addLogEntry(`[ERROR] Failed to create session: ${error.message}`, 'error');
+            return null;
+        }
+    }
+    
+    /**
+     * Close the current session
+     */
+    async closeSession() {
+        if (!this.state.sessionId) {
+            return;
+        }
+        
+        try {
+            const response = await fetch(`/session/${this.state.sessionId}/close`, {
+                method: 'POST'
+            });
+            
+            if (response.ok) {
+                const result = await response.json();
+                addLogEntry(`[SESSION] Closed session: ${this.state.sessionId} (${this.state.chunksRecorded} chunks)`, 'info');
+                
+                // Reset session state
+                this.state.sessionId = null;
+                this.state.currentSession = null;
+                this.state.chunksRecorded = 0;
+                
+                this.updateSessionDisplay();
+            } else {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+            
+        } catch (error) {
+            console.error('Failed to close session:', error);
+            addLogEntry(`[ERROR] Failed to close session: ${error.message}`, 'error');
+        }
+    }
+    
+    /**
+     * Get session information
+     */
+    async getSessionInfo(sessionId = null) {
+        const targetSessionId = sessionId || this.state.sessionId;
+        if (!targetSessionId) {
+            return null;
+        }
+        
+        try {
+            const response = await fetch(`/session/${targetSessionId}/info`);
+            
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+            
+            return await response.json();
+            
+        } catch (error) {
+            console.error('Failed to get session info:', error);
+            return null;
+        }
+    }
+    
+    /**
+     * Auto-create session if needed
+     */
+    async ensureSession() {
+        if (!this.state.sessionId && this.state.autoCreateSession) {
+            await this.createSession();
+        }
+        return this.state.sessionId;
+    }
+    
+    /**
+     * Update session display in UI
+     */
+    updateSessionDisplay() {
+        // Add session info to the UI if there are session display elements
+        // For now, we'll add it to the activity log
+        if (this.state.sessionId) {
+            const sessionInfo = `Session: ${this.state.sessionId} | Chunks: ${this.state.chunksRecorded}`;
+            // Update a session display element if it exists
+            const sessionDisplay = document.getElementById('sessionInfo');
+            if (sessionDisplay) {
+                sessionDisplay.textContent = sessionInfo;
+            }
+        }
     }
     
     /**
@@ -269,6 +448,14 @@ class AudioDigitApp {
             if (!this.isMethodReady(this.state.selectedMethod)) {
                 addLogEntry(`[INFO] Initializing ${this.getMethodName(this.state.selectedMethod)} first...`, 'info');
                 await this.initializeSelectedMethod(this.state.selectedMethod);
+            }
+            
+            // Ensure we have a session for this recording
+            await this.ensureSession();
+            
+            // Set session ID on audio recorder for chunk saving
+            if (this.state.sessionId) {
+                this.audioRecorder.setSessionId(this.state.sessionId);
             }
             
             // Start recording
@@ -500,6 +687,50 @@ class AudioDigitApp {
         setTimeout(() => {
             this.updateCabinetStatus(result.method, 'ready');
         }, 2000);
+    }
+    
+    /**
+     * Update prediction display (alias for displayResults for compatibility)
+     */
+    updatePredictionDisplay(result) {
+        this.displayResults(result);
+        this.updateStats(result);
+    }
+    
+    /**
+     * Show visual effect for digit detection
+     */
+    showDigitDetectionEffect(digit) {
+        // Flash the predicted digit display
+        const digitElement = this.elements.predictedDigit;
+        if (digitElement) {
+            digitElement.style.transform = 'scale(1.2)';
+            digitElement.style.textShadow = '0 0 20px #ffe66d';
+            
+            setTimeout(() => {
+                digitElement.style.transform = 'scale(1)';
+                digitElement.style.textShadow = '0 0 10px #ffe66d';
+            }, 300);
+        }
+        
+        // Play a brief success sound (if available)
+        try {
+            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            oscillator.frequency.setValueAtTime(800, audioContext.currentTime);
+            gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.1);
+            
+            oscillator.start(audioContext.currentTime);
+            oscillator.stop(audioContext.currentTime + 0.1);
+        } catch (e) {
+            // Ignore audio context errors
+        }
     }
     
     /**

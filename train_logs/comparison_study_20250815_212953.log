@@ -1,0 +1,26 @@
+2025-08-15 21:29:53 | INFO     | ml_training_1989262998224 | ML Training Logger initialized - Log file: train_logs\comparison_study_20250815_212953.log
+2025-08-15 21:29:53 | INFO     | ml_training_1989262998224 | === SYSTEM INFORMATION ===
+2025-08-15 21:29:53 | INFO     | ml_training_1989262998224 | Python Version: 3.12.6 (tags/v3.12.6:a4a2d2b, Sep  6 2024, 20:11:23) [MSC v.1940 64 bit (AMD64)]
+2025-08-15 21:29:53 | INFO     | ml_training_1989262998224 | PyTorch Version: 2.3.1+cu121
+2025-08-15 21:29:53 | INFO     | ml_training_1989262998224 | NumPy Version: 1.26.4
+2025-08-15 21:29:53 | INFO     | ml_training_1989262998224 | Librosa Version: 0.10.2
+2025-08-15 21:29:53 | INFO     | ml_training_1989262998224 | CUDA Available: Yes
+2025-08-15 21:29:53 | INFO     | ml_training_1989262998224 | CUDA Version: 12.1
+2025-08-15 21:29:53 | INFO     | ml_training_1989262998224 | GPU: NVIDIA GeForce RTX 3060 Laptop GPU
+2025-08-15 21:29:53 | INFO     | ml_training_1989262998224 | GPU Memory: 6.0 GB
+2025-08-15 21:29:53 | INFO     | ml_training_1989262998224 | === END SYSTEM INFO ===
+2025-08-15 21:29:53 | INFO     | ml_training_1989262998224 | === DATASET INFORMATION ===
+2025-08-15 21:29:53 | INFO     | ml_training_1989262998224 | total_samples: 2700
+2025-08-15 21:29:53 | INFO     | ml_training_1989262998224 | train_samples: 1890
+2025-08-15 21:29:53 | INFO     | ml_training_1989262998224 | val_samples: 270
+2025-08-15 21:29:53 | INFO     | ml_training_1989262998224 | test_samples: 540
+2025-08-15 21:29:53 | INFO     | ml_training_1989262998224 | sample_rate: 8000
+2025-08-15 21:29:53 | INFO     | ml_training_1989262998224 | max_length: 8000
+2025-08-15 21:29:53 | INFO     | ml_training_1989262998224 | num_classes: 10
+2025-08-15 21:29:53 | INFO     | ml_training_1989262998224 | class_names: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+2025-08-15 21:29:53 | INFO     | ml_training_1989262998224 | audio_shape: (2700, 8000)
+2025-08-15 21:29:53 | INFO     | ml_training_1989262998224 | mean_sample_rate: 8000.0
+2025-08-15 21:29:53 | INFO     | ml_training_1989262998224 | std_sample_rate: 0.0
+2025-08-15 21:29:53 | INFO     | ml_training_1989262998224 | === END DATASET INFO ===
+2025-08-15 21:29:53 | INFO     | ml_training_1989262998224 | Closing ML Training Logger
+2025-08-15 21:29:53 | INFO     | ml_training_1989262998224 | Metrics summary saved to: train_logs\metrics_summary_comparison_study_20250815_212953.json

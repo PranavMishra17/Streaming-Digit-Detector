@@ -1,0 +1,223 @@
+2025-08-15 21:17:27,028 - __main__ - INFO - ML Training Pipeline Demo initialized
+2025-08-15 21:17:27,063 - __main__ - INFO - ============================================================
+2025-08-15 21:17:27,063 - __main__ - INFO - === Testing Data Loading ===
+2025-08-15 21:17:27,064 - __main__ - INFO - Creating synthetic dataset...
+2025-08-15 21:17:27,203 - __main__ - INFO - Synthetic dataset created:
+2025-08-15 21:17:27,203 - __main__ - INFO -   Train: 210, Val: 30, Test: 60
+2025-08-15 21:17:27,207 - __main__ - INFO - === Testing Pipeline Setup ===
+2025-08-15 21:17:27,208 - __main__ - INFO - Testing MFCC pipeline setup...
+2025-08-15 21:17:27,208 - ml_training.pipelines.mfcc_pipeline - INFO - Setting up MFCC pipeline...
+2025-08-15 21:17:27,208 - ml_training.pipelines.mfcc_pipeline - INFO - Fitting feature scaler on training data...
+2025-08-15 21:17:35,358 - ml_training.pipelines.mfcc_pipeline - INFO - Feature scaling statistics:
+2025-08-15 21:17:35,358 - ml_training.pipelines.mfcc_pipeline - INFO -   Mean: [-208.52901139    3.61761262    0.25548155   -4.52423898   -2.25832327]... (first 5)
+2025-08-15 21:17:35,358 - ml_training.pipelines.mfcc_pipeline - INFO -   Std: [1.07688573 4.00953215 7.73473794 6.77573277 7.71799344]... (first 5)
+2025-08-15 21:17:35,358 - ml_training.pipelines.mfcc_pipeline - INFO - Extracting MFCC features for 210 samples...
+2025-08-15 21:17:35,940 - ml_training.pipelines.mfcc_pipeline - INFO - MFCC Dataset initialized - Features shape: (210, 156)
+2025-08-15 21:17:35,941 - ml_training.pipelines.mfcc_pipeline - INFO - Extracting MFCC features for 60 samples...
+2025-08-15 21:17:36,111 - ml_training.pipelines.mfcc_pipeline - INFO - MFCC Dataset initialized - Features shape: (60, 156)
+2025-08-15 21:17:36,111 - ml_training.pipelines.mfcc_pipeline - INFO - Extracting MFCC features for 30 samples...
+2025-08-15 21:17:36,192 - ml_training.pipelines.mfcc_pipeline - INFO - MFCC Dataset initialized - Features shape: (30, 156)
+2025-08-15 21:17:36,223 - ml_training.pipelines.mfcc_pipeline - INFO - MFCC Classifier initialized:
+2025-08-15 21:17:36,223 - ml_training.pipelines.mfcc_pipeline - INFO -   Architecture: 156 -> 256 -> 128 -> 64 -> 10
+2025-08-15 21:17:36,224 - ml_training.pipelines.mfcc_pipeline - INFO -   Total parameters: 82,890
+2025-08-15 21:17:36,224 - ml_training.pipelines.mfcc_pipeline - INFO -   Dropout: 0.3
+2025-08-15 21:17:36,470 - ml_training.pipelines.mfcc_pipeline - INFO - MFCC pipeline setup completed:
+2025-08-15 21:17:36,471 - ml_training.pipelines.mfcc_pipeline - INFO -   Device: cuda
+2025-08-15 21:17:36,471 - ml_training.pipelines.mfcc_pipeline - INFO -   Train samples: 210
+2025-08-15 21:17:36,471 - ml_training.pipelines.mfcc_pipeline - INFO -   Val samples: 30
+2025-08-15 21:17:36,471 - ml_training.pipelines.mfcc_pipeline - INFO -   Test samples: 60
+2025-08-15 21:17:36,471 - ml_training.pipelines.mfcc_pipeline - INFO -   Batch size: 16
+2025-08-15 21:17:36,471 - ml_training.pipelines.mfcc_pipeline - INFO -   Feature dimension: 156
+2025-08-15 21:17:36,472 - __main__ - INFO - Testing Mel CNN pipeline setup...
+2025-08-15 21:17:36,473 - ml_training.pipelines.mel_cnn_pipeline - INFO - Setting up Mel Spectrogram CNN pipeline...
+2025-08-15 21:17:36,538 - ml_training.pipelines.mel_cnn_pipeline - INFO - Mel Spectrogram Extractor initialized:
+2025-08-15 21:17:36,538 - ml_training.pipelines.mel_cnn_pipeline - INFO -   Expected output shape: (64, 51)
+2025-08-15 21:17:36,538 - ml_training.pipelines.mel_cnn_pipeline - INFO -   Device: cuda
+2025-08-15 21:17:36,538 - ml_training.pipelines.mel_cnn_pipeline - INFO -   Frequency range: 0-4000 Hz
+2025-08-15 21:17:36,539 - ml_training.pipelines.mel_cnn_pipeline - INFO - Precomputing mel spectrograms for 210 samples...
+2025-08-15 21:17:37,657 - ml_training.pipelines.mel_cnn_pipeline - INFO - Spectrogram precomputation completed
+2025-08-15 21:17:37,658 - ml_training.pipelines.mel_cnn_pipeline - INFO - Precomputing mel spectrograms for 60 samples...
+2025-08-15 21:17:37,686 - ml_training.pipelines.mel_cnn_pipeline - INFO - Spectrogram precomputation completed
+2025-08-15 21:17:37,686 - ml_training.pipelines.mel_cnn_pipeline - INFO - Precomputing mel spectrograms for 30 samples...
+2025-08-15 21:17:37,692 - ml_training.pipelines.mel_cnn_pipeline - INFO - Spectrogram precomputation completed
+2025-08-15 21:17:37,705 - ml_training.pipelines.mel_cnn_pipeline - INFO - Mel Spectrogram CNN initialized:
+2025-08-15 21:17:37,705 - ml_training.pipelines.mel_cnn_pipeline - INFO -   Input shape: (1, 64, 51)
+2025-08-15 21:17:37,705 - ml_training.pipelines.mel_cnn_pipeline - INFO -   Architecture: Conv(32->64->128->256) -> Global Pool -> FC(512->256->10)
+2025-08-15 21:17:37,705 - ml_training.pipelines.mel_cnn_pipeline - INFO -   Total parameters: 653,802
+2025-08-15 21:17:37,709 - ml_training.pipelines.mel_cnn_pipeline - INFO - Mel CNN pipeline setup completed:
+2025-08-15 21:17:37,709 - ml_training.pipelines.mel_cnn_pipeline - INFO -   Device: cuda
+2025-08-15 21:17:37,709 - ml_training.pipelines.mel_cnn_pipeline - INFO -   Train samples: 210
+2025-08-15 21:17:37,709 - ml_training.pipelines.mel_cnn_pipeline - INFO -   Val samples: 30
+2025-08-15 21:17:37,709 - ml_training.pipelines.mel_cnn_pipeline - INFO -   Test samples: 60
+2025-08-15 21:17:37,710 - ml_training.pipelines.mel_cnn_pipeline - INFO -   Batch size: 8
+2025-08-15 21:17:37,710 - ml_training.pipelines.mel_cnn_pipeline - INFO -   Spectrogram shape: (64, 51)
+2025-08-15 21:17:37,711 - __main__ - INFO - Testing Raw CNN pipeline setup...
+2025-08-15 21:17:37,712 - ml_training.pipelines.raw_cnn_pipeline - INFO - Setting up Raw Waveform CNN pipeline...
+2025-08-15 21:17:37,714 - ml_training.pipelines.raw_cnn_pipeline - INFO - Raw Waveform Dataset initialized:
+2025-08-15 21:17:37,715 - ml_training.pipelines.raw_cnn_pipeline - INFO -   Samples: 210
+2025-08-15 21:17:37,715 - ml_training.pipelines.raw_cnn_pipeline - INFO -   Audio length: 8000 samples
+2025-08-15 21:17:37,715 - ml_training.pipelines.raw_cnn_pipeline - INFO -   Augmentation: True
+2025-08-15 21:17:37,715 - ml_training.pipelines.raw_cnn_pipeline - INFO -     Noise factor: 0.005
+2025-08-15 21:17:37,715 - ml_training.pipelines.raw_cnn_pipeline - INFO -     Max shift: 400 samples
+2025-08-15 21:17:37,715 - ml_training.pipelines.raw_cnn_pipeline - INFO -     Amplitude range: (0.8, 1.2)
+2025-08-15 21:17:37,715 - ml_training.pipelines.raw_cnn_pipeline - INFO - Raw Waveform Dataset initialized:
+2025-08-15 21:17:37,716 - ml_training.pipelines.raw_cnn_pipeline - INFO -   Samples: 60
+2025-08-15 21:17:37,716 - ml_training.pipelines.raw_cnn_pipeline - INFO -   Audio length: 8000 samples
+2025-08-15 21:17:37,716 - ml_training.pipelines.raw_cnn_pipeline - INFO -   Augmentation: False
+2025-08-15 21:17:37,716 - ml_training.pipelines.raw_cnn_pipeline - INFO - Raw Waveform Dataset initialized:
+2025-08-15 21:17:37,716 - ml_training.pipelines.raw_cnn_pipeline - INFO -   Samples: 30
+2025-08-15 21:17:37,716 - ml_training.pipelines.raw_cnn_pipeline - INFO -   Audio length: 8000 samples
+2025-08-15 21:17:37,716 - ml_training.pipelines.raw_cnn_pipeline - INFO -   Augmentation: False
+2025-08-15 21:17:37,726 - ml_training.pipelines.raw_cnn_pipeline - INFO - Raw Waveform CNN initialized:
+2025-08-15 21:17:37,726 - ml_training.pipelines.raw_cnn_pipeline - INFO -   Input length: 8000 samples
+2025-08-15 21:17:37,726 - ml_training.pipelines.raw_cnn_pipeline - INFO -   Architecture: Conv1D(64->128->128->256->256) -> Global Pool -> FC(512->256->10)
+2025-08-15 21:17:37,726 - ml_training.pipelines.raw_cnn_pipeline - INFO -   Total parameters: 640,906
+2025-08-15 21:17:37,728 - ml_training.pipelines.raw_cnn_pipeline - INFO -   Receptive field: 128 samples
+2025-08-15 21:17:37,730 - ml_training.pipelines.raw_cnn_pipeline - INFO - Raw CNN pipeline setup completed:
+2025-08-15 21:17:37,730 - ml_training.pipelines.raw_cnn_pipeline - INFO -   Device: cuda
+2025-08-15 21:17:37,731 - ml_training.pipelines.raw_cnn_pipeline - INFO -   Train samples: 210
+2025-08-15 21:17:37,731 - ml_training.pipelines.raw_cnn_pipeline - INFO -   Val samples: 30
+2025-08-15 21:17:37,731 - ml_training.pipelines.raw_cnn_pipeline - INFO -   Test samples: 60
+2025-08-15 21:17:37,731 - ml_training.pipelines.raw_cnn_pipeline - INFO -   Batch size: 8
+2025-08-15 21:17:37,731 - ml_training.pipelines.raw_cnn_pipeline - INFO -   Audio length: 8000 samples
+2025-08-15 21:17:37,732 - __main__ - INFO - === Testing Training Loop (mfcc) ===
+2025-08-15 21:17:37,734 - ml_training_2575482196416 - INFO - ML Training Logger initialized - Log file: demo_output\logs\demo_mfcc_20250815_211737.log
+2025-08-15 21:17:37,734 - ml_training_2575482196416 - INFO - === SYSTEM INFORMATION ===
+2025-08-15 21:17:37,734 - ml_training_2575482196416 - INFO - Python Version: 3.12.6 (tags/v3.12.6:a4a2d2b, Sep  6 2024, 20:11:23) [MSC v.1940 64 bit (AMD64)]
+2025-08-15 21:17:37,735 - ml_training_2575482196416 - INFO - PyTorch Version: 2.3.1+cu121
+2025-08-15 21:17:37,735 - ml_training_2575482196416 - INFO - NumPy Version: 1.26.4
+2025-08-15 21:17:37,735 - ml_training_2575482196416 - INFO - Librosa Version: 0.10.2
+2025-08-15 21:17:37,735 - ml_training_2575482196416 - INFO - CUDA Available: Yes
+2025-08-15 21:17:37,735 - ml_training_2575482196416 - INFO - CUDA Version: 12.1
+2025-08-15 21:17:37,736 - ml_training_2575482196416 - INFO - GPU: NVIDIA GeForce RTX 3060 Laptop GPU
+2025-08-15 21:17:37,736 - ml_training_2575482196416 - INFO - GPU Memory: 6.0 GB
+2025-08-15 21:17:37,736 - ml_training_2575482196416 - INFO - === END SYSTEM INFO ===
+2025-08-15 21:17:37,739 - ml_training.utils.visualization - INFO - Visualizer initialized - Output directory: demo_output\logs\plots\demo_mfcc
+2025-08-15 21:17:37,739 - ml_training_2575482196416 - INFO - Trainer initialized for demo_mfcc
+2025-08-15 21:17:37,739 - ml_training_2575482196416 - INFO - === DEMO_MFCC ARCHITECTURE ===
+2025-08-15 21:17:37,740 - ml_training_2575482196416 - INFO - Total Parameters: 82,890
+2025-08-15 21:17:37,740 - ml_training_2575482196416 - INFO - Trainable Parameters: 82,890
+2025-08-15 21:17:37,740 - ml_training_2575482196416 - INFO - Non-trainable Parameters: 0
+2025-08-15 21:17:37,740 - ml_training_2575482196416 - INFO - Model Architecture:
+2025-08-15 21:17:37,741 - ml_training_2575482196416 - INFO -   network.0: Linear(in_features=156, out_features=256, bias=True)
+2025-08-15 21:17:37,741 - ml_training_2575482196416 - INFO -   network.1: BatchNorm1d(256, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+2025-08-15 21:17:37,741 - ml_training_2575482196416 - INFO -   network.2: ReLU(inplace=True)
+2025-08-15 21:17:37,741 - ml_training_2575482196416 - INFO -   network.3: Dropout(p=0.3, inplace=False)
+2025-08-15 21:17:37,741 - ml_training_2575482196416 - INFO -   network.4: Linear(in_features=256, out_features=128, bias=True)
+2025-08-15 21:17:37,741 - ml_training_2575482196416 - INFO -   network.5: BatchNorm1d(128, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+2025-08-15 21:17:37,742 - ml_training_2575482196416 - INFO -   network.6: ReLU(inplace=True)
+2025-08-15 21:17:37,742 - ml_training_2575482196416 - INFO -   network.7: Dropout(p=0.3, inplace=False)
+2025-08-15 21:17:37,742 - ml_training_2575482196416 - INFO -   network.8: Linear(in_features=128, out_features=64, bias=True)
+2025-08-15 21:17:37,742 - ml_training_2575482196416 - INFO -   network.9: BatchNorm1d(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+2025-08-15 21:17:37,742 - ml_training_2575482196416 - INFO -   network.10: ReLU(inplace=True)
+2025-08-15 21:17:37,742 - ml_training_2575482196416 - INFO -   network.11: Dropout(p=0.3, inplace=False)
+2025-08-15 21:17:37,742 - ml_training_2575482196416 - INFO -   network.12: Linear(in_features=64, out_features=10, bias=True)
+2025-08-15 21:17:37,743 - ml_training_2575482196416 - INFO - === END DEMO_MFCC ARCHITECTURE ===
+2025-08-15 21:17:39,551 - ml_training_2575482196416 - INFO - === EXPERIMENT CONFIGURATION ===
+2025-08-15 21:17:39,552 - ml_training_2575482196416 - INFO - learning_rate: 0.01
+2025-08-15 21:17:39,552 - ml_training_2575482196416 - INFO - weight_decay: 0.0001
+2025-08-15 21:17:39,552 - ml_training_2575482196416 - INFO - scheduler_type: step
+2025-08-15 21:17:39,552 - ml_training_2575482196416 - INFO - early_stopping_patience: 5
+2025-08-15 21:17:39,552 - ml_training_2575482196416 - INFO - gradient_clipping: 1.0
+2025-08-15 21:17:39,553 - ml_training_2575482196416 - INFO - mixed_precision: True
+2025-08-15 21:17:39,553 - ml_training_2575482196416 - INFO - optimizer: Adam
+2025-08-15 21:17:39,553 - ml_training_2575482196416 - INFO - loss_function: CrossEntropyLoss with label smoothing
+2025-08-15 21:17:39,553 - ml_training_2575482196416 - INFO - device: cuda
+2025-08-15 21:17:39,555 - ml_training_2575482196416 - INFO - Configuration saved to: demo_output\logs\config_demo_mfcc_20250815_211737.json
+2025-08-15 21:17:39,555 - ml_training_2575482196416 - INFO - === END CONFIGURATION ===
+2025-08-15 21:17:39,555 - ml_training_2575482196416 - INFO - Starting training for 5 epochs
+2025-08-15 21:17:39,555 - ml_training_2575482196416 - DEBUG - Timer started: train_epoch_1
+2025-08-15 21:17:40,193 - ml_training_2575482196416 - DEBUG - Batch 0/14: Loss=2.8626, Acc=12.50%
+2025-08-15 21:17:40,283 - ml_training_2575482196416 - INFO - Timer 'train_epoch_1': 0.7287 seconds
+2025-08-15 21:17:40,284 - ml_training_2575482196416 - DEBUG - Timer started: val_epoch_1
+2025-08-15 21:17:40,290 - ml_training_2575482196416 - INFO - Timer 'val_epoch_1': 0.0055 seconds
+2025-08-15 21:17:40,290 - ml_training_2575482196416 - INFO - Epoch   1 | Train Loss: 1.9630 | Train Acc: 39.05% | Val Loss: 0.8142 | Val Acc: 90.00% | LR: 1.00e-02
+2025-08-15 21:17:40,315 - ml_training_2575482196416 - INFO - Checkpoint saved at epoch 1
+2025-08-15 21:17:40,315 - ml_training_2575482196416 - INFO - Model path: demo_output\models\demo_mfcc\best_model.pt
+2025-08-15 21:17:40,315 - ml_training_2575482196416 - INFO - Checkpoint metrics: {'val_acc': 90.0, 'val_loss': 0.814195841550827}
+2025-08-15 21:17:40,316 - ml_training_2575482196416 - DEBUG - Timer started: train_epoch_2
+2025-08-15 21:17:40,324 - ml_training_2575482196416 - DEBUG - Batch 0/14: Loss=1.1367, Acc=75.00%
+2025-08-15 21:17:40,425 - ml_training_2575482196416 - INFO - Timer 'train_epoch_2': 0.1084 seconds
+2025-08-15 21:17:40,425 - ml_training_2575482196416 - DEBUG - Timer started: val_epoch_2
+2025-08-15 21:17:40,431 - ml_training_2575482196416 - INFO - Timer 'val_epoch_2': 0.0065 seconds
+2025-08-15 21:17:40,431 - ml_training_2575482196416 - INFO - Epoch   2 | Train Loss: 1.2550 | Train Acc: 78.10% | Val Loss: 0.8308 | Val Acc: 93.33% | LR: 1.00e-02
+2025-08-15 21:17:40,448 - ml_training_2575482196416 - INFO - Checkpoint saved at epoch 2
+2025-08-15 21:17:40,448 - ml_training_2575482196416 - INFO - Model path: demo_output\models\demo_mfcc\best_model.pt
+2025-08-15 21:17:40,448 - ml_training_2575482196416 - INFO - Checkpoint metrics: {'val_acc': 93.33333333333333, 'val_loss': 0.830847978591919}
+2025-08-15 21:17:40,449 - ml_training_2575482196416 - DEBUG - Timer started: train_epoch_3
+2025-08-15 21:17:40,456 - ml_training_2575482196416 - DEBUG - Batch 0/14: Loss=1.1320, Acc=81.25%
+2025-08-15 21:17:40,548 - ml_training_2575482196416 - INFO - Timer 'train_epoch_3': 0.0988 seconds
+2025-08-15 21:17:40,549 - ml_training_2575482196416 - DEBUG - Timer started: val_epoch_3
+2025-08-15 21:17:40,554 - ml_training_2575482196416 - INFO - Timer 'val_epoch_3': 0.0050 seconds
+2025-08-15 21:17:40,555 - ml_training_2575482196416 - INFO - Epoch   3 | Train Loss: 0.9123 | Train Acc: 86.67% | Val Loss: 0.6522 | Val Acc: 100.00% | LR: 1.00e-02
+2025-08-15 21:17:40,573 - ml_training_2575482196416 - INFO - Checkpoint saved at epoch 3
+2025-08-15 21:17:40,574 - ml_training_2575482196416 - INFO - Model path: demo_output\models\demo_mfcc\best_model.pt
+2025-08-15 21:17:40,574 - ml_training_2575482196416 - INFO - Checkpoint metrics: {'val_acc': 100.0, 'val_loss': 0.6521654725074768}
+2025-08-15 21:17:40,574 - ml_training_2575482196416 - DEBUG - Timer started: train_epoch_4
+2025-08-15 21:17:40,582 - ml_training_2575482196416 - DEBUG - Batch 0/14: Loss=0.7149, Acc=100.00%
+2025-08-15 21:17:40,676 - ml_training_2575482196416 - INFO - Timer 'train_epoch_4': 0.1024 seconds
+2025-08-15 21:17:40,678 - ml_training_2575482196416 - DEBUG - Timer started: val_epoch_4
+2025-08-15 21:17:40,683 - ml_training_2575482196416 - INFO - Timer 'val_epoch_4': 0.0050 seconds
+2025-08-15 21:17:40,683 - ml_training_2575482196416 - INFO - Epoch   4 | Train Loss: 0.9139 | Train Acc: 90.95% | Val Loss: 0.6173 | Val Acc: 100.00% | LR: 1.00e-02
+2025-08-15 21:17:40,692 - ml_training_2575482196416 - DEBUG - Timer started: train_epoch_5
+2025-08-15 21:17:40,700 - ml_training_2575482196416 - DEBUG - Batch 0/14: Loss=0.7254, Acc=93.75%
+2025-08-15 21:17:40,798 - ml_training_2575482196416 - INFO - Timer 'train_epoch_5': 0.1063 seconds
+2025-08-15 21:17:40,798 - ml_training_2575482196416 - DEBUG - Timer started: val_epoch_5
+2025-08-15 21:17:40,803 - ml_training_2575482196416 - INFO - Timer 'val_epoch_5': 0.0045 seconds
+2025-08-15 21:17:40,804 - ml_training_2575482196416 - INFO - Epoch   5 | Train Loss: 0.7782 | Train Acc: 95.71% | Val Loss: 0.6020 | Val Acc: 100.00% | LR: 1.00e-02
+2025-08-15 21:17:40,804 - ml_training_2575482196416 - INFO - Training completed. Evaluating on test set...
+2025-08-15 21:17:40,839 - ml_training_2575482196416 - INFO - Loaded checkpoint from epoch 3
+2025-08-15 21:17:40,839 - ml_training_2575482196416 - DEBUG - Timer started: test_evaluation
+2025-08-15 21:17:40,846 - ml_training_2575482196416 - INFO - Timer 'test_evaluation': 0.0075 seconds
+2025-08-15 21:17:40,859 - ml_training_2575482196416 - INFO - === TEST RESULTS ===
+2025-08-15 21:17:40,859 - ml_training_2575482196416 - INFO - Test Accuracy: 1.0000
+2025-08-15 21:17:40,859 - ml_training_2575482196416 - INFO - Test Loss: 0.6638
+2025-08-15 21:17:40,860 - ml_training_2575482196416 - INFO - Classification Report:
+2025-08-15 21:17:40,860 - ml_training_2575482196416 - INFO -                 precision    recall  f1-score   support
+2025-08-15 21:17:40,860 - ml_training_2575482196416 - INFO -              0     1.0000    1.0000    1.0000         6
+2025-08-15 21:17:40,860 - ml_training_2575482196416 - INFO -              1     1.0000    1.0000    1.0000         6
+2025-08-15 21:17:40,861 - ml_training_2575482196416 - INFO -              2     1.0000    1.0000    1.0000         6
+2025-08-15 21:17:40,861 - ml_training_2575482196416 - INFO -              3     1.0000    1.0000    1.0000         6
+2025-08-15 21:17:40,861 - ml_training_2575482196416 - INFO -              4     1.0000    1.0000    1.0000         6
+2025-08-15 21:17:40,862 - ml_training_2575482196416 - INFO -              5     1.0000    1.0000    1.0000         6
+2025-08-15 21:17:40,862 - ml_training_2575482196416 - INFO -              6     1.0000    1.0000    1.0000         6
+2025-08-15 21:17:40,862 - ml_training_2575482196416 - INFO -              7     1.0000    1.0000    1.0000         6
+2025-08-15 21:17:40,862 - ml_training_2575482196416 - INFO -              8     1.0000    1.0000    1.0000         6
+2025-08-15 21:17:40,862 - ml_training_2575482196416 - INFO -              9     1.0000    1.0000    1.0000         6
+2025-08-15 21:17:40,863 - ml_training_2575482196416 - INFO -       accuracy                         1.0000        60
+2025-08-15 21:17:40,863 - ml_training_2575482196416 - INFO -      macro avg     1.0000    1.0000    1.0000        60
+2025-08-15 21:17:40,863 - ml_training_2575482196416 - INFO -   weighted avg     1.0000    1.0000    1.0000        60
+2025-08-15 21:17:40,863 - ml_training_2575482196416 - INFO - === END TEST RESULTS ===
+2025-08-15 21:17:43,083 - ml_training.utils.visualization - INFO - Plot saved to: demo_output\logs\plots\demo_mfcc\training_history_demo_mfcc_training_history.png
+2025-08-15 21:17:43,548 - matplotlib.category - INFO - Using categorical units to plot a list of strings that are all parsable as floats or dates. If these strings should be plotted as numbers, cast to the appropriate data type before plotting.
+2025-08-15 21:17:43,548 - matplotlib.category - INFO - Using categorical units to plot a list of strings that are all parsable as floats or dates. If these strings should be plotted as numbers, cast to the appropriate data type before plotting.
+2025-08-15 21:17:44,771 - ml_training.utils.visualization - INFO - Plot saved to: demo_output\logs\plots\demo_mfcc\confusion_matrix_demo_mfcc_confusion_matrix.png
+2025-08-15 21:17:44,772 - ml_training_2575482196416 - INFO - Visualizations generated successfully
+2025-08-15 21:17:44,772 - ml_training_2575482196416 - INFO - Closing ML Training Logger
+2025-08-15 21:17:44,774 - ml_training_2575482196416 - INFO - Metrics summary saved to: demo_output\logs\metrics_summary_demo_mfcc_20250815_211737.json
+2025-08-15 21:17:44,776 - __main__ - INFO -   Final val accuracy: 100.00%
+2025-08-15 21:17:44,776 - __main__ - INFO -   Test accuracy: 1.00
+2025-08-15 21:17:44,776 - __main__ - INFO - === Testing Inference (mfcc) ===
+2025-08-15 21:17:44,779 - __main__ - INFO -   Predicted: 9
+2025-08-15 21:17:44,779 - __main__ - INFO -   Confidence: 0.950
+2025-08-15 21:17:44,779 - __main__ - INFO -   Inference time: 1.0 ms
+2025-08-15 21:17:44,779 - __main__ - INFO - === Testing Inference (mel_cnn) ===
+2025-08-15 21:17:44,781 - __main__ - INFO -   Predicted: 9
+2025-08-15 21:17:44,781 - __main__ - INFO -   Confidence: 0.950
+2025-08-15 21:17:44,781 - __main__ - INFO -   Inference time: 1.0 ms
+2025-08-15 21:17:44,781 - __main__ - INFO - === Testing Inference (raw_cnn) ===
+2025-08-15 21:17:44,783 - __main__ - INFO -   Predicted: 9
+2025-08-15 21:17:44,783 - __main__ - INFO -   Confidence: 0.950
+2025-08-15 21:17:44,783 - __main__ - INFO -   Inference time: 1.0 ms
+2025-08-15 21:17:44,783 - __main__ - INFO - === Testing Visualization ===
+2025-08-15 21:17:44,785 - ml_training.utils.visualization - INFO - Visualizer initialized - Output directory: demo_output\plots
+2025-08-15 21:17:45,764 - ml_training.utils.visualization - INFO - Plot saved to: demo_output\plots\training_history_demo_training_history.png
+2025-08-15 21:17:46,430 - matplotlib.category - INFO - Using categorical units to plot a list of strings that are all parsable as floats or dates. If these strings should be plotted as numbers, cast to the appropriate data type before plotting.
+2025-08-15 21:17:46,431 - matplotlib.category - INFO - Using categorical units to plot a list of strings that are all parsable as floats or dates. If these strings should be plotted as numbers, cast to the appropriate data type before plotting.
+2025-08-15 21:17:47,664 - ml_training.utils.visualization - INFO - Plot saved to: demo_output\plots\confusion_matrix_demo_confusion_matrix.png
+2025-08-15 21:17:47,666 - __main__ - INFO -   Plots saved to: demo_output\plots
+2025-08-15 21:17:47,666 - __main__ - INFO - ============================================================
+2025-08-15 21:17:47,668 - __main__ - INFO - Total demo time: 20.60 seconds
+2025-08-15 21:17:47,668 - __main__ - INFO - Demo outputs saved to: demo_output
+2025-08-15 21:17:47,668 - __main__ - INFO - ============================================================
+2025-08-15 21:17:47,668 - __main__ - INFO - Component Status Summary:

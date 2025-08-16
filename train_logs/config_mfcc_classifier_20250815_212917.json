@@ -1,0 +1,11 @@
+{
+  "learning_rate": 0.001,
+  "weight_decay": 0.0001,
+  "scheduler_type": "plateau",
+  "early_stopping_patience": 10,
+  "gradient_clipping": 1.0,
+  "mixed_precision": true,
+  "optimizer": "Adam",
+  "loss_function": "CrossEntropyLoss with label smoothing",
+  "device": "cuda"
+}

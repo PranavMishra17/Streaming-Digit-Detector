@@ -1,0 +1,175 @@
+2025-08-15 21:30:37 | INFO     | ml_training_1989882468864 | ML Training Logger initialized - Log file: train_logs\raw_cnn_classifier_20250815_213037.log
+2025-08-15 21:30:37 | INFO     | ml_training_1989882468864 | === SYSTEM INFORMATION ===
+2025-08-15 21:30:37 | INFO     | ml_training_1989882468864 | Python Version: 3.12.6 (tags/v3.12.6:a4a2d2b, Sep  6 2024, 20:11:23) [MSC v.1940 64 bit (AMD64)]
+2025-08-15 21:30:37 | INFO     | ml_training_1989882468864 | PyTorch Version: 2.3.1+cu121
+2025-08-15 21:30:37 | INFO     | ml_training_1989882468864 | NumPy Version: 1.26.4
+2025-08-15 21:30:37 | INFO     | ml_training_1989882468864 | Librosa Version: 0.10.2
+2025-08-15 21:30:37 | INFO     | ml_training_1989882468864 | CUDA Available: Yes
+2025-08-15 21:30:37 | INFO     | ml_training_1989882468864 | CUDA Version: 12.1
+2025-08-15 21:30:37 | INFO     | ml_training_1989882468864 | GPU: NVIDIA GeForce RTX 3060 Laptop GPU
+2025-08-15 21:30:37 | INFO     | ml_training_1989882468864 | GPU Memory: 6.0 GB
+2025-08-15 21:30:37 | INFO     | ml_training_1989882468864 | === END SYSTEM INFO ===
+2025-08-15 21:30:37 | INFO     | ml_training_1989882468864 | Trainer initialized for raw_cnn_classifier
+2025-08-15 21:30:37 | INFO     | ml_training_1989882468864 | === RAW_CNN_CLASSIFIER ARCHITECTURE ===
+2025-08-15 21:30:37 | INFO     | ml_training_1989882468864 | Total Parameters: 640,906
+2025-08-15 21:30:37 | INFO     | ml_training_1989882468864 | Trainable Parameters: 640,906
+2025-08-15 21:30:37 | INFO     | ml_training_1989882468864 | Non-trainable Parameters: 0
+2025-08-15 21:30:37 | INFO     | ml_training_1989882468864 | Model Architecture:
+2025-08-15 21:30:37 | INFO     | ml_training_1989882468864 |   conv1: Conv1d(1, 64, kernel_size=(80,), stride=(4,), padding=(38,), bias=False)
+2025-08-15 21:30:37 | INFO     | ml_training_1989882468864 |   conv2: Conv1d(64, 128, kernel_size=(3,), stride=(1,), padding=(1,), bias=False)
+2025-08-15 21:30:37 | INFO     | ml_training_1989882468864 |   conv3: Conv1d(128, 128, kernel_size=(3,), stride=(1,), padding=(1,), bias=False)
+2025-08-15 21:30:37 | INFO     | ml_training_1989882468864 |   conv4: Conv1d(128, 256, kernel_size=(3,), stride=(1,), padding=(1,), bias=False)
+2025-08-15 21:30:37 | INFO     | ml_training_1989882468864 |   conv5: Conv1d(256, 256, kernel_size=(3,), stride=(1,), padding=(1,), bias=False)
+2025-08-15 21:30:37 | INFO     | ml_training_1989882468864 |   bn1: BatchNorm1d(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+2025-08-15 21:30:37 | INFO     | ml_training_1989882468864 |   bn2: BatchNorm1d(128, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+2025-08-15 21:30:37 | INFO     | ml_training_1989882468864 |   bn3: BatchNorm1d(128, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+2025-08-15 21:30:37 | INFO     | ml_training_1989882468864 |   bn4: BatchNorm1d(256, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+2025-08-15 21:30:37 | INFO     | ml_training_1989882468864 |   bn5: BatchNorm1d(256, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+2025-08-15 21:30:37 | INFO     | ml_training_1989882468864 |   pool: MaxPool1d(kernel_size=4, stride=4, padding=0, dilation=1, ceil_mode=False)
+2025-08-15 21:30:37 | INFO     | ml_training_1989882468864 |   dropout1d: Dropout1d(p=0.2, inplace=False)
+2025-08-15 21:30:37 | INFO     | ml_training_1989882468864 |   dropout: Dropout(p=0.3, inplace=False)
+2025-08-15 21:30:37 | INFO     | ml_training_1989882468864 |   global_pool: AdaptiveAvgPool1d(output_size=1)
+2025-08-15 21:30:37 | INFO     | ml_training_1989882468864 |   fc1: Linear(in_features=256, out_features=512, bias=True)
+2025-08-15 21:30:37 | INFO     | ml_training_1989882468864 |   fc2: Linear(in_features=512, out_features=256, bias=True)
+2025-08-15 21:30:37 | INFO     | ml_training_1989882468864 |   fc3: Linear(in_features=256, out_features=10, bias=True)
+2025-08-15 21:30:37 | INFO     | ml_training_1989882468864 | === END RAW_CNN_CLASSIFIER ARCHITECTURE ===
+2025-08-15 21:30:37 | INFO     | ml_training_1989882468864 | === EXPERIMENT CONFIGURATION ===
+2025-08-15 21:30:37 | INFO     | ml_training_1989882468864 | learning_rate: 0.001
+2025-08-15 21:30:37 | INFO     | ml_training_1989882468864 | weight_decay: 0.0001
+2025-08-15 21:30:37 | INFO     | ml_training_1989882468864 | scheduler_type: plateau
+2025-08-15 21:30:37 | INFO     | ml_training_1989882468864 | early_stopping_patience: 10
+2025-08-15 21:30:37 | INFO     | ml_training_1989882468864 | gradient_clipping: 1.0
+2025-08-15 21:30:37 | INFO     | ml_training_1989882468864 | mixed_precision: True
+2025-08-15 21:30:37 | INFO     | ml_training_1989882468864 | optimizer: Adam
+2025-08-15 21:30:37 | INFO     | ml_training_1989882468864 | loss_function: CrossEntropyLoss with label smoothing
+2025-08-15 21:30:37 | INFO     | ml_training_1989882468864 | device: cuda
+2025-08-15 21:30:37 | INFO     | ml_training_1989882468864 | Configuration saved to: train_logs\config_raw_cnn_classifier_20250815_213037.json
+2025-08-15 21:30:37 | INFO     | ml_training_1989882468864 | === END CONFIGURATION ===
+2025-08-15 21:30:37 | INFO     | ml_training_1989882468864 | Starting training for 10 epochs
+2025-08-15 21:30:37 | DEBUG    | ml_training_1989882468864 | Timer started: train_epoch_1
+2025-08-15 21:30:37 | DEBUG    | ml_training_1989882468864 | Batch 0/119: Loss=3.8729, Acc=0.00%
+2025-08-15 21:30:38 | DEBUG    | ml_training_1989882468864 | Batch 50/119: Loss=2.2453, Acc=12.62%
+2025-08-15 21:30:39 | DEBUG    | ml_training_1989882468864 | Batch 100/119: Loss=2.2926, Acc=19.00%
+2025-08-15 21:30:40 | INFO     | ml_training_1989882468864 | Timer 'train_epoch_1': 2.7876 seconds
+2025-08-15 21:30:40 | DEBUG    | ml_training_1989882468864 | Timer started: val_epoch_1
+2025-08-15 21:30:40 | INFO     | ml_training_1989882468864 | Timer 'val_epoch_1': 0.1270 seconds
+2025-08-15 21:30:40 | INFO     | ml_training_1989882468864 | Epoch   1 | Train Loss: 2.3141 | Train Acc: 20.32% | Val Loss: 1.6611 | Val Acc: 41.11% | LR: 1.00e-03
+2025-08-15 21:30:40 | INFO     | ml_training_1989882468864 | Checkpoint saved at epoch 1
+2025-08-15 21:30:40 | INFO     | ml_training_1989882468864 | Model path: models\raw_cnn_classifier\best_model.pt
+2025-08-15 21:30:40 | INFO     | ml_training_1989882468864 | Checkpoint metrics: {'val_acc': 41.111111111111114, 'val_loss': 1.661128373707042}
+2025-08-15 21:30:40 | DEBUG    | ml_training_1989882468864 | Timer started: train_epoch_2
+2025-08-15 21:30:40 | DEBUG    | ml_training_1989882468864 | Batch 0/119: Loss=2.0720, Acc=31.25%
+2025-08-15 21:30:41 | DEBUG    | ml_training_1989882468864 | Batch 50/119: Loss=1.6981, Acc=35.91%
+2025-08-15 21:30:42 | DEBUG    | ml_training_1989882468864 | Batch 100/119: Loss=1.8724, Acc=37.25%
+2025-08-15 21:30:42 | INFO     | ml_training_1989882468864 | Timer 'train_epoch_2': 2.3815 seconds
+2025-08-15 21:30:42 | DEBUG    | ml_training_1989882468864 | Timer started: val_epoch_2
+2025-08-15 21:30:43 | INFO     | ml_training_1989882468864 | Timer 'val_epoch_2': 0.0770 seconds
+2025-08-15 21:30:43 | INFO     | ml_training_1989882468864 | Epoch   2 | Train Loss: 1.8000 | Train Acc: 37.41% | Val Loss: 1.4655 | Val Acc: 46.67% | LR: 1.00e-03
+2025-08-15 21:30:43 | INFO     | ml_training_1989882468864 | Checkpoint saved at epoch 2
+2025-08-15 21:30:43 | INFO     | ml_training_1989882468864 | Model path: models\raw_cnn_classifier\best_model.pt
+2025-08-15 21:30:43 | INFO     | ml_training_1989882468864 | Checkpoint metrics: {'val_acc': 46.666666666666664, 'val_loss': 1.4654857761719648}
+2025-08-15 21:30:43 | DEBUG    | ml_training_1989882468864 | Timer started: train_epoch_3
+2025-08-15 21:30:43 | DEBUG    | ml_training_1989882468864 | Batch 0/119: Loss=1.6165, Acc=43.75%
+2025-08-15 21:30:44 | DEBUG    | ml_training_1989882468864 | Batch 50/119: Loss=1.9521, Acc=46.32%
+2025-08-15 21:30:45 | DEBUG    | ml_training_1989882468864 | Batch 100/119: Loss=1.5224, Acc=46.35%
+2025-08-15 21:30:45 | INFO     | ml_training_1989882468864 | Timer 'train_epoch_3': 2.3463 seconds
+2025-08-15 21:30:45 | DEBUG    | ml_training_1989882468864 | Timer started: val_epoch_3
+2025-08-15 21:30:45 | INFO     | ml_training_1989882468864 | Timer 'val_epoch_3': 0.0745 seconds
+2025-08-15 21:30:45 | INFO     | ml_training_1989882468864 | Epoch   3 | Train Loss: 1.6175 | Train Acc: 47.04% | Val Loss: 1.2698 | Val Acc: 61.48% | LR: 1.00e-03
+2025-08-15 21:30:45 | INFO     | ml_training_1989882468864 | Checkpoint saved at epoch 3
+2025-08-15 21:30:45 | INFO     | ml_training_1989882468864 | Model path: models\raw_cnn_classifier\best_model.pt
+2025-08-15 21:30:45 | INFO     | ml_training_1989882468864 | Checkpoint metrics: {'val_acc': 61.48148148148148, 'val_loss': 1.2698361803503597}
+2025-08-15 21:30:45 | DEBUG    | ml_training_1989882468864 | Timer started: train_epoch_4
+2025-08-15 21:30:45 | DEBUG    | ml_training_1989882468864 | Batch 0/119: Loss=1.5369, Acc=31.25%
+2025-08-15 21:30:46 | DEBUG    | ml_training_1989882468864 | Batch 50/119: Loss=1.4948, Acc=53.19%
+2025-08-15 21:30:47 | DEBUG    | ml_training_1989882468864 | Batch 100/119: Loss=1.4223, Acc=55.88%
+2025-08-15 21:30:47 | INFO     | ml_training_1989882468864 | Timer 'train_epoch_4': 2.2653 seconds
+2025-08-15 21:30:47 | DEBUG    | ml_training_1989882468864 | Timer started: val_epoch_4
+2025-08-15 21:30:47 | INFO     | ml_training_1989882468864 | Timer 'val_epoch_4': 0.0804 seconds
+2025-08-15 21:30:47 | INFO     | ml_training_1989882468864 | Epoch   4 | Train Loss: 1.4522 | Train Acc: 56.83% | Val Loss: 1.0410 | Val Acc: 77.78% | LR: 1.00e-03
+2025-08-15 21:30:47 | INFO     | ml_training_1989882468864 | Checkpoint saved at epoch 4
+2025-08-15 21:30:47 | INFO     | ml_training_1989882468864 | Model path: models\raw_cnn_classifier\best_model.pt
+2025-08-15 21:30:47 | INFO     | ml_training_1989882468864 | Checkpoint metrics: {'val_acc': 77.77777777777777, 'val_loss': 1.041027167264153}
+2025-08-15 21:30:47 | DEBUG    | ml_training_1989882468864 | Timer started: train_epoch_5
+2025-08-15 21:30:47 | DEBUG    | ml_training_1989882468864 | Batch 0/119: Loss=1.5432, Acc=43.75%
+2025-08-15 21:30:48 | DEBUG    | ml_training_1989882468864 | Batch 50/119: Loss=1.4469, Acc=62.13%
+2025-08-15 21:30:49 | DEBUG    | ml_training_1989882468864 | Batch 100/119: Loss=1.4727, Acc=61.45%
+2025-08-15 21:30:50 | INFO     | ml_training_1989882468864 | Timer 'train_epoch_5': 2.2898 seconds
+2025-08-15 21:30:50 | DEBUG    | ml_training_1989882468864 | Timer started: val_epoch_5
+2025-08-15 21:30:50 | INFO     | ml_training_1989882468864 | Timer 'val_epoch_5': 0.0647 seconds
+2025-08-15 21:30:50 | INFO     | ml_training_1989882468864 | Epoch   5 | Train Loss: 1.3325 | Train Acc: 62.49% | Val Loss: 0.8919 | Val Acc: 84.81% | LR: 1.00e-03
+2025-08-15 21:30:50 | INFO     | ml_training_1989882468864 | Checkpoint saved at epoch 5
+2025-08-15 21:30:50 | INFO     | ml_training_1989882468864 | Model path: models\raw_cnn_classifier\best_model.pt
+2025-08-15 21:30:50 | INFO     | ml_training_1989882468864 | Checkpoint metrics: {'val_acc': 84.81481481481481, 'val_loss': 0.8918585286420935}
+2025-08-15 21:30:50 | DEBUG    | ml_training_1989882468864 | Timer started: train_epoch_6
+2025-08-15 21:30:50 | DEBUG    | ml_training_1989882468864 | Batch 0/119: Loss=1.2298, Acc=62.50%
+2025-08-15 21:30:51 | DEBUG    | ml_training_1989882468864 | Batch 50/119: Loss=0.9826, Acc=70.59%
+2025-08-15 21:30:52 | DEBUG    | ml_training_1989882468864 | Batch 100/119: Loss=1.2768, Acc=70.17%
+2025-08-15 21:30:52 | INFO     | ml_training_1989882468864 | Timer 'train_epoch_6': 2.2983 seconds
+2025-08-15 21:30:52 | DEBUG    | ml_training_1989882468864 | Timer started: val_epoch_6
+2025-08-15 21:30:52 | INFO     | ml_training_1989882468864 | Timer 'val_epoch_6': 0.0738 seconds
+2025-08-15 21:30:52 | INFO     | ml_training_1989882468864 | Epoch   6 | Train Loss: 1.1853 | Train Acc: 70.05% | Val Loss: 0.9036 | Val Acc: 81.48% | LR: 1.00e-03
+2025-08-15 21:30:52 | DEBUG    | ml_training_1989882468864 | Timer started: train_epoch_7
+2025-08-15 21:30:52 | DEBUG    | ml_training_1989882468864 | Batch 0/119: Loss=0.8114, Acc=93.75%
+2025-08-15 21:30:53 | DEBUG    | ml_training_1989882468864 | Batch 50/119: Loss=1.1655, Acc=71.94%
+2025-08-15 21:30:54 | DEBUG    | ml_training_1989882468864 | Batch 100/119: Loss=1.4443, Acc=71.41%
+2025-08-15 21:30:55 | INFO     | ml_training_1989882468864 | Timer 'train_epoch_7': 2.3995 seconds
+2025-08-15 21:30:55 | DEBUG    | ml_training_1989882468864 | Timer started: val_epoch_7
+2025-08-15 21:30:55 | INFO     | ml_training_1989882468864 | Timer 'val_epoch_7': 0.0988 seconds
+2025-08-15 21:30:55 | INFO     | ml_training_1989882468864 | Epoch   7 | Train Loss: 1.1454 | Train Acc: 72.65% | Val Loss: 0.8213 | Val Acc: 87.04% | LR: 1.00e-03
+2025-08-15 21:30:55 | INFO     | ml_training_1989882468864 | Checkpoint saved at epoch 7
+2025-08-15 21:30:55 | INFO     | ml_training_1989882468864 | Model path: models\raw_cnn_classifier\best_model.pt
+2025-08-15 21:30:55 | INFO     | ml_training_1989882468864 | Checkpoint metrics: {'val_acc': 87.03703703703704, 'val_loss': 0.8213256211841807}
+2025-08-15 21:30:55 | DEBUG    | ml_training_1989882468864 | Timer started: train_epoch_8
+2025-08-15 21:30:55 | DEBUG    | ml_training_1989882468864 | Batch 0/119: Loss=1.0457, Acc=81.25%
+2025-08-15 21:30:56 | DEBUG    | ml_training_1989882468864 | Batch 50/119: Loss=1.1085, Acc=78.43%
+2025-08-15 21:30:57 | DEBUG    | ml_training_1989882468864 | Batch 100/119: Loss=0.9500, Acc=78.03%
+2025-08-15 21:30:57 | INFO     | ml_training_1989882468864 | Timer 'train_epoch_8': 2.2973 seconds
+2025-08-15 21:30:57 | DEBUG    | ml_training_1989882468864 | Timer started: val_epoch_8
+2025-08-15 21:30:57 | INFO     | ml_training_1989882468864 | Timer 'val_epoch_8': 0.0940 seconds
+2025-08-15 21:30:57 | INFO     | ml_training_1989882468864 | Epoch   8 | Train Loss: 1.0651 | Train Acc: 77.94% | Val Loss: 0.8063 | Val Acc: 88.52% | LR: 1.00e-03
+2025-08-15 21:30:57 | INFO     | ml_training_1989882468864 | Checkpoint saved at epoch 8
+2025-08-15 21:30:57 | INFO     | ml_training_1989882468864 | Model path: models\raw_cnn_classifier\best_model.pt
+2025-08-15 21:30:57 | INFO     | ml_training_1989882468864 | Checkpoint metrics: {'val_acc': 88.51851851851852, 'val_loss': 0.8062583909315222}
+2025-08-15 21:30:57 | DEBUG    | ml_training_1989882468864 | Timer started: train_epoch_9
+2025-08-15 21:30:57 | DEBUG    | ml_training_1989882468864 | Batch 0/119: Loss=0.8191, Acc=93.75%
+2025-08-15 21:30:58 | DEBUG    | ml_training_1989882468864 | Batch 50/119: Loss=1.1023, Acc=78.68%
+2025-08-15 21:30:59 | DEBUG    | ml_training_1989882468864 | Batch 100/119: Loss=0.8437, Acc=78.65%
+2025-08-15 21:31:00 | INFO     | ml_training_1989882468864 | Timer 'train_epoch_9': 2.3194 seconds
+2025-08-15 21:31:00 | DEBUG    | ml_training_1989882468864 | Timer started: val_epoch_9
+2025-08-15 21:31:00 | INFO     | ml_training_1989882468864 | Timer 'val_epoch_9': 0.0808 seconds
+2025-08-15 21:31:00 | INFO     | ml_training_1989882468864 | Epoch   9 | Train Loss: 1.0337 | Train Acc: 78.52% | Val Loss: 0.7867 | Val Acc: 87.04% | LR: 1.00e-03
+2025-08-15 21:31:00 | DEBUG    | ml_training_1989882468864 | Timer started: train_epoch_10
+2025-08-15 21:31:00 | DEBUG    | ml_training_1989882468864 | Batch 0/119: Loss=1.1525, Acc=81.25%
+2025-08-15 21:31:01 | DEBUG    | ml_training_1989882468864 | Batch 50/119: Loss=0.7708, Acc=81.37%
+2025-08-15 21:31:02 | DEBUG    | ml_training_1989882468864 | Batch 100/119: Loss=1.0907, Acc=79.58%
+2025-08-15 21:31:02 | INFO     | ml_training_1989882468864 | Timer 'train_epoch_10': 2.3684 seconds
+2025-08-15 21:31:02 | DEBUG    | ml_training_1989882468864 | Timer started: val_epoch_10
+2025-08-15 21:31:02 | INFO     | ml_training_1989882468864 | Timer 'val_epoch_10': 0.1001 seconds
+2025-08-15 21:31:02 | INFO     | ml_training_1989882468864 | Epoch  10 | Train Loss: 1.0151 | Train Acc: 79.68% | Val Loss: 0.8052 | Val Acc: 88.15% | LR: 1.00e-03
+2025-08-15 21:31:02 | INFO     | ml_training_1989882468864 | Training completed. Evaluating on test set...
+2025-08-15 21:31:02 | INFO     | ml_training_1989882468864 | Loaded checkpoint from epoch 8
+2025-08-15 21:31:02 | DEBUG    | ml_training_1989882468864 | Timer started: test_evaluation
+2025-08-15 21:31:02 | INFO     | ml_training_1989882468864 | Timer 'test_evaluation': 0.1939 seconds
+2025-08-15 21:31:02 | INFO     | ml_training_1989882468864 | === TEST RESULTS ===
+2025-08-15 21:31:02 | INFO     | ml_training_1989882468864 | Test Accuracy: 0.8759
+2025-08-15 21:31:02 | INFO     | ml_training_1989882468864 | Test Loss: 0.8168
+2025-08-15 21:31:02 | INFO     | ml_training_1989882468864 | Classification Report:
+2025-08-15 21:31:02 | INFO     | ml_training_1989882468864 |                 precision    recall  f1-score   support
+2025-08-15 21:31:02 | INFO     | ml_training_1989882468864 |              0     1.0000    0.9444    0.9714        54
+2025-08-15 21:31:02 | INFO     | ml_training_1989882468864 |              1     0.9333    0.7778    0.8485        54
+2025-08-15 21:31:02 | INFO     | ml_training_1989882468864 |              2     0.6438    0.8704    0.7402        54
+2025-08-15 21:31:02 | INFO     | ml_training_1989882468864 |              3     0.6607    0.6852    0.6727        54
+2025-08-15 21:31:02 | INFO     | ml_training_1989882468864 |              4     1.0000    0.9815    0.9907        54
+2025-08-15 21:31:02 | INFO     | ml_training_1989882468864 |              5     0.9153    1.0000    0.9558        54
+2025-08-15 21:31:02 | INFO     | ml_training_1989882468864 |              6     0.9773    0.7963    0.8776        54
+2025-08-15 21:31:02 | INFO     | ml_training_1989882468864 |              7     0.9434    0.9259    0.9346        54
+2025-08-15 21:31:02 | INFO     | ml_training_1989882468864 |              8     0.9362    0.8148    0.8713        54
+2025-08-15 21:31:02 | INFO     | ml_training_1989882468864 |              9     0.8814    0.9630    0.9204        54
+2025-08-15 21:31:02 | INFO     | ml_training_1989882468864 |       accuracy                         0.8759       540
+2025-08-15 21:31:02 | INFO     | ml_training_1989882468864 |      macro avg     0.8891    0.8759    0.8783       540
+2025-08-15 21:31:02 | INFO     | ml_training_1989882468864 |   weighted avg     0.8891    0.8759    0.8783       540
+2025-08-15 21:31:02 | INFO     | ml_training_1989882468864 | === END TEST RESULTS ===
+2025-08-15 21:31:05 | INFO     | ml_training_1989882468864 | Visualizations generated successfully
+2025-08-15 21:31:05 | INFO     | ml_training_1989882468864 | Closing ML Training Logger
+2025-08-15 21:31:05 | INFO     | ml_training_1989882468864 | Metrics summary saved to: train_logs\metrics_summary_raw_cnn_classifier_20250815_213037.json

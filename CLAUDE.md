@@ -5,7 +5,7 @@ Lightweight prototype for spoken digit recognition (0-9) with retro gaming aesth
 
 ## Architecture
 - **Backend**: Flask Python server with audio processing endpoints
-- **Frontend**: Retro pixelated UI using NES.css framework
+- **Frontend**: Retro pixelated UI
 - **Audio**: Web Audio API for microphone input and real-time visualization
 - **ML Pipeline**: Modular cabinet system for different classification approaches
 
@@ -116,3 +116,6 @@ Lightweight prototype for spoken digit recognition (0-9) with retro gaming aesth
 - **JavaScript**: No external dependencies (vanilla JS + Web Audio API)
 - **CSS**: NES.css framework for retro styling
 - **Fonts**: Press Start 2P, Pixel, other 8-bit fonts
+
+
+CAUTION: NEVER use EMOJIS IN UI

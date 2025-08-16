@@ -20,21 +20,35 @@ class AudioRecorder {
         this.isStreaming = false;
         this.audioChunksBuffer = [];
         
-        // Voice Activity Detection
+        // Voice Activity Detection - Optimized for digit recognition
         this.vadActive = false;
         this.speechStartTime = null;
         this.silenceFrames = 0;
         this.speechFrames = 0;
-        this.minSpeechFrames = 5;
-        this.minSilenceFrames = 10;
-        this.energyThreshold = 0.02;
-        this.vadCheckInterval = 100; // Check every 100ms
+        this.minSpeechFrames = 3;     // Reduced for faster detection (300ms)
+        this.minSilenceFrames = 15;   // Increased for longer speech collection (1.5s)
+        this.energyThreshold = 0.015; // Lower threshold for better digit detection
+        this.vadCheckInterval = 100;   // Check every 100ms
+        
+        // Audio collection settings for better digit recognition
+        this.minChunkDuration = 500;   // Minimum 500ms chunks
+        this.maxChunkDuration = 2000;  // Maximum 2s chunks
         
         this.onDataAvailable = null;
         this.onRecordingStart = null;
         this.onRecordingStop = null;
         this.onError = null;
         this.onChunkReady = null; // New callback for streaming chunks
+        this.onVADResult = null; // Callback for VAD processing results
+        this.onDigitDetected = null; // Callback for digit detection results
+        
+        // WebRTC VAD integration
+        this.useWebRTCVAD = true; // Use backend WebRTC VAD instead of simple energy VAD
+        this.streamingMethod = 'faster_whisper'; // Default method for streaming processing (try faster-whisper first)
+        this.vadProcessingActive = false;
+        
+        // Session management
+        this.sessionId = null;
         
         // Bind methods
         this.startRecording = this.startRecording.bind(this);
@@ -105,8 +119,8 @@ class AudioRecorder {
                 if (this.onError) this.onError(event.error);
             });
             
-            // Start recording with streaming chunks
-            this.mediaRecorder.start(100); // Collect data every 100ms for continuous streaming
+            // Start recording with streaming chunks optimized for speech
+            this.mediaRecorder.start(200); // Collect data every 200ms for better speech segments
             
         } catch (error) {
             console.error('Failed to start recording:', error);
@@ -345,14 +359,36 @@ class AudioRecorder {
             
             // End of speech detected
             if (this.vadActive && this.silenceFrames >= this.minSilenceFrames) {
-                console.log('Speech ended - processing segment...');
-                this.processSpeechSegment();
+                const speechDuration = this.speechStartTime ? Date.now() - this.speechStartTime : 0;
+                
+                // Only process if we have collected enough speech
+                if (speechDuration >= this.minChunkDuration) {
+                    console.log('Speech ended - processing segment...');
+                    this.processSpeechSegment();
+                } else {
+                    console.log(`Speech segment too short (${speechDuration}ms), ignoring...`);
+                }
                 
                 // Reset for next speech segment
                 this.vadActive = false;
                 this.speechFrames = 0;
                 this.silenceFrames = 0;
                 this.speechStartTime = null;
+            }
+            
+            // Force processing if speech is too long
+            if (this.vadActive && this.speechStartTime) {
+                const speechDuration = Date.now() - this.speechStartTime;
+                if (speechDuration >= this.maxChunkDuration) {
+                    console.log('Speech segment reached maximum duration, force processing...');
+                    this.processSpeechSegment();
+                    
+                    // Reset for next speech segment
+                    this.vadActive = false;
+                    this.speechFrames = 0;
+                    this.silenceFrames = 0;
+                    this.speechStartTime = null;
+                }
             }
         }
     }
@@ -369,7 +405,7 @@ class AudioRecorder {
     }
     
     /**
-     * Process detected speech segment
+     * Process detected speech segment with WebRTC VAD
      */
     async processSpeechSegment() {
         if (this.audioChunksBuffer.length === 0) return;
@@ -380,8 +416,8 @@ class AudioRecorder {
                 type: this.getSupportedMimeType() 
             });
             
-            // Only process if we have enough audio data
-            if (speechBlob.size < 500) { // Skip very small segments
+            // Check minimum size but be more lenient
+            if (speechBlob.size < 2000) { // Require at least 2KB for meaningful audio
                 console.log('Skipping small speech segment:', speechBlob.size, 'bytes');
                 return;
             }
@@ -389,25 +425,122 @@ class AudioRecorder {
             const speechDuration = this.speechStartTime ? Date.now() - this.speechStartTime : 1000;
             console.log(`Processing speech segment: ${speechBlob.size} bytes, ${speechDuration}ms duration`);
             
-            // Try to convert to proper WAV format
-            let processedBlob;
-            try {
-                // First try proper audio decoding and WAV conversion
-                processedBlob = await this.convertToWAV(speechBlob);
-                console.log('Speech segment WAV conversion successful');
-            } catch (error) {
-                console.warn('Speech segment WAV conversion failed, sending original format:', error.message);
-                // Send original blob and let server handle conversion
-                processedBlob = speechBlob;
-            }
-            
-            // Notify about new speech segment
-            if (this.onChunkReady) {
-                this.onChunkReady(processedBlob, speechDuration);
+            // Choose processing method based on configuration
+            if (this.useWebRTCVAD) {
+                await this.processWithBackendVAD(speechBlob, speechDuration);
+            } else {
+                // Use original frontend processing
+                await this.processWithFrontendVAD(speechBlob, speechDuration);
             }
             
         } catch (error) {
             console.error('Error processing speech segment:', error);
+        }
+    }
+    
+    /**
+     * Process audio chunk using backend WebRTC VAD
+     */
+    async processWithBackendVAD(audioBlob, duration) {
+        try {
+            // Prepare form data for backend processing
+            const formData = new FormData();
+            formData.append('audio', audioBlob, 'audio_chunk.webm');
+            formData.append('method', this.streamingMethod);
+            
+            // Add session ID if available
+            if (this.sessionId) {
+                formData.append('session_id', this.sessionId);
+            }
+            
+            this.vadProcessingActive = true;
+            
+            // Send to backend VAD processing endpoint
+            const response = await fetch('/process_audio_chunk', {
+                method: 'POST',
+                body: formData
+            });
+            
+            if (!response.ok) {
+                throw new Error(`Backend VAD processing failed: ${response.status}`);
+            }
+            
+            const result = await response.json();
+            
+            console.log('Backend VAD processing result:', result);
+            
+            // Log detailed processing info
+            if (result.has_fallback) {
+                console.log('🔄 Fallback processing was used (VAD detected no speech)');
+            }
+            if (result.segments_detected > 0) {
+                console.log(`📊 VAD detected ${result.segments_detected} speech segments`);
+            }
+            if (result.total_results > 0) {
+                console.log(`✅ Generated ${result.total_results} prediction results`);
+            }
+            
+            // Handle VAD results
+            if (this.onVADResult) {
+                this.onVADResult(result);
+            }
+            
+            // Handle digit detection results
+            if (result.results && result.results.length > 0) {
+                for (const segmentResult of result.results) {
+                    if (segmentResult.predicted_digit && segmentResult.success) {
+                        console.log(`Digit detected: ${segmentResult.predicted_digit}`);
+                        
+                        // Add session information to the result
+                        const enhancedResult = {
+                            ...segmentResult,
+                            chunks_saved: result.chunks_saved || 0,
+                            session_id: result.session_id || this.sessionId
+                        };
+                        
+                        if (this.onDigitDetected) {
+                            this.onDigitDetected(enhancedResult);
+                        }
+                    }
+                }
+            }
+            
+        } catch (error) {
+            console.error('Backend VAD processing error:', error);
+            
+            // Fallback to frontend processing
+            console.log('Falling back to frontend processing...');
+            await this.processWithFrontendVAD(audioBlob, duration);
+            
+        } finally {
+            this.vadProcessingActive = false;
+        }
+    }
+    
+    /**
+     * Process audio chunk using original frontend method
+     */
+    async processWithFrontendVAD(audioBlob, duration) {
+        try {
+            // Try to convert to proper WAV format
+            let processedBlob;
+            try {
+                // First try proper audio decoding and WAV conversion
+                processedBlob = await this.convertToWAV(audioBlob);
+                console.log('Speech segment WAV conversion successful');
+            } catch (error) {
+                console.warn('Speech segment WAV conversion failed, sending original format:', error.message);
+                // Send original blob and let server handle conversion
+                processedBlob = audioBlob;
+            }
+            
+            // Notify about new speech segment
+            if (this.onChunkReady) {
+                this.onChunkReady(processedBlob, duration);
+            }
+            
+        } catch (error) {
+            console.error('Error processing speech segment with frontend VAD:', error);
         }
     }
     
@@ -530,6 +663,78 @@ class AudioRecorder {
             return Date.now() - this.recordingStartTime;
         }
         return this.recordingDuration;
+    }
+    
+    /**
+     * Configure streaming processing method
+     */
+    setStreamingMethod(method) {
+        this.streamingMethod = method;
+        console.log(`Streaming method set to: ${method}`);
+    }
+    
+    /**
+     * Toggle between WebRTC VAD and frontend VAD
+     */
+    setVADMode(useWebRTC) {
+        this.useWebRTCVAD = useWebRTC;
+        console.log(`VAD mode set to: ${useWebRTC ? 'Backend WebRTC' : 'Frontend Energy'}`);
+    }
+    
+    /**
+     * Get current VAD status from backend
+     */
+    async getVADStatus() {
+        try {
+            const response = await fetch('/vad_status');
+            if (response.ok) {
+                const status = await response.json();
+                return status;
+            }
+        } catch (error) {
+            console.error('Error getting VAD status:', error);
+        }
+        return null;
+    }
+    
+    /**
+     * Reset VAD state on backend
+     */
+    async resetVADState() {
+        try {
+            const response = await fetch('/reset_vad', { method: 'POST' });
+            if (response.ok) {
+                const result = await response.json();
+                console.log('VAD state reset:', result.message);
+                return true;
+            }
+        } catch (error) {
+            console.error('Error resetting VAD state:', error);
+        }
+        return false;
+    }
+    
+    /**
+     * Check if VAD processing is currently active
+     */
+    get isVADProcessing() {
+        return this.vadProcessingActive;
+    }
+    
+    /**
+     * Set session ID for audio chunk saving
+     */
+    setSessionId(sessionId) {
+        this.sessionId = sessionId;
+        console.log(`AudioRecorder session ID set to: ${sessionId}`);
+    }
+    
+    /**
+     * Clear session ID
+     */
+    clearSessionId() {
+        this.sessionId = null;
+        console.log('AudioRecorder session ID cleared');
     }
 }
 

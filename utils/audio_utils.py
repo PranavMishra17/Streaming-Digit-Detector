@@ -2,9 +2,125 @@ import numpy as np
 import wave
 import io
 import logging
+import subprocess
+import tempfile
+import os
+from pathlib import Path
 from typing import Tuple, Optional
 
 logger = logging.getLogger(__name__)
+
+def check_ffmpeg_available() -> bool:
+    """Check if ffmpeg is available on the system."""
+    try:
+        result = subprocess.run(['ffmpeg', '-version'], 
+                              capture_output=True, 
+                              text=True, 
+                              timeout=5)
+        return result.returncode == 0
+    except (subprocess.SubprocessError, FileNotFoundError, subprocess.TimeoutExpired):
+        return False
+
+def convert_with_ffmpeg(audio_data: bytes, target_sr: int = 8000, target_format: str = 'wav') -> Optional[bytes]:
+    """
+    Convert audio using ffmpeg for high-quality format conversion.
+    
+    Args:
+        audio_data: Input audio bytes in any format
+        target_sr: Target sampling rate (default: 8000 Hz for ML models)
+        target_format: Target audio format (default: wav)
+        
+    Returns:
+        Converted audio bytes or None if conversion fails
+    """
+    if not check_ffmpeg_available():
+        logger.warning("ffmpeg not available for audio conversion")
+        return None
+    
+    temp_input = None
+    temp_output = None
+    
+    try:
+        # Create temporary files
+        with tempfile.NamedTemporaryFile(suffix='.input', delete=False) as temp_input:
+            temp_input.write(audio_data)
+            temp_input.flush()
+            
+        with tempfile.NamedTemporaryFile(suffix=f'.{target_format}', delete=False) as temp_output:
+            pass  # Just need the filename
+        
+        # Build ffmpeg command for high-quality conversion
+        ffmpeg_cmd = [
+            'ffmpeg',
+            '-i', temp_input.name,
+            '-ar', str(target_sr),          # Resample to target sample rate
+            '-ac', '1',                     # Convert to mono
+            '-acodec', 'pcm_s16le',         # 16-bit PCM (standard for ML)
+            '-f', target_format,            # Output format
+            '-loglevel', 'error',           # Reduce ffmpeg output
+            '-y',                           # Overwrite output
+            temp_output.name
+        ]
+        
+        logger.debug(f"Running ffmpeg conversion: {' '.join(ffmpeg_cmd)}")
+        
+        # Run ffmpeg conversion
+        result = subprocess.run(ffmpeg_cmd, 
+                              capture_output=True, 
+                              text=True,
+                              timeout=30)
+        
+        if result.returncode == 0:
+            # Read converted audio
+            with open(temp_output.name, 'rb') as f:
+                converted_audio = f.read()
+            
+            logger.debug(f"ffmpeg conversion successful: "
+                        f"{len(audio_data)} -> {len(converted_audio)} bytes "
+                        f"({target_sr}Hz, mono, {target_format})")
+            
+            return converted_audio
+        else:
+            logger.error(f"ffmpeg conversion failed: {result.stderr}")
+            return None
+            
+    except Exception as e:
+        logger.error(f"ffmpeg conversion error: {str(e)}")
+        return None
+        
+    finally:
+        # Clean up temporary files
+        try:
+            if temp_input and os.path.exists(temp_input.name):
+                os.unlink(temp_input.name)
+            if temp_output and os.path.exists(temp_output.name):
+                os.unlink(temp_output.name)
+        except Exception as cleanup_error:
+            logger.warning(f"Failed to cleanup temp files: {cleanup_error}")
+
+def convert_for_ml_models(audio_data: bytes, pipeline_type: str = 'mfcc') -> bytes:
+    """
+    Convert audio specifically for ML model requirements.
+    
+    Args:
+        audio_data: Input audio bytes
+        pipeline_type: ML pipeline type ('mfcc', 'mel_cnn', 'raw_cnn')
+        
+    Returns:
+        Audio bytes optimized for the specific ML model
+    """
+    # All our ML models expect 8kHz, mono, 16-bit PCM
+    target_sr = 8000
+    
+    # Try ffmpeg first for best quality
+    converted = convert_with_ffmpeg(audio_data, target_sr=target_sr)
+    if converted:
+        logger.debug(f"Used ffmpeg for {pipeline_type} model audio conversion")
+        return converted
+    
+    # Fallback to existing conversion methods
+    logger.debug(f"Using fallback audio conversion for {pipeline_type} model")
+    return convert_audio_format(audio_data)
 
 def validate_audio_format(audio_data: bytes) -> bool:
     """
