@@ -113,7 +113,10 @@ The Streaming Digit Classifier is a comprehensive web application that demonstra
 | **MFCC + Dense NN** | **98.52%** | ~8.4s | ~85K | ~0.3MB | **~1-2ms** |
 | **Mel CNN** | **97.22%** | ~53.2s | ~675K | ~2.6MB | **~3-5ms** |
 | **Raw CNN** | **91.30%** | ~67.7s | ~675K | ~2.6MB | **~5-8ms** |
-| **Wav2Vec2 API** | Variable | Pre-trained | ~95M | External | **~1-3s** |
+| **Wav2Vec2 API** | N/A | Pre-trained | ~95M | External | **~1-3s** |
+
+
+> *System Specs: NVIDIA GeForce RTX 3060 Laptop GPU • 16GB RAM • Intel i7-11800H @ 2.30GHz*
 
 ### 1. MFCC + Dense Neural Network (Best Performance)
 
@@ -590,7 +593,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 **Developed by:**
 
-**Pranav Mishra**
+## Pranav Mishra
 
 [![GitHub](https://img.shields.io/badge/-GitHub-181717?style=flat-square&logo=github)](https://github.com/PranavMishra17)
 [![Portfolio](https://img.shields.io/badge/-Portfolio-000?style=flat-square&logo=vercel)](https://portfolio-pranav-mishra-paranoid.vercel.app)
@@ -609,3 +612,5 @@ pip install -r requirements.txt
 python app.py
 # Navigate to http://localhost:5000 and start speaking digits!
 ```
+
+![Footer](static/foot.png)
