@@ -121,6 +121,8 @@ class MLMFCCProcessor(AudioProcessor):
             # Convert audio bytes to numpy array
             audio_array = self._bytes_to_audio_array(optimized_audio)
             
+            # No audio preprocessing needed - normalization happens at feature level in ML pipeline
+            
             # Make prediction using ML classifier
             start_time = time.time()
             result = self.classifier.predict(
@@ -182,6 +184,8 @@ class MLMFCCProcessor(AudioProcessor):
             
             # Convert audio bytes to numpy array
             audio_array = self._bytes_to_audio_array(optimized_audio)
+            
+            # No audio preprocessing needed - normalization happens at feature level in ML pipeline
             
             # Make prediction using ML classifier
             start_time = time.time()
@@ -256,6 +260,57 @@ class MLMFCCProcessor(AudioProcessor):
             logger.error(f"Failed to convert audio bytes to array: {str(e)}")
             # Return a small zero array as fallback
             return np.zeros(1000, dtype=np.float32)
+    
+    def _preprocess_audio_for_mfcc(self, audio_array: np.ndarray) -> np.ndarray:
+        """
+        Apply MFCC-specific audio preprocessing to improve model performance.
+        This compensates for missing scaler normalization.
+        
+        Args:
+            audio_array: Raw audio array
+            
+        Returns:
+            preprocessed_audio: Audio array optimized for MFCC feature extraction
+        """
+        try:
+            # Remove DC component
+            audio_array = audio_array - np.mean(audio_array)
+            
+            # Apply gentle normalization to handle volume variations
+            # This helps compensate for the missing feature scaler
+            max_val = np.max(np.abs(audio_array))
+            if max_val > 0:
+                audio_array = audio_array / max_val * 0.7  # Scale to 70% of max to avoid clipping
+            
+            # Apply a gentle high-pass filter to remove low-frequency noise
+            # This improves MFCC feature quality
+            from scipy import signal
+            if len(audio_array) > 100:  # Only apply if we have enough samples
+                # Simple high-pass filter at ~300Hz for 8kHz sample rate
+                sos = signal.butter(2, 300, btype='high', fs=8000, output='sos')
+                audio_array = signal.sosfilt(sos, audio_array)
+            
+            # Ensure we don't have any NaN or inf values
+            audio_array = np.nan_to_num(audio_array, nan=0.0, posinf=0.0, neginf=0.0)
+            
+            logger.debug(f"MFCC preprocessing applied: range=[{np.min(audio_array):.3f}, {np.max(audio_array):.3f}], "
+                        f"mean={np.mean(audio_array):.3f}, std={np.std(audio_array):.3f}")
+            
+            return audio_array
+            
+        except ImportError:
+            # Fallback if scipy is not available - just normalize
+            logger.warning("Scipy not available, using basic normalization")
+            audio_array = audio_array - np.mean(audio_array)
+            max_val = np.max(np.abs(audio_array))
+            if max_val > 0:
+                audio_array = audio_array / max_val * 0.7
+            return audio_array
+            
+        except Exception as e:
+            logger.error(f"MFCC preprocessing failed: {str(e)}")
+            # Return original array if preprocessing fails
+            return audio_array
     
     def get_stats(self) -> Dict[str, Any]:
         """Get processor performance statistics."""

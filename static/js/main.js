@@ -10,36 +10,21 @@ class AudioDigitApp {
         this.audioVisualizer = null;
         this.noiseGenerator = null;
         
-        // UI elements
+        // UI elements (only existing ones after redesign)
         this.elements = {
             startRecording: document.getElementById('startRecording'),
             stopRecording: document.getElementById('stopRecording'),
             clearCanvas: document.getElementById('clearCanvas'),
-            processAudio: document.getElementById('processAudio'),
-            getStats: document.getElementById('getStats'),
-            testConnection: document.getElementById('testConnection'),
             
             // Status displays
             recordingStatus: document.getElementById('recordingStatus'),
             audioInfo: document.getElementById('audioInfo'),
-            predictedDigit: document.getElementById('predictedDigit'),
-            methodUsed: document.getElementById('methodUsed'),
-            inferenceTime: document.getElementById('inferenceTime'),
-            audioDuration: document.getElementById('audioDuration'),
-            averageTime: document.getElementById('averageTime'),
             
             // Performance stats
             totalPredictions: document.getElementById('totalPredictions'),
             fastestMethod: document.getElementById('fastestMethod'),
             successRate: document.getElementById('successRate'),
-            
-            // Noise controls
-            noiseType: document.getElementById('noiseType'),
-            noiseLevel: document.getElementById('noiseLevel'),
-            noiseLevelValue: document.getElementById('noiseLevelValue'),
-            
-            // Log
-            activityLog: document.getElementById('activityLog'),
+            sessionTime: document.getElementById('sessionTime'),
             
             // Canvas
             audioCanvas: document.getElementById('audioCanvas')
@@ -50,7 +35,7 @@ class AudioDigitApp {
             isRecording: false,
             hasRecordedAudio: false,
             currentAudioBlob: null,
-            selectedMethod: 'external_api',
+            selectedMethod: 'ml_mfcc',
             totalPredictions: 0,
             methodStats: {},
             sessionStartTime: Date.now(),
@@ -330,35 +315,24 @@ class AudioDigitApp {
         this.elements.stopRecording.addEventListener('click', () => this.stopRecording());
         this.elements.clearCanvas.addEventListener('click', () => this.clearVisualization());
         
-        // Processing controls
-        this.elements.processAudio.addEventListener('click', () => this.processAudio());
-        this.elements.getStats.addEventListener('click', () => this.showStats());
-        this.elements.testConnection.addEventListener('click', () => this.testAPIConnection());
+        // Processing controls - removed (now handled automatically by VAD)
         
-        // Method selection with lazy loading
-        const methodRadios = document.querySelectorAll('input[name=\"method\"]');
-        methodRadios.forEach(radio => {
-            radio.addEventListener('change', (e) => {
-                if (e.target.checked) {
-                    this.state.selectedMethod = e.target.value;
-                    this.updateMethodSelection();
-                    this.initializeSelectedMethod(e.target.value);
-                    addLogEntry(`[INFO] Selected method: ${this.getMethodName(e.target.value)}`, 'info');
-                }
-            });
-        });
-        
-        // Noise controls
-        this.elements.noiseLevel.addEventListener('input', (e) => {
-            this.elements.noiseLevelValue.textContent = e.target.value;
-        });
-        
-        this.elements.noiseType.addEventListener('change', (e) => {
-            const noiseType = e.target.value;
-            if (noiseType !== 'none') {
-                addLogEntry(`[INFO] Noise injection enabled: ${noiseType}`, 'info');
+        // Method selection - Override the global selectMethod function
+        window.originalSelectMethod = window.selectMethod;
+        window.selectMethod = (methodName) => {
+            // Call original UI function
+            if (window.originalSelectMethod) {
+                window.originalSelectMethod(methodName);
             }
-        });
+            
+            // Update application state
+            this.state.selectedMethod = methodName;
+            this.updateMethodSelection();
+            this.initializeSelectedMethod(methodName);
+            addLogEntry(`[INFO] Selected method: ${this.getMethodName(methodName)}`, 'info');
+        };
+        
+        // Noise controls are now in popup - handled by HTML functions
         
         // Keyboard shortcuts
         document.addEventListener('keydown', (e) => {
@@ -493,6 +467,11 @@ class AudioDigitApp {
         
         this.audioRecorder.stopListening();
         this.audioVisualizer.stop();
+        
+        // Update state and UI
+        this.state.isRecording = false;
+        this.updateRecordingState();
+        addLogEntry('[INFO] Recording stopped manually', 'info');
     }
     
     /**
@@ -522,9 +501,9 @@ class AudioDigitApp {
         }
         
         try {
-            // Apply noise if configured
-            const noiseType = this.elements.noiseType.value;
-            const noiseLevel = parseFloat(this.elements.noiseLevel.value);
+            // Apply noise if configured (from popup)
+            const noiseType = document.getElementById('noiseType')?.value || 'none';
+            const noiseLevel = parseFloat(document.getElementById('noiseLevel')?.value || '0');
             
             let processedBlob = audioBlob;
             if (noiseType !== 'none' && noiseLevel > 0) {
@@ -591,13 +570,12 @@ class AudioDigitApp {
         
         try {
             // Update UI for processing state
-            this.elements.processAudio.textContent = 'Processing...';
-            this.elements.processAudio.disabled = true;
+            console.log('Processing audio...');
             
-            // Apply noise if configured
+            // Apply noise if configured (from popup)
             let audioBlob = this.state.currentAudioBlob;
-            const noiseType = this.elements.noiseType.value;
-            const noiseLevel = parseFloat(this.elements.noiseLevel.value);
+            const noiseType = document.getElementById('noiseType')?.value || 'none';
+            const noiseLevel = parseFloat(document.getElementById('noiseLevel')?.value || '0');
             
             if (noiseType !== 'none' && noiseLevel > 0) {
                 addLogEntry(`[INFO] Applying ${noiseType} noise (level: ${noiseLevel})`, 'info');
@@ -640,9 +618,8 @@ class AudioDigitApp {
             this.elements.predictedDigit.style.color = '#ff0000';
             
         } finally {
-            // Reset processing button
-            this.elements.processAudio.textContent = 'Analyze Audio';
-            this.elements.processAudio.disabled = false;
+            // Processing complete
+            console.log('Audio processing finished');
         }
     }
     
@@ -650,24 +627,43 @@ class AudioDigitApp {
      * Display streaming result (non-intrusive)
      */
     displayStreamingResult(result) {
-        // Update prediction with streaming indicator
-        this.elements.predictedDigit.textContent = result.predicted_digit;
-        this.elements.predictedDigit.style.color = result.predicted_digit === 'ERROR' ? '#ff0000' : '#ffe66d';
+        // Debug logging to see what we're getting
+        console.log('Streaming result received:', {
+            method: result.method,
+            selectedMethod: this.state.selectedMethod,
+            predicted_digit: result.predicted_digit,
+            confidence: result.confidence,
+            confidence_score: result.confidence_score,
+            inference_time: result.inference_time
+        });
         
-        // Update method and timing info
-        this.elements.methodUsed.textContent = this.getMethodName(result.method);
-        this.elements.inferenceTime.textContent = `${result.inference_time}s`;
-        if (result.audio_duration) {
-            this.elements.audioDuration.textContent = `${result.audio_duration}s`;
+        // Normalize the result object to ensure consistent field names
+        const normalizedResult = {
+            predicted_digit: result.predicted_digit,
+            confidence: result.confidence_score || result.confidence, // Try both field names
+            inference_time: result.inference_time,
+            method: result.method || this.state.selectedMethod
+        };
+        
+        console.log('Normalized result:', normalizedResult);
+        
+        // Use the new UI's method-specific display for streaming results
+        if (typeof window.updatePredictionDisplay === 'function') {
+            window.updatePredictionDisplay(normalizedResult.method, normalizedResult);
         }
-        if (result.average_time) {
-            this.elements.averageTime.textContent = `${result.average_time}s`;
+        
+        // Update session info if available
+        if (result.session_id) {
+            this.state.sessionId = result.session_id;
+        }
+        if (result.chunks_saved) {
+            this.state.chunksRecorded = result.chunks_saved;
         }
         
         // Brief visual feedback for method cabinet
-        this.updateCabinetStatus(result.method, 'working');
+        this.updateCabinetStatus(normalizedResult.method, 'working');
         setTimeout(() => {
-            this.updateCabinetStatus(result.method, 'ready');
+            this.updateCabinetStatus(normalizedResult.method, 'ready');
         }, 1000);
     }
     
@@ -675,21 +671,32 @@ class AudioDigitApp {
      * Display processing results in UI
      */
     displayResults(result) {
-        // Main prediction
-        this.elements.predictedDigit.textContent = result.predicted_digit;
-        this.elements.predictedDigit.style.color = result.predicted_digit === 'ERROR' ? '#ff0000' : '#ffe66d';
+        // Normalize the result object to ensure consistent field names
+        const normalizedResult = {
+            predicted_digit: result.predicted_digit,
+            confidence: result.confidence_score || result.confidence, // Try both field names
+            inference_time: result.inference_time,
+            method: result.method || this.state.selectedMethod
+        };
         
-        // Stats
-        this.elements.methodUsed.textContent = this.getMethodName(result.method);
-        this.elements.inferenceTime.textContent = `${result.inference_time}s`;
-        this.elements.audioDuration.textContent = `${result.audio_duration}s`;
-        this.elements.averageTime.textContent = `${result.average_time || result.inference_time}s`;
+        // Use the new UI's method-specific display
+        if (typeof window.updatePredictionDisplay === 'function') {
+            window.updatePredictionDisplay(normalizedResult.method, normalizedResult);
+        }
+        
+        // Update session info if available
+        if (result.session_id) {
+            this.state.sessionId = result.session_id;
+        }
+        if (result.chunks_saved) {
+            this.state.chunksRecorded = result.chunks_saved;
+        }
         
         // Visual feedback for method cabinet
-        this.updateCabinetStatus(result.method, result.success !== false ? 'working' : 'error');
+        this.updateCabinetStatus(normalizedResult.method, result.success !== false ? 'working' : 'error');
         
         setTimeout(() => {
-            this.updateCabinetStatus(result.method, 'ready');
+            this.updateCabinetStatus(normalizedResult.method, 'ready');
         }, 2000);
     }
     
@@ -874,15 +881,13 @@ class AudioDigitApp {
      * Update UI state based on application state
      */
     updateUIState() {
-        // Enable/disable process button
-        this.elements.processAudio.disabled = !this.state.hasRecordedAudio;
-        
-        // Update button text based on state
-        if (this.state.hasRecordedAudio) {
-            this.elements.processAudio.classList.remove('btn-disabled');
-        } else {
-            this.elements.processAudio.classList.add('btn-disabled');
-        }
+        // UI state is now managed by the new method cabinet system
+        // No need to enable/disable buttons since audio is processed automatically
+        console.log('UI state updated:', {
+            hasRecordedAudio: this.state.hasRecordedAudio,
+            isRecording: this.state.isRecording,
+            selectedMethod: this.state.selectedMethod
+        });
     }
     
     /**

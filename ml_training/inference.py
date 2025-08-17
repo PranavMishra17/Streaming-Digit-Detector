@@ -241,6 +241,10 @@ class DigitClassifier:
             # Apply scaling if available
             if self.scaler is not None:
                 features = self.scaler.transform([features])[0]
+            else:
+                # Apply feature-level normalization as fallback (same as training would have done)
+                logger.warning("No scaler available - applying manual MFCC feature normalization")
+                features = (features - np.mean(features)) / (np.std(features) + 1e-8)
             
             # Convert to tensor
             input_tensor = torch.FloatTensor(features).unsqueeze(0).to(self.device)

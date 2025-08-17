@@ -125,7 +125,7 @@ class Wav2Vec2Processor(AudioProcessor):
             'one': '1', 'won': '1',
             'two': '2', 'to': '2', 'too': '2',
             'three': '3', 'tree': '3',
-            'four': '4', 'for': '4', 'fore': '4',
+            'four': '4', 'for': '4', 'fore': '4', 'full': '4',  # "full" often misheard as "four"
             'five': '5',
             'six': '6', 'sick': '6',
             'seven': '7',

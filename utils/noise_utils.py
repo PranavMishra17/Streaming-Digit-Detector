@@ -6,7 +6,7 @@ from typing import Literal, Optional
 
 logger = logging.getLogger(__name__)
 
-NoiseType = Literal['white', 'pink', 'brown', 'background', 'speech']
+NoiseType = Literal['white', 'pink', 'brown', 'gaussian', 'background', 'speech']
 
 class NoiseGenerator:
     """
@@ -92,6 +92,23 @@ class NoiseGenerator:
         brown = brown / np.std(brown) * amplitude
         return brown.astype(np.float32)
     
+    def generate_gaussian_noise(self, duration: float, sample_rate: int = 16000, 
+                               amplitude: float = 0.1) -> np.ndarray:
+        """
+        Generate Gaussian (normal distribution) noise.
+        
+        Args:
+            duration: Duration in seconds
+            sample_rate: Sample rate in Hz
+            amplitude: Noise amplitude (standard deviation)
+            
+        Returns:
+            Numpy array of Gaussian noise
+        """
+        samples = int(duration * sample_rate)
+        noise = np.random.normal(0, amplitude, samples)
+        return noise.astype(np.float32)
+    
     def generate_background_noise(self, duration: float, sample_rate: int = 16000, 
                                 amplitude: float = 0.05) -> np.ndarray:
         """
@@ -163,6 +180,8 @@ class NoiseGenerator:
                             noise = self.generate_pink_noise(duration, sample_rate, noise_level)
                         elif noise_type == 'brown':
                             noise = self.generate_brown_noise(duration, sample_rate, noise_level)
+                        elif noise_type == 'gaussian':
+                            noise = self.generate_gaussian_noise(duration, sample_rate, noise_level)
                         elif noise_type == 'background':
                             noise = self.generate_background_noise(duration, sample_rate, noise_level)
                         else:
@@ -188,6 +207,8 @@ class NoiseGenerator:
                         noise = self.generate_pink_noise(duration, sample_rate, noise_level)
                     elif noise_type == 'brown':
                         noise = self.generate_brown_noise(duration, sample_rate, noise_level)
+                    elif noise_type == 'gaussian':
+                        noise = self.generate_gaussian_noise(duration, sample_rate, noise_level)
                     elif noise_type == 'background':
                         noise = self.generate_background_noise(duration, sample_rate, noise_level)
                     else:
@@ -243,6 +264,8 @@ class NoiseGenerator:
                 noise = self.generate_pink_noise(duration, sample_rate, amplitude)
             elif noise_type == 'brown':
                 noise = self.generate_brown_noise(duration, sample_rate, amplitude)
+            elif noise_type == 'gaussian':
+                noise = self.generate_gaussian_noise(duration, sample_rate, amplitude)
             elif noise_type == 'background':
                 noise = self.generate_background_noise(duration, sample_rate, amplitude)
             else:

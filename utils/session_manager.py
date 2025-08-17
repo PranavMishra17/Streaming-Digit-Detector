@@ -251,7 +251,7 @@ class AudioSession:
             self.metadata['chunk_count'] = self.chunk_count
             self._save_metadata()
             
-            logger.info(f"💾 Saved audio chunk {self.chunk_count}: {chunk_path}")
+            logger.info(f"Saved audio chunk {self.chunk_count}: {chunk_path}")
             return str(chunk_path)
             
         except Exception as e:

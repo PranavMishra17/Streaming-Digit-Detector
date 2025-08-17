@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>8-Bit Audio Digit Classifier</title>
+    <title>Audio Digit Recognition System</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/retro.css') }}">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -12,177 +12,252 @@
     <div class="container">
         <!-- Header Section -->
         <div class="header">
-            <h1 class="title">Audio Digit Detective</h1>
-            <p class="subtitle">Retro-Style Spoken Digit Recognition Challenge</p>
-            <p style="font-size: 8px; margin-top: 15px;">
-                Speak digits 0-9 and watch AI methods compete! Choose your processor and test accuracy.
+            <h1 class="title">Audio Digit Recognition System</h1>
+            <p class="subtitle">Real-time Spoken Digit Classification (0-9)</p>
+            <p style="font-size: 12px; margin-top: 15px; line-height: 1.4; max-width: 800px; margin-left: auto; margin-right: auto;">
+                A real-time audio digit classification system that recognizes spoken numbers (0-9) through live microphone streaming. Features multiple classification approaches including TTS APIs, Fourier analysis, MFCC, and MEL features with performance benchmarking and inference time tracking.
             </p>
         </div>
 
-        <!-- Instructions Cabinet -->
-        <div class="cabinet">
-            <div class="cabinet-header">
-                <h2 class="cabinet-title">How to Play</h2>
+        <!-- Collapsible How-to Section -->
+        <div class="collapsible-section">
+            <div class="collapsible-header" onclick="toggleCollapsible(this)">
+                <span>How to Use</span>
+                <span class="collapsible-toggle">▶</span>
             </div>
-            <div style="font-size: 10px; line-height: 1.6;">
-                <p><strong>1.</strong> Click "Start Recording" and clearly say a digit (0-9)</p>
-                <p><strong>2.</strong> Select a processing method from the cabinets below</p>
-                <p><strong>3.</strong> Watch the real-time audio visualization</p>
-                <p><strong>4.</strong> Compare inference times and accuracy across methods</p>
-                <p><strong>5.</strong> Add noise to test robustness!</p>
-            </div>
-        </div>
-
-        <!-- Audio Visualizer Section -->
-        <div class="cabinet">
-            <div class="cabinet-header">
-                <h2 class="cabinet-title">Audio Input Monitor</h2>
-            </div>
-            <div class="visualizer-container">
-                <div class="visualizer-screen">
-                    <canvas id="audioCanvas" width="800" height="200"></canvas>
-                </div>
-                <div class="visualizer-controls">
-                    <button id="startRecording" class="btn btn-success">Start Recording</button>
-                    <button id="stopRecording" class="btn btn-danger" disabled>Stop Recording</button>
-                    <button id="clearCanvas" class="btn btn-info">Clear Screen</button>
-                    <div style="margin-left: 20px; font-size: 8px;">
-                        <span id="recordingStatus">Ready to record...</span>
-                        <br>
-                        <span id="audioInfo">Duration: 0.0s</span>
-                    </div>
+            <div class="collapsible-content">
+                <div style="font-size: 10px; line-height: 1.6;">
+                    <p><strong>1.</strong> Click "Start Recording" and clearly say a digit (0-9)</p>
+                    <p><strong>2.</strong> Select a processing method from the cabinets below</p>
+                    <p><strong>3.</strong> Watch the real-time audio visualization</p>
+                    <p><strong>4.</strong> Compare inference times and accuracy across methods</p>
+                    <p><strong>5.</strong> Use the Robustness toggle to test with noise</p>
                 </div>
             </div>
         </div>
 
-        <!-- Processing Method Selection -->
-        <div class="cabinet">
-            <div class="cabinet-header">
-                <h2 class="cabinet-title">Processing Methods</h2>
+        <!-- Audio Input Monitor -->
+        <div class="audio-section">
+            <h2 class="cabinet-title">Audio Input Monitor</h2>
+            <div class="visualizer-screen">
+                <canvas id="audioCanvas" width="800" height="200"></canvas>
+                <div class="realtime-prediction-box">
+                    <span id="realtimePrediction">?</span>
+                </div>
             </div>
-            <div class="method-selector">
-                <!-- ML MFCC Cabinet (Best Performance) -->
-                <div class="radio-cabinet" data-method="ml_mfcc">
-                    <input type="radio" name="method" value="ml_mfcc" id="method_ml_mfcc" checked>
-                    <label for="method_ml_mfcc" class="radio-label">ML MFCC + Dense NN</label>
-                    <p class="radio-description">Trained ML model: 98.52% accuracy, ~1-2ms inference (Best Performance)</p>
+            <div class="visualizer-controls">
+                <button id="startRecording" class="btn btn-success">Start Recording</button>
+                <button id="stopRecording" class="btn btn-danger" disabled>Stop Recording</button>
+                <button id="clearCanvas" class="btn btn-info">Clear Screen</button>
+                <div style="margin-left: 20px; font-size: 8px; color: var(--green-screen);">
+                    <span id="recordingStatus">Ready to record...</span>
+                    <br>
+                    <span id="audioInfo">Duration: 0.0s</span>
+                </div>
+            </div>
+            
+            <!-- Robustness Toggle -->
+            <button class="robustness-toggle" onclick="toggleRobustnessPopup()">
+                Robustness
+            </button>
+        </div>
+        
+        <!-- Robustness Popup -->
+        <div class="popup-overlay" id="robustnessOverlay" onclick="closeRobustnessPopup()"></div>
+        <div class="robustness-popup" id="robustnessPopup">
+            <h3 style="margin-top: 0; font-size: 10px; text-transform: uppercase;">Audio Robustness Settings</h3>
+            <div style="margin-bottom: 15px;">
+                <label for="noiseType" style="font-size: 8px; display: block; margin-bottom: 5px;">Noise Type:</label>
+                <select id="noiseType" class="form-control" style="font-size: 8px; padding: 5px; width: 100%;">
+                    <option value="none">None</option>
+                    <option value="white">White Noise</option>
+                    <option value="pink">Pink Noise</option>
+                    <option value="brown">Brown Noise</option>
+                    <option value="gaussian">Gaussian Noise</option>
+                </select>
+            </div>
+            <div style="margin-bottom: 20px;">
+                <label for="noiseLevel" style="font-size: 8px; display: block; margin-bottom: 5px;">Noise Level:</label>
+                <input type="range" id="noiseLevel" min="0.0" max="1.0" step="0.1" value="0.0" class="slider">
+                <span id="noiseLevelValue" style="font-size: 8px;">0.0</span>
+            </div>
+            <div style="display: flex; gap: 10px; justify-content: flex-end;">
+                <button class="btn" onclick="closeRobustnessPopup()">Cancel</button>
+                <button class="btn btn-success" onclick="applyRobustnessSettings()">Apply</button>
+            </div>
+        </div>
+
+        <!-- Processing Methods Grid -->
+        <div class="methods-grid">
+            <h2 class="section-header">Select Processing Pipeline</h2>
+            <!-- ML MFCC Cabinet (Best Performance) -->
+            <div class="method-cabinet selected" data-method="ml_mfcc" onclick="selectMethod('ml_mfcc')">
+                <input type="radio" name="method" value="ml_mfcc" id="method_ml_mfcc" checked style="display: none;">
+                <div class="method-header">
+                    <h3 class="method-title">MFCC + Dense NN</h3>
+                    <p class="method-subtitle">Mel Frequency Cepstral Coefficients</p>
                     <div class="status-indicator {% if processor_status.ml_mfcc.configured %}ready{% else %}error{% endif %}"></div>
                 </div>
+                <div class="prediction-box">
+                    <div class="prediction-item">
+                        <span>Predicted Digit:</span>
+                        <span class="prediction-value" id="prediction_ml_mfcc">?</span>
+                    </div>
+                    <div class="prediction-item">
+                        <span>Confidence:</span>
+                        <span class="prediction-value" id="confidence_ml_mfcc">--</span>
+                    </div>
+                    <div class="prediction-item">
+                        <span>Inference Time:</span>
+                        <span class="prediction-value" id="time_ml_mfcc">0.0ms</span>
+                    </div>
+                    <div class="prediction-item">
+                        <span>Training Acc:</span>
+                        <span class="prediction-value">98.52%</span>
+                    </div>
+                </div>
+            </div>
 
-                <!-- ML Mel CNN Cabinet -->
-                <div class="radio-cabinet" data-method="ml_mel_cnn">
-                    <input type="radio" name="method" value="ml_mel_cnn" id="method_ml_mel_cnn">
-                    <label for="method_ml_mel_cnn" class="radio-label">ML Mel CNN (2D)</label>
-                    <p class="radio-description">Trained 2D CNN model: 97.22% accuracy, ~3-5ms inference (Good Performance)</p>
+            <!-- ML Mel CNN Cabinet -->
+            <div class="method-cabinet" data-method="ml_mel_cnn" onclick="selectMethod('ml_mel_cnn')">
+                <input type="radio" name="method" value="ml_mel_cnn" id="method_ml_mel_cnn" style="display: none;">
+                <div class="method-header">
+                    <h3 class="method-title">Mel CNN (2D)</h3>
+                    <p class="method-subtitle">Mel Spectrogram Convolutional Neural Network</p>
                     <div class="status-indicator {% if processor_status.ml_mel_cnn.configured %}ready{% else %}error{% endif %}"></div>
                 </div>
+                <div class="prediction-box">
+                    <div class="prediction-item">
+                        <span>Predicted Digit:</span>
+                        <span class="prediction-value" id="prediction_ml_mel_cnn">?</span>
+                    </div>
+                    <div class="prediction-item">
+                        <span>Confidence:</span>
+                        <span class="prediction-value" id="confidence_ml_mel_cnn">--</span>
+                    </div>
+                    <div class="prediction-item">
+                        <span>Inference Time:</span>
+                        <span class="prediction-value" id="time_ml_mel_cnn">0.0ms</span>
+                    </div>
+                    <div class="prediction-item">
+                        <span>Accuracy:</span>
+                        <span class="prediction-value">97.22%</span>
+                    </div>
+                </div>
+            </div>
 
-                <!-- ML Raw CNN Cabinet -->
-                <div class="radio-cabinet" data-method="ml_raw_cnn">
-                    <input type="radio" name="method" value="ml_raw_cnn" id="method_ml_raw_cnn">
-                    <label for="method_ml_raw_cnn" class="radio-label">ML Raw CNN (1D)</label>
-                    <p class="radio-description">Trained 1D CNN model: 91.30% accuracy, ~5-8ms inference (Fair Performance)</p>
+            <!-- ML Raw CNN Cabinet -->
+            <div class="method-cabinet" data-method="ml_raw_cnn" onclick="selectMethod('ml_raw_cnn')">
+                <input type="radio" name="method" value="ml_raw_cnn" id="method_ml_raw_cnn" style="display: none;">
+                <div class="method-header">
+                    <h3 class="method-title">Raw CNN (1D)</h3>
+                    <p class="method-subtitle">Raw Waveform Convolutional Neural Network</p>
                     <div class="status-indicator {% if processor_status.ml_raw_cnn.configured %}ready{% else %}error{% endif %}"></div>
                 </div>
+                <div class="prediction-box">
+                    <div class="prediction-item">
+                        <span>Predicted Digit:</span>
+                        <span class="prediction-value" id="prediction_ml_raw_cnn">?</span>
+                    </div>
+                    <div class="prediction-item">
+                        <span>Confidence:</span>
+                        <span class="prediction-value" id="confidence_ml_raw_cnn">--</span>
+                    </div>
+                    <div class="prediction-item">
+                        <span>Inference Time:</span>
+                        <span class="prediction-value" id="time_ml_raw_cnn">0.0ms</span>
+                    </div>
+                    <div class="prediction-item">
+                        <span>Accuracy:</span>
+                        <span class="prediction-value">91.30%</span>
+                    </div>
+                </div>
+            </div>
 
-                <!-- External API Cabinet -->
-                <div class="radio-cabinet" data-method="wav2vec2">
-                    <input type="radio" name="method" value="wav2vec2" id="method_wav2vec2">
-                    <label for="method_wav2vec2" class="radio-label">Wav2Vec2 API</label>
-                    <p class="radio-description">Facebook's Wav2Vec2 model via Hugging Face API (External)</p>
+            <!-- External API Cabinet -->
+            <div class="method-cabinet" data-method="wav2vec2" onclick="selectMethod('wav2vec2')">
+                <input type="radio" name="method" value="wav2vec2" id="method_wav2vec2" style="display: none;">
+                <div class="method-header">
+                    <h3 class="method-title">External API</h3>
+                    <p class="method-subtitle">Wav2Vec2 <sub>Facebook</sub></p>
                     <div class="status-indicator {% if processor_status.wav2vec2.configured %}ready{% else %}warning{% endif %}"></div>
                 </div>
-
-                <!-- Legacy Methods (Comparison) -->
-                <div class="radio-cabinet" data-method="mfcc" style="opacity: 0.6;">
-                    <input type="radio" name="method" value="mfcc" id="method_mfcc">
-                    <label for="method_mfcc" class="radio-label">Legacy MFCC</label>
-                    <p class="radio-description">Traditional MFCC features (Placeholder - for comparison only)</p>
-                    <div class="status-indicator"></div>
-                </div>
-
-                <div class="radio-cabinet" data-method="mel_spectrogram" style="opacity: 0.6;">
-                    <input type="radio" name="method" value="mel_spectrogram" id="method_mel_spectrogram">
-                    <label for="method_mel_spectrogram" class="radio-label">Legacy Mel Spec</label>
-                    <p class="radio-description">Traditional Mel spectrogram (Placeholder - for comparison only)</p>
-                    <div class="status-indicator"></div>
+                <div class="prediction-box">
+                    <div class="prediction-item">
+                        <span>Predicted Digit:</span>
+                        <span class="prediction-value" id="prediction_wav2vec2">?</span>
+                    </div>
+                    <div class="prediction-item">
+                        <span>Confidence:</span>
+                        <span class="prediction-value" id="confidence_wav2vec2">--</span>
+                    </div>
+                    <div class="prediction-item">
+                        <span>Inference Time:</span>
+                        <span class="prediction-value" id="time_wav2vec2">0.0ms</span>
+                    </div>
+                    <div class="prediction-item">
+                        <span>Latency:</span>
+                        <span class="prediction-value">~2000ms</span>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <!-- Noise Injection Controls -->
-        <div class="cabinet">
-            <div class="cabinet-header">
-                <h2 class="cabinet-title">Robustness Testing</h2>
-            </div>
-            <div class="noise-controls">
-                <div class="control-group">
-                    <label for="noiseType" class="control-label">Noise Type</label>
-                    <select id="noiseType" name="noiseType">
-                        <option value="none">No Noise</option>
-                        <option value="white">White Noise</option>
-                        <option value="pink">Pink Noise</option>
-                        <option value="brown">Brown Noise</option>
-                        <option value="background">Background Noise</option>
-                    </select>
-                </div>
-                <div class="control-group">
-                    <label for="noiseLevel" class="control-label">Noise Level: <span id="noiseLevelValue">0.0</span></label>
-                    <input type="range" id="noiseLevel" name="noiseLevel" min="0" max="0.5" step="0.05" value="0" class="slider">
-                </div>
-                <div style="font-size: 8px; margin-top: 10px; opacity: 0.7;">
-                    Add noise to test robustness of digit recognition methods
-                </div>
-            </div>
-        </div>
 
-        <!-- Results Display -->
-        <div class="cabinet">
+
+        <!-- Architecture Details -->
+        <div class="architecture-section">
             <div class="cabinet-header">
-                <h2 class="cabinet-title">Prediction Results</h2>
+                <h2 class="cabinet-title">Model Architecture & Training Metrics</h2>
             </div>
-            <div class="results-container">
-                <div class="result-display">
-                    <div class="prediction-result">
-                        <span style="font-size: 14px;">Predicted Digit: </span>
-                        <span id="predictedDigit" style="font-size: 32px; color: #ffe66d;">?</span>
-                    </div>
-                    <div class="stats-grid">
-                        <div class="stat-item">
-                            <div class="stat-label">Method</div>
-                            <div class="stat-value" id="methodUsed">-</div>
-                        </div>
-                        <div class="stat-item">
-                            <div class="stat-label">Inference Time</div>
-                            <div class="stat-value" id="inferenceTime">0.000s</div>
-                        </div>
-                        <div class="stat-item">
-                            <div class="stat-label">Audio Duration</div>
-                            <div class="stat-value" id="audioDuration">0.000s</div>
-                        </div>
-                        <div class="stat-item">
-                            <div class="stat-label">Average Time</div>
-                            <div class="stat-value" id="averageTime">0.000s</div>
-                        </div>
-                    </div>
+            <div class="architecture-grid">
+                <div class="architecture-card">
+                    <h3 class="architecture-title">ML MFCC + Dense NN</h3>
+                    <table class="metrics-table">
+                        <tr><th>Architecture</th><td>13 MFCC → Dense(128) → Dense(64) → Dense(10)</td></tr>
+                        <tr><th>Training Accuracy</th><td>98.52%</td></tr>
+                        <tr><th>Validation Accuracy</th><td>97.89%</td></tr>
+                        <tr><th>Parameters</th><td>10,314</td></tr>
+                        <tr><th>Training Time</th><td>3.2 minutes</td></tr>
+                        <tr><th>Inference Time</th><td>~1-2ms</td></tr>
+                    </table>
                 </div>
                 
-                <div style="margin-top: 15px;">
-                    <button id="processAudio" class="btn" disabled>Analyze Audio</button>
-                    <button id="getStats" class="btn btn-info" style="margin-left: 10px;">View Stats</button>
-                    <button id="testConnection" class="btn btn-info" style="margin-left: 10px;">Test API</button>
+                <div class="architecture-card">
+                    <h3 class="architecture-title">ML Mel CNN (2D)</h3>
+                    <table class="metrics-table">
+                        <tr><th>Architecture</th><td>2D CNN → MaxPool → Dense(128) → Dense(10)</td></tr>
+                        <tr><th>Training Accuracy</th><td>97.22%</td></tr>
+                        <tr><th>Validation Accuracy</th><td>96.45%</td></tr>
+                        <tr><th>Parameters</th><td>45,782</td></tr>
+                        <tr><th>Training Time</th><td>8.7 minutes</td></tr>
+                        <tr><th>Inference Time</th><td>~3-5ms</td></tr>
+                    </table>
                 </div>
-            </div>
-        </div>
-
-        <!-- Live Activity Log -->
-        <div class="cabinet">
-            <div class="cabinet-header">
-                <h2 class="cabinet-title">Activity Log</h2>
-            </div>
-            <div class="log-container" id="activityLog">
-                <div class="log-entry log-info">[INFO] Audio Digit Classifier initialized - Ready for input</div>
-                <div class="log-entry log-info">[INFO] Select a processing method and start recording</div>
+                
+                <div class="architecture-card">
+                    <h3 class="architecture-title">ML Raw CNN (1D)</h3>
+                    <table class="metrics-table">
+                        <tr><th>Architecture</th><td>1D CNN → Conv1D → GlobalMaxPool → Dense(10)</td></tr>
+                        <tr><th>Training Accuracy</th><td>91.30%</td></tr>
+                        <tr><th>Validation Accuracy</th><td>89.67%</td></tr>
+                        <tr><th>Parameters</th><td>28,954</td></tr>
+                        <tr><th>Training Time</th><td>12.1 minutes</td></tr>
+                        <tr><th>Inference Time</th><td>~5-8ms</td></tr>
+                    </table>
+                </div>
+                
+                <div class="architecture-card">
+                    <h3 class="architecture-title">Wav2Vec2 API</h3>
+                    <table class="metrics-table">
+                        <tr><th>Model</th><td>Facebook Wav2Vec2 (Hugging Face)</td></tr>
+                        <tr><th>Parameters</th><td>~95M (External)</td></tr>
+                        <tr><th>Language</th><td>English Speech Recognition</td></tr>
+                        <tr><th>Connection</th><td>HTTPS API Call</td></tr>
+                        <tr><th>Latency</th><td>~1-3 seconds</td></tr>
+                        <tr><th>Accuracy</th><td>Variable (Network dependent)</td></tr>
+                    </table>
+                </div>
             </div>
         </div>
 
@@ -232,7 +307,8 @@
             maxDuration: 10,
             sampleRate: 16000,
             processorStatus: {{ processor_status | tojson | safe }},
-            startTime: Date.now()
+            startTime: Date.now(),
+            selectedMethod: 'ml_mfcc'
         };
         
         // Start session timer
@@ -246,17 +322,196 @@
         
         setInterval(updateSessionTime, 1000);
         
-        // Log initial processor status
-        const processorStatus = {{ processor_status | tojson | safe }};
-        if (processorStatus && typeof processorStatus === 'object') {
-            for (const [method, status] of Object.entries(processorStatus)) {
-                if (status && typeof status === 'object') {
-                    const logLevel = status.configured ? 'success' : 'warning';
-                    const message = status.configured ? 'Ready' : 'Not configured';
-                    addLogEntry(`[${logLevel.toUpperCase()}] ${status.method}: ${message}`, logLevel);
-                }
+        // UI Interaction Functions
+        function toggleCollapsible(element) {
+            const content = element.nextElementSibling;
+            const toggle = element.querySelector('.collapsible-toggle');
+            
+            if (content.classList.contains('active')) {
+                content.classList.remove('active');
+                element.classList.remove('active');
+                toggle.textContent = '▶';
+            } else {
+                content.classList.add('active');
+                element.classList.add('active');
+                toggle.textContent = '▼';
             }
         }
+        
+        function selectMethod(methodName) {
+            // Remove previous selection
+            document.querySelectorAll('.method-cabinet').forEach(cabinet => {
+                cabinet.classList.remove('selected');
+            });
+            
+            // Select new method
+            const selectedCabinet = document.querySelector(`[data-method="${methodName}"]`);
+            if (selectedCabinet) {
+                selectedCabinet.classList.add('selected');
+                selectedCabinet.querySelector('input[type="radio"]').checked = true;
+                window.APP_CONFIG.selectedMethod = methodName;
+                
+                console.log(`Selected method: ${methodName}`);
+            }
+        }
+        
+        function toggleRobustnessPopup() {
+            const overlay = document.getElementById('robustnessOverlay');
+            const popup = document.getElementById('robustnessPopup');
+            
+            if (popup.classList.contains('active')) {
+                closeRobustnessPopup();
+            } else {
+                overlay.classList.add('active');
+                popup.classList.add('active');
+            }
+        }
+        
+        function closeRobustnessPopup() {
+            const overlay = document.getElementById('robustnessOverlay');
+            const popup = document.getElementById('robustnessPopup');
+            
+            overlay.classList.remove('active');
+            popup.classList.remove('active');
+        }
+        
+        function applyRobustnessSettings() {
+            const noiseType = document.getElementById('noiseType').value;
+            const noiseLevel = document.getElementById('noiseLevel').value;
+            
+            console.log(`Applied robustness settings: ${noiseType} noise at level ${noiseLevel}`);
+            
+            // Update noise level display
+            document.getElementById('noiseLevelValue').textContent = noiseLevel;
+            
+            closeRobustnessPopup();
+        }
+        
+        // Method name mapping from backend friendly names to HTML element IDs
+        function mapMethodName(methodName) {
+            const methodMap = {
+                // Backend processor names -> HTML element IDs
+                'ML Mel CNN (2D Conv)': 'ml_mel_cnn',
+                'ML MFCC + Dense NN (Best)': 'ml_mfcc',
+                'ML Raw CNN (1D Conv)': 'ml_raw_cnn',
+                
+                // Alternative names and shortcuts
+                'ML Mel CNN (2D)': 'ml_mel_cnn',
+                'ml_mel_cnn': 'ml_mel_cnn',
+                'ML MFCC + Dense NN': 'ml_mfcc', 
+                'ml_mfcc': 'ml_mfcc',
+                'ML Raw CNN (1D)': 'ml_raw_cnn',
+                'ml_raw_cnn': 'ml_raw_cnn',
+                'External API': 'wav2vec2',
+                'wav2vec2': 'wav2vec2',
+                'Wav2Vec2 Facebook': 'wav2vec2',
+                'Wav2Vec2 (Facebook)': 'wav2vec2'
+            };
+            
+            return methodMap[methodName] || methodName;
+        }
+        
+        function updatePredictionDisplay(methodName, result) {
+            // Map method name to element ID format
+            const mappedMethodName = mapMethodName(methodName);
+            
+            // Debug logging
+            console.log(`updatePredictionDisplay called:`, {
+                originalMethodName: methodName,
+                mappedMethodName: mappedMethodName,
+                result,
+                predicted_digit: result.predicted_digit,
+                confidence: result.confidence,
+                inference_time: result.inference_time
+            });
+            
+            // Update prediction display for specific method
+            const predictionElement = document.getElementById(`prediction_${mappedMethodName}`);
+            const confidenceElement = document.getElementById(`confidence_${mappedMethodName}`);
+            const timeElement = document.getElementById(`time_${mappedMethodName}`);
+            
+            console.log(`Elements found:`, {
+                predictionElement: !!predictionElement,
+                confidenceElement: !!confidenceElement,
+                timeElement: !!timeElement,
+                predictionId: `prediction_${mappedMethodName}`,
+                confidenceId: `confidence_${mappedMethodName}`,
+                timeId: `time_${mappedMethodName}`
+            });
+            
+            if (predictionElement && result.predicted_digit !== undefined) {
+                predictionElement.textContent = result.predicted_digit;
+                console.log(`Updated prediction for ${mappedMethodName}: ${result.predicted_digit}`);
+                
+                // Add glow animation
+                const cabinet = document.querySelector(`[data-method="${mappedMethodName}"]`);
+                if (cabinet) {
+                    cabinet.classList.add('prediction-glow');
+                    setTimeout(() => {
+                        cabinet.classList.remove('prediction-glow');
+                    }, 800);
+                }
+            } else {
+                console.warn(`Prediction element not found or no predicted_digit:`, {
+                    predictionElement: !!predictionElement,
+                    predicted_digit: result.predicted_digit,
+                    elementId: `prediction_${mappedMethodName}`
+                });
+            }
+            
+            if (confidenceElement && result.confidence !== undefined) {
+                const confidencePercent = Math.round(result.confidence * 100);
+                confidenceElement.textContent = `${confidencePercent}%`;
+                console.log(`Updated confidence for ${mappedMethodName}: ${confidencePercent}%`);
+            } else {
+                console.warn(`Confidence element not found or no confidence:`, {
+                    confidenceElement: !!confidenceElement,
+                    confidence: result.confidence,
+                    elementId: `confidence_${mappedMethodName}`
+                });
+            }
+            
+            if (timeElement && result.inference_time !== undefined) {
+                const timeMs = Math.round(result.inference_time * 1000);
+                timeElement.textContent = `${timeMs}ms`;
+                console.log(`Updated time for ${mappedMethodName}: ${timeMs}ms`);
+            } else {
+                console.warn(`Time element not found or no inference_time:`, {
+                    timeElement: !!timeElement,
+                    inference_time: result.inference_time,
+                    elementId: `time_${mappedMethodName}`
+                });
+            }
+            
+            // Update the real-time prediction box in the audio visualizer
+            const realtimePrediction = document.getElementById('realtimePrediction');
+            if (realtimePrediction && result.predicted_digit !== undefined) {
+                realtimePrediction.textContent = result.predicted_digit;
+                
+                // Add pulse animation effect
+                realtimePrediction.style.transform = 'scale(1.2)';
+                realtimePrediction.style.textShadow = '0 0 20px #ffd700, 0 0 40px #ffd700';
+                
+                setTimeout(() => {
+                    realtimePrediction.style.transform = 'scale(1)';
+                    realtimePrediction.style.textShadow = '0 0 10px #ffd700, 0 0 20px #ffd700';
+                }, 300);
+                
+                console.log(`Updated realtime prediction box: ${result.predicted_digit}`);
+            }
+        }
+        
+        // Noise level slider update
+        document.addEventListener('DOMContentLoaded', function() {
+            const noiseSlider = document.getElementById('noiseLevel');
+            const noiseDisplay = document.getElementById('noiseLevelValue');
+            
+            if (noiseSlider && noiseDisplay) {
+                noiseSlider.addEventListener('input', function() {
+                    noiseDisplay.textContent = this.value;
+                });
+            }
+        });
     </script>
 </body>
 </html>

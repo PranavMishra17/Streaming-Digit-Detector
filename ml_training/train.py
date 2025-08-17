@@ -19,6 +19,7 @@ import torch.optim as optim
 from torch.optim.lr_scheduler import ReduceLROnPlateau, StepLR, CosineAnnealingLR
 import numpy as np
 from sklearn.metrics import accuracy_score, classification_report, confusion_matrix
+import pickle
 
 # Add project root to path
 PROJECT_ROOT = Path(__file__).parent.parent
@@ -569,6 +570,13 @@ def train_pipeline(pipeline_type: str, data_splits: Dict[str, Any],
         num_epochs=config['num_epochs'],
         save_frequency=config['save_frequency']
     )
+    
+    # Save pipeline-specific components after training
+    if pipeline_type == 'mfcc' and 'scaler' in pipeline_components:
+        scaler_path = trainer.checkpoint_dir / "scaler.pkl"
+        with open(scaler_path, 'wb') as f:
+            pickle.dump(pipeline_components['scaler'], f)
+        logger.info(f"MFCC scaler saved to {scaler_path}")
     
     return results
 

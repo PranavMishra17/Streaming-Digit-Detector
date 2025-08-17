@@ -431,7 +431,7 @@ def process_audio():
                     )
                     result['saved_to'] = saved_path
                     result['session_id'] = session_id
-                    app.logger.info(f"💾 Audio saved to session {session_id}: {saved_path}")
+                    app.logger.info(f"Audio saved to session {session_id}: {saved_path}")
                 else:
                     app.logger.warning(f"Session {session_id} not found, audio not saved")
             except Exception as e:
@@ -637,7 +637,7 @@ def process_audio_chunk():
                     }
                     
                     if saved_chunks:
-                        app.logger.info(f"💾 Saved {len(saved_chunks)} audio chunks to session {session_id}")
+                        app.logger.info(f"Saved {len(saved_chunks)} audio chunks to session {session_id}")
                         
                 else:
                     app.logger.warning(f"Session {session_id} not found, chunks not saved")
