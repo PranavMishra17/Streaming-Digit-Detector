@@ -6,9 +6,24 @@
       "WebFetch(domain:raw.githubusercontent.com)",
       "Bash(python -m pip install:*)",
       "Bash(python:*)",
-      "Bash(curl:*)"
+      "Bash(curl:*)",
+      "Bash(rm:*)",
+      "Bash(taskkill:*)",
+      "Bash(pip install:*)",
+      "Bash(winget install:*)",
+      "Bash(ffmpeg:*)",
+      "Bash(refreshenv)",
+      "Bash(where:*)",
+      "Bash(echo:*)",
+      "WebSearch",
+      "Bash(grep:*)",
+      "WebFetch(domain:cdn.jsdelivr.net)",
+      "Bash(timeout:*)",
+      "Bash(dir:*)"
     ],
     "deny": [],
-    "ask": []
-  }
+    "ask": [],
+    "defaultMode": "acceptEdits"
+  },
+  "outputStyle": "default"
 }

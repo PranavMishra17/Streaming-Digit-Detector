@@ -20,6 +20,7 @@ train_logs/
 *.pkl
 !models/*/scaler.pkl
 
+<<<<<<< HEAD
 # Exclude model checkpoint files (only keep best models for production)
 models/*/checkpoint_*.pt
 
@@ -38,6 +39,8 @@ demo_output/
 output/
 sessions/
 
+=======
+>>>>>>> d557042 (railway deployment)
 # Development files
 .env
 .venv/
@@ -111,6 +114,7 @@ tests/
 pytest.ini
 .pytest_cache/
 
+<<<<<<< HEAD
 # Documentation (exclude all documentation from production)
 README.md
 docs/
@@ -129,6 +133,12 @@ docs/images/
 train_logs/
 demo_output/
 nul
+=======
+# Documentation
+README.md
+docs/
+*.md
+>>>>>>> d557042 (railway deployment)
 
 # Large development files
 output/

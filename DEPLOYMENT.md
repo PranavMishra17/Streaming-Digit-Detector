@@ -93,11 +93,15 @@ models/
 ### Resource Usage
 - **CPU**: Models run efficiently on CPU (1-8ms inference time)
 - **Memory**: ~200-500MB for all 3 models loaded
+<<<<<<< HEAD
 - **Storage**: ~26MB total deployment (reduced from 340MB+)
   - 7.5MB - Mel CNN model
   - 7.4MB - Raw CNN model  
   - 1.0MB - MFCC model + scaler
   - 10MB - Dependencies and code
+=======
+- **Storage**: ~20MB for model files + dependencies
+>>>>>>> d557042 (railway deployment)
 
 ### Production Features
 - **Gunicorn** WSGI server with 2 workers

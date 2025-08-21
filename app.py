@@ -18,14 +18,10 @@ from dotenv import load_dotenv
 import numpy as np
 
 # Import audio processors
-from audio_processors.external_api import ExternalAPIProcessor
-from audio_processors.local_whisper import LocalWhisperProcessor
-from audio_processors.wav2vec2_processor import Wav2Vec2Processor
+# Removed wav2vec2, whisper and external API processors for production deployment
 from audio_processors.raw_spectrogram import RawSpectrogramProcessor  
 from audio_processors.mel_spectrogram import MelSpectrogramProcessor
 from audio_processors.mfcc_processor import MFCCProcessor
-from audio_processors.whisper_digit_processor import WhisperDigitProcessor
-from audio_processors.faster_whisper_processor import FasterWhisperDigitProcessor
 
 # Import new ML-trained processors
 from audio_processors.ml_mfcc_processor import MLMFCCProcessor
@@ -75,37 +71,9 @@ def initialize_processors():
         except Exception as e:
             app.logger.error(f"[FAIL] Failed to initialize {proc_name}: {str(e)}")
     
-    # Try to initialize speech recognition processors in order of preference
-    speech_processors = [
-        ('wav2vec2', Wav2Vec2Processor, 'Wav2Vec2 (Facebook) - External API Default'),
-        ('faster_whisper', FasterWhisperDigitProcessor, 'Faster-Whisper with VAD'),
-        ('whisper_digit', WhisperDigitProcessor, 'Whisper Digit Recognition'),
-        ('external_api', ExternalAPIProcessor, 'External API (Whisper)'),
-        ('local_whisper', LocalWhisperProcessor, 'Local Whisper (Tiny)')
-    ]
-    
-    working_speech_processor = None
-    
-    for proc_key, proc_class, proc_name in speech_processors:
-        try:
-            processor = proc_class()
-            if processor.is_configured():
-                procs[proc_key] = processor
-                if working_speech_processor is None:
-                    working_speech_processor = proc_key
-                app.logger.info(f"[OK] {proc_name} initialized and configured")
-            else:
-                app.logger.warning(f"[WARN] {proc_name} not configured (missing dependencies/tokens)")
-        except Exception as e:
-            app.logger.error(f"[FAIL] Failed to initialize {proc_name}: {str(e)}")
-    
-    # Set primary speech processor (prefer wav2vec2 as default)
-    if 'wav2vec2' in procs:
-        procs['primary_speech'] = procs['wav2vec2']
-        app.logger.info("Primary speech processor: wav2vec2")
-    elif working_speech_processor:
-        procs['primary_speech'] = procs[working_speech_processor]
-        app.logger.info(f"Primary speech processor: {working_speech_processor}")
+    # Speech recognition processors excluded for production deployment
+    # Focusing only on trained ML models for better performance and fewer dependencies
+    app.logger.info("External speech processors (wav2vec2, whisper) excluded for production")
     
     # Add legacy processors for comparison (lower priority)
     legacy_processors = [
@@ -463,7 +431,7 @@ def process_audio_chunk():
             return jsonify({'error': 'No audio chunk provided'}), 400
         
         audio_file = request.files['audio']
-        method = request.form.get('method', 'whisper_digit')
+        method = request.form.get('method', 'ml_mfcc')
         
         # Validate method
         if method not in processors:
@@ -779,11 +747,12 @@ def debug_transcription():
         audio_int16 = (audio_signal * 32767).astype(np.int16)
         audio_bytes = audio_int16.tobytes()
         
-        # Test with different processors
+        # Test with available ML processors
         results = {}
         
-        for method_name, processor in [('whisper_digit', processors.get('whisper_digit')),
-                                     ('faster_whisper', processors.get('faster_whisper'))]:
+        for method_name, processor in [('ml_mfcc', processors.get('ml_mfcc')),
+                                     ('ml_mel_cnn', processors.get('ml_mel_cnn')),
+                                     ('ml_raw_cnn', processors.get('ml_raw_cnn'))]:
             if processor and hasattr(processor, 'predict_with_timing'):
                 try:
                     result = processor.predict_with_timing(audio_bytes)

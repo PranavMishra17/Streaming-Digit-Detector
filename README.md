@@ -1,10 +1,5 @@
 # Streaming Digit Classifier
 
-[![Python](https://img.shields.io/badge/Python-3.12-blue?style=flat-square&logo=python)](https://python.org)
-[![Flask](https://img.shields.io/badge/Flask-3.1.0-green?style=flat-square&logo=flask)](https://flask.palletsprojects.com)
-[![License](https://img.shields.io/badge/License-MIT-purple?style=flat-square)](LICENSE)
-[![Status](https://img.shields.io/badge/Status-Active-brightgreen?style=flat-square)](https://github.com/PranavMishra17/Streaming-Digit-Detector)
-
 ![Title](title.png)
 
 **Real-time streaming digit recognition system with multiple ML approaches and comprehensive robustness testing**
