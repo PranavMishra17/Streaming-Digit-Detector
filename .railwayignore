@@ -1,0 +1,142 @@
+# Training modules (not needed for production)
+ml_training/train.py
+ml_training/demo.py
+ml_training/utils/
+ml_training/README.md
+train_logs/
+*.ipynb
+
+# Include essential ML inference components
+!ml_training/__init__.py
+!ml_training/inference.py
+!ml_training/data/__init__.py
+!ml_training/data/dataset_loader.py
+!ml_training/pipelines/__init__.py
+!ml_training/pipelines/mfcc_pipeline.py
+!ml_training/pipelines/mel_cnn_pipeline.py
+!ml_training/pipelines/raw_cnn_pipeline.py
+
+# Exclude training-only pickle files, but allow scaler.pkl for models
+*.pkl
+!models/*/scaler.pkl
+
+# Exclude model checkpoint files (only keep best models for production)
+models/*/checkpoint_*.pt
+
+# Explicitly include essential model files
+!models/mfcc_classifier/best_model.pt
+!models/mfcc_classifier/scaler.pkl
+!models/mel_cnn_classifier/best_model.pt
+!models/raw_cnn_classifier/best_model.pt
+
+# Exclude large log files
+*.log
+audio_digit_classifier.log
+
+# Exclude demo output and training artifacts
+demo_output/
+output/
+sessions/
+
+# Development files
+.env
+.venv/
+venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+pip-log.txt
+pip-delete-this-directory.txt
+.tox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.log
+.git/
+.mypy_cache/
+.pytest_cache/
+.hypothesis/
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Audio processors we don't need (excluded from deployment)
+audio_processors/wav2vec2_processor.py
+audio_processors/external_api.py
+audio_processors/local_whisper.py
+audio_processors/whisper_digit_processor.py
+audio_processors/faster_whisper_processor.py
+
+# Include required ML processors and utilities
+!audio_processors/ml_mfcc_processor.py
+!audio_processors/ml_mel_cnn_processor.py
+!audio_processors/ml_raw_cnn_processor.py
+!audio_processors/base_processor.py
+!audio_processors/__init__.py
+!audio_processors/mfcc_processor.py
+!audio_processors/mel_spectrogram.py
+!audio_processors/raw_spectrogram.py
+
+# Include necessary utility files for VAD and audio processing
+!utils/__init__.py
+!utils/audio_utils.py
+!utils/logging_utils.py
+!utils/webrtc_vad.py
+!utils/enhanced_vad.py
+!utils/vad.py
+!utils/session_manager.py
+!utils/noise_utils.py
+
+# Test files (optional - keep if you want testing in production)
+tests/
+pytest.ini
+.pytest_cache/
+
+# Documentation (exclude all documentation from production)
+README.md
+docs/
+*.md
+!DEPLOYMENT.md
+
+# Exclude title and banner images
+title.png
+banner.png
+foot.png
+star.png
+docs/images/
+
+# Exclude any development or training logs
+*.log
+train_logs/
+demo_output/
+nul
+
+# Large development files
+output/
+sessions/
+temp/
+*.wav
+*.mp3
+*.ogg
+
+# Development dependencies
+requirements-dev.txt
