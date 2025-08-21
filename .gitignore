@@ -7,3 +7,13 @@
 audio_digit_classifier.log
 *.log
 .env
+train_logs/
+demo_output/
+output/
+sessions/
+temp/
+*.wav
+*.mp3
+*.ogg
+*.flac
+*.m4a
