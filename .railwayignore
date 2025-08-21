@@ -16,31 +16,32 @@ train_logs/
 !ml_training/pipelines/mel_cnn_pipeline.py
 !ml_training/pipelines/raw_cnn_pipeline.py
 
+# CRITICAL: Exclude ALL training checkpoint files (these are huge!)
+models/*/checkpoint_*.pt
+models/*/checkpoint_epoch_*.pt
+
 # Exclude training-only pickle files, but allow scaler.pkl for models
 *.pkl
 !models/*/scaler.pkl
 
-<<<<<<< HEAD
-# Exclude model checkpoint files (only keep best models for production)
-models/*/checkpoint_*.pt
-
-# Explicitly include essential model files
+# Explicitly include ONLY the best models for production
 !models/mfcc_classifier/best_model.pt
 !models/mfcc_classifier/scaler.pkl
 !models/mel_cnn_classifier/best_model.pt
 !models/raw_cnn_classifier/best_model.pt
 
-# Exclude large log files
+# Exclude ALL log files (these can be huge)
 *.log
 audio_digit_classifier.log
+train_logs/
+demo_output/
 
 # Exclude demo output and training artifacts
 demo_output/
 output/
 sessions/
+temp/
 
-=======
->>>>>>> d557042 (railway deployment)
 # Development files
 .env
 .venv/
@@ -109,12 +110,11 @@ audio_processors/faster_whisper_processor.py
 !utils/session_manager.py
 !utils/noise_utils.py
 
-# Test files (optional - keep if you want testing in production)
+# Test files (exclude from production)
 tests/
 pytest.ini
 .pytest_cache/
 
-<<<<<<< HEAD
 # Documentation (exclude all documentation from production)
 README.md
 docs/
@@ -133,12 +133,6 @@ docs/images/
 train_logs/
 demo_output/
 nul
-=======
-# Documentation
-README.md
-docs/
-*.md
->>>>>>> d557042 (railway deployment)
 
 # Large development files
 output/
@@ -150,3 +144,18 @@ temp/
 
 # Development dependencies
 requirements-dev.txt
+
+# Exclude large audio files and session data
+*.wav
+*.mp3
+*.ogg
+*.flac
+*.m4a
+*.aac
+
+# Exclude any remaining large files
+*.zip
+*.tar
+*.gz
+*.rar
+*.7z
