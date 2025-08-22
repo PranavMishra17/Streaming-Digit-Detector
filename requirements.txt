@@ -1,25 +1,19 @@
-# Production Requirements for Audio Digit Classifier
-# Optimized for Railway deployment - ML models + VAD only
+# Minimal Requirements for Audio Digit Classifier
+# Core functionality only - no extra features
 
-# Flask Core (using your current working versions)
+# Flask Core
 Flask==3.1.0
 python-dotenv==1.0.1
-gunicorn==23.0.0
 
-# Core ML Dependencies (using your current working versions)
-# Note: Railway will automatically use CPU-only torch if CUDA version not available
+# Essential ML (CPU-only versions)
 torch==2.3.1
 numpy==1.26.4
 scikit-learn==1.6.1
 
-# Audio Processing (Core) - using your current working versions
+# Core Audio Processing
 librosa==0.10.2
 soundfile==0.12.1
 scipy==1.15.2
 
-# VAD and Audio Utils
+# VAD
 webrtcvad==2.0.10
-
-# Remove unnecessary dependencies for Python 3.11
-# pickle5 not needed for Python 3.8+
-# pathlib2 not needed for Python 3.4+

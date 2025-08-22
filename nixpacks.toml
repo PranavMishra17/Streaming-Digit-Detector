@@ -1,4 +1,4 @@
-# Railway deployment configuration for Flask app
+# Simple Railway deployment - no Docker, just direct Python hosting
 [variables]
 NIXPACKS_PYTHON_VERSION = "3.11"
 
@@ -6,4 +6,4 @@ NIXPACKS_PYTHON_VERSION = "3.11"
 cmd = "pip install --no-cache-dir -r requirements.txt"
 
 [start]
-cmd = "gunicorn app:app --bind 0.0.0.0:$PORT --workers 2 --timeout 120 --max-requests 1000 --preload --access-logfile - --error-logfile -"
+cmd = "python app.py"
