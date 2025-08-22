@@ -1,0 +1,9 @@
+# Railway deployment configuration for Flask app
+[variables]
+NIXPACKS_PYTHON_VERSION = "3.11"
+
+[build]
+cmd = "pip install --no-cache-dir -r requirements.txt"
+
+[start]
+cmd = "gunicorn app:app --bind 0.0.0.0:$PORT --workers 2 --timeout 120 --max-requests 1000 --preload --access-logfile - --error-logfile -"

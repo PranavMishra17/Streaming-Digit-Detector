@@ -1,0 +1,61 @@
+# Docker ignore file to reduce build context size
+# This complements .railwayignore for faster builds
+
+# Git and version control
+.git/
+.gitignore
+.gitattributes
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Python cache and virtual environments
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+.venv/
+venv/
+env/
+
+# Large training files
+models/*/checkpoint_*.pt
+train_logs/
+demo_output/
+output/
+sessions/
+temp/
+
+# Documentation and images
+README.md
+docs/
+*.md
+!DEPLOYMENT.md
+title.png
+banner.png
+foot.png
+star.png
+
+# Audio files
+*.wav
+*.mp3
+*.ogg
+*.flac
+
+# Logs
+*.log
+audio_digit_classifier.log
+
+# Development files
+.env
+requirements-dev.txt
+tests/
