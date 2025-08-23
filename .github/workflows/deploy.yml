@@ -41,6 +41,10 @@ jobs:
           
           # Ensure all assets are in the right place
           ls -la _site/
+          echo "=== Checking index.html exists ==="
+          ls -la _site/index.html
+          echo "=== Checking directory structure ==="
+          find _site -name "*.html" -o -name "*.css" -o -name "*.js" | head -20
           
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3

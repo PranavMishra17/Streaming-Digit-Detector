@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Streaming digit classifier (lightweight)</title>
+    <link rel="stylesheet" href="css/retro.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+</head>
+<body>
+    <div class="container">
+        <!-- Header Section -->
+        <div class="header">
+            <h1 class="title">Streaming Digit classifier (lightweight)</h1>
+            <p class="subtitle">Real-time Spoken Digit Classification (0-9)</p>
+            <p style="font-size: 12px; margin-top: 15px; line-height: 1.4; max-width: 800px; margin-left: auto; margin-right: auto;">
+                A real-time audio digit classification system that recognizes spoken numbers (0-9) through live microphone streaming. Features multiple classification approaches including TTS APIs, Fourier analysis, MFCC, and MEL features with performance benchmarking and inference time tracking.
+            </p>
+        </div>
+
+        <!-- API Status Section (New addition for backend monitoring) -->
+        <div class="system-specs-section">
+            <div class="system-specs-bar">
+                <span class="specs-label">Backend API:</span>
+                <span id="apiStatus" class="status-indicator">Connecting...</span>
+                <span class="specs-details" id="apiUrl">https://paranoiid-streaming-digit-classifier.hf.space</span>
+            </div>
+        </div>
+
+        <!-- Collapsible How-to Section -->
+        <div class="collapsible-section">
+            <div class="collapsible-header" onclick="toggleCollapsible(this)">
+                <span>How to Use</span>
+                <span class="collapsible-toggle">▶</span>
+            </div>
+            <div class="collapsible-content">
+                <div style="font-size: 10px; line-height: 1.6;">
+                    <p><strong>1.</strong> Click "Start Recording" and clearly say a digit (0-9)</p>
+                    <p><strong>2.</strong> Select a processing method from the cabinets below</p>
+                    <p><strong>3.</strong> Watch the real-time audio visualization</p>
+                    <p><strong>4.</strong> Compare inference times and accuracy across methods</p>
+                    <p><strong>5.</strong> Use the Robustness toggle to test with noise</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Audio Input Monitor -->
+        <div class="audio-section">
+            <h2 class="cabinet-title">Audio Input Monitor</h2>
+            <div class="visualizer-screen">
+                <canvas id="audioCanvas" width="800" height="200"></canvas>
+                <div class="realtime-prediction-box">
+                    <span id="realtimePrediction">?</span>
+                </div>
+            </div>
+            <div class="visualizer-controls">
+                <button id="startRecording" class="btn btn-success">Start Recording</button>
+                <button id="stopRecording" class="btn btn-danger" disabled>Stop Recording</button>
+                <button id="clearCanvas" class="btn btn-info">Clear Screen</button>
+                <div style="margin-left: 20px; font-size: 8px; color: var(--green-screen);">
+                    <span id="recordingStatus">Ready to record...</span>
+                    <br>
+                    <span id="audioInfo">Duration: 0.0s</span>
+                </div>
+            </div>
+            
+            <!-- Robustness Toggle -->
+            <button class="robustness-toggle" onclick="toggleRobustnessPopup()">
+                Robustness
+            </button>
+        </div>
+        
+        <!-- Robustness Popup -->
+        <div class="popup-overlay" id="robustnessOverlay" onclick="closeRobustnessPopup()"></div>
+        <div class="robustness-popup" id="robustnessPopup">
+            <h3 style="margin-top: 0; font-size: 10px; text-transform: uppercase;">Audio Robustness Settings</h3>
+            <div style="margin-bottom: 15px;">
+                <label for="noiseType" style="font-size: 8px; display: block; margin-bottom: 5px;">Noise Type:</label>
+                <select id="noiseType" class="form-control" style="font-size: 8px; padding: 5px; width: 100%;">
+                    <option value="none">None</option>
+                    <option value="white">White Noise</option>
+                    <option value="pink">Pink Noise</option>
+                    <option value="brown">Brown Noise</option>
+                    <option value="gaussian">Gaussian Noise</option>
+                </select>
+            </div>
+            <div style="margin-bottom: 20px;">
+                <label for="noiseLevel" style="font-size: 8px; display: block; margin-bottom: 5px;">Noise Level:</label>
+                <input type="range" id="noiseLevel" min="0.0" max="1.0" step="0.1" value="0.0" class="slider">
+                <span id="noiseLevelValue" style="font-size: 8px;">0.0</span>
+            </div>
+            <div style="display: flex; gap: 10px; justify-content: flex-end;">
+                <button class="btn" onclick="closeRobustnessPopup()">Cancel</button>
+                <button class="btn btn-success" onclick="applyRobustnessSettings()">Apply</button>
+            </div>
+        </div>
+
+        <!-- Processing Methods Grid -->
+        <div class="methods-grid">
+            <h2 class="section-header">Select Processing Pipeline</h2>
+            <!-- ML MFCC Cabinet (Best Performance) -->
+            <div class="method-cabinet selected" data-method="ml_mfcc" onclick="selectMethod('ml_mfcc')">
+                <input type="radio" name="method" value="ml_mfcc" id="method_ml_mfcc" checked style="display: none;">
+                <img src="star.png" class="performance-star" alt="Best Performance">
+                <div class="method-header">
+                    <h3 class="method-title">MFCC + Dense NN</h3>
+                    <p class="method-subtitle">Mel Frequency Cepstral Coefficients</p>
+                    <div class="status-indicator" id="status_ml_mfcc"></div>
+                </div>
+                <div class="prediction-box">
+                    <div class="prediction-item">
+                        <span>Predicted Digit:</span>
+                        <span class="prediction-value" id="prediction_ml_mfcc">?</span>
+                    </div>
+                    <div class="prediction-item">
+                        <span>Confidence:</span>
+                        <span class="prediction-value" id="confidence_ml_mfcc">--</span>
+                    </div>
+                    <div class="prediction-item">
+                        <span>Inference Time:</span>
+                        <span class="prediction-value" id="time_ml_mfcc">0.0ms</span>
+                    </div>
+                    <div class="prediction-item">
+                        <span>Testing Acc:</span>
+                        <span class="prediction-value">98.52%</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ML Mel CNN Cabinet -->
+            <div class="method-cabinet" data-method="ml_mel_cnn" onclick="selectMethod('ml_mel_cnn')">
+                <input type="radio" name="method" value="ml_mel_cnn" id="method_ml_mel_cnn" style="display: none;">
+                <div class="method-header">
+                    <h3 class="method-title">Mel CNN (2D)</h3>
+                    <p class="method-subtitle">Mel Spectrogram Convolutional Neural Network</p>
+                    <div class="status-indicator" id="status_ml_mel_cnn"></div>
+                </div>
+                <div class="prediction-box">
+                    <div class="prediction-item">
+                        <span>Predicted Digit:</span>
+                        <span class="prediction-value" id="prediction_ml_mel_cnn">?</span>
+                    </div>
+                    <div class="prediction-item">
+                        <span>Confidence:</span>
+                        <span class="prediction-value" id="confidence_ml_mel_cnn">--</span>
+                    </div>
+                    <div class="prediction-item">
+                        <span>Inference Time:</span>
+                        <span class="prediction-value" id="time_ml_mel_cnn">0.0ms</span>
+                    </div>
+                    <div class="prediction-item">
+                        <span>Testing Acc:</span>
+                        <span class="prediction-value">97.22%</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ML Raw CNN Cabinet -->
+            <div class="method-cabinet" data-method="ml_raw_cnn" onclick="selectMethod('ml_raw_cnn')">
+                <input type="radio" name="method" value="ml_raw_cnn" id="method_ml_raw_cnn" style="display: none;">
+                <div class="method-header">
+                    <h3 class="method-title">Raw CNN (1D)</h3>
+                    <p class="method-subtitle">Raw Waveform Convolutional Neural Network</p>
+                    <div class="status-indicator" id="status_ml_raw_cnn"></div>
+                </div>
+                <div class="prediction-box">
+                    <div class="prediction-item">
+                        <span>Predicted Digit:</span>
+                        <span class="prediction-value" id="prediction_ml_raw_cnn">?</span>
+                    </div>
+                    <div class="prediction-item">
+                        <span>Confidence:</span>
+                        <span class="prediction-value" id="confidence_ml_raw_cnn">--</span>
+                    </div>
+                    <div class="prediction-item">
+                        <span>Inference Time:</span>
+                        <span class="prediction-value" id="time_ml_raw_cnn">0.0ms</span>
+                    </div>
+                    <div class="prediction-item">
+                        <span>Testing Acc:</span>
+                        <span class="prediction-value">91.30%</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- External API Cabinet -->
+            <div class="method-cabinet" data-method="external_api" onclick="selectMethod('external_api')">
+                <input type="radio" name="method" value="external_api" id="method_external_api" style="display: none;">
+                <div class="method-header">
+                    <h3 class="method-title">External API</h3>
+                    <p class="method-subtitle">Whisper API</p>
+                    <div class="status-indicator" id="status_external_api"></div>
+                </div>
+                <div class="prediction-box">
+                    <div class="prediction-item">
+                        <span>Predicted Digit:</span>
+                        <span class="prediction-value" id="prediction_external_api">?</span>
+                    </div>
+                    <div class="prediction-item">
+                        <span>Confidence:</span>
+                        <span class="prediction-value" id="confidence_external_api">--</span>
+                    </div>
+                    <div class="prediction-item">
+                        <span>Inference Time:</span>
+                        <span class="prediction-value" id="time_external_api">0.0ms</span>
+                    </div>
+                    <div class="prediction-item">
+                        <span>Latency:</span>
+                        <span class="prediction-value">~2000ms</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- System Specifications -->
+        <div class="system-specs-section">
+            <div class="system-specs-bar">
+                <span class="specs-label">Deployment:</span>
+                <span class="specs-details">Frontend: GitHub Pages • Backend API: Hugging Face Spaces • ML Models: PyTorch CPU</span>
+            </div>
+        </div>
+
+        <!-- Architecture Details -->
+        <div class="architecture-section">
+            <div class="cabinet-header">
+                <h2 class="cabinet-title">Model Architecture & Training Metrics</h2>
+            </div>
+            <div class="architecture-grid">
+                <!-- Row 1 -->
+                <div class="architecture-card">
+                    <h3 class="architecture-title">MFCC + Dense NN</h3>
+                    <table class="metrics-table">
+                        <tr><th>Architecture</th><td>13 MFCC → Dense(128) → Dense(64) → Dense(10)</td></tr>
+                        <tr><th>Test Accuracy</th><td>98.52%</td></tr>
+                        <tr><th>Validation Accuracy</th><td>97.89%</td></tr>
+                        <tr><th>Parameters</th><td>10,314</td></tr>
+                        <tr><th>Training Time</th><td>3.2 minutes</td></tr>
+                        <tr><th>Inference Time</th><td>~1-2ms</td></tr>
+                    </table>
+                </div>
+                
+                <div class="architecture-card">
+                    <h3 class="architecture-title">Mel CNN (2D)</h3>
+                    <table class="metrics-table">
+                        <tr><th>Architecture</th><td>2D CNN → MaxPool → Dense(128) → Dense(10)</td></tr>
+                        <tr><th>Test Accuracy</th><td>97.22%</td></tr>
+                        <tr><th>Validation Accuracy</th><td>96.45%</td></tr>
+                        <tr><th>Parameters</th><td>45,782</td></tr>
+                        <tr><th>Training Time</th><td>8.7 minutes</td></tr>
+                        <tr><th>Inference Time</th><td>~3-5ms</td></tr>
+                    </table>
+                </div>
+                
+                <div class="architecture-card">
+                    <h3 class="architecture-title">Raw CNN (1D)</h3>
+                    <table class="metrics-table">
+                        <tr><th>Architecture</th><td>1D CNN → Conv1D → GlobalMaxPool → Dense(10)</td></tr>
+                        <tr><th>Test Accuracy</th><td>91.30%</td></tr>
+                        <tr><th>Validation Accuracy</th><td>89.67%</td></tr>
+                        <tr><th>Parameters</th><td>28,954</td></tr>
+                        <tr><th>Training Time</th><td>12.1 minutes</td></tr>
+                        <tr><th>Inference Time</th><td>~5-8ms</td></tr>
+                    </table>
+                </div>
+                
+                <!-- Row 2 -->
+                <div class="architecture-card">
+                    <h3 class="architecture-title">External API</h3>
+                    <table class="metrics-table">
+                        <tr><th>Model</th><td>Whisper (Hugging Face)</td></tr>
+                        <tr><th>Parameters</th><td>~39M (External)</td></tr>
+                        <tr><th>Language</th><td>English Speech Recognition</td></tr>
+                        <tr><th>Connection</th><td>HTTPS API Call</td></tr>
+                        <tr><th>Latency</th><td>~1-3 seconds</td></tr>
+                        <tr><th>Test Accuracy</th><td>Variable (Network dependent)</td></tr>
+                    </table>
+                </div>
+                
+                <div class="architecture-card">
+                    <h3 class="architecture-title">Raw Spectrogram (Dropped)</h3>
+                    <table class="metrics-table">
+                        <tr><th>Architecture</th><td>STFT → 2D CNN → Dense Layers</td></tr>
+                        <tr><th>Status</th><td>Not Implemented</td></tr>
+                        <tr><th>Reason</th><td>High Dimensionality</td></tr>
+                        <tr><th>Issue</th><td>Memory intensive (~64k features)</td></tr>
+                        <tr><th>Alternative</th><td>Mel-scale features used instead</td></tr>
+                        <tr><th>Estimated Performance</th><td>Similar to Mel CNN but slower</td></tr>
+                    </table>
+                </div>
+                
+                <div class="architecture-card">
+                    <h3 class="architecture-title">MFCC + SVM (Alternative)</h3>
+                    <table class="metrics-table">
+                        <tr><th>Architecture</th><td>13 MFCC → Support Vector Machine</td></tr>
+                        <tr><th>Status</th><td>Not Implemented</td></tr>
+                        <tr><th>Estimated Accuracy</th><td>85-90%</td></tr>
+                        <tr><th>Advantages</th><td>Lightweight, Fast Training</td></tr>
+                        <tr><th>Parameters</th><td>~1000 Support Vectors</td></tr>
+                        <tr><th>Inference Time</th><td>~0.5ms (Estimated)</td></tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Performance Comparison -->
+        <div class="cabinet">
+            <div class="cabinet-header">
+                <h2 class="cabinet-title">Performance Monitor</h2>
+            </div>
+            <div id="performanceStats" class="stats-grid">
+                <div class="stat-item">
+                    <div class="stat-label">Total Predictions</div>
+                    <div class="stat-value" id="totalPredictions">0</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">Fastest Method</div>
+                    <div class="stat-value" id="fastestMethod">-</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">Session Time</div>
+                    <div class="stat-value" id="sessionTime">00:00</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">API Latency</div>
+                    <div class="stat-value" id="apiLatency">-- ms</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Footer Banner -->
+        <div class="footer-banner">
+            <img src="foot.png" alt="Footer Banner" class="footer-image">
+        </div>
+    </div>
+
+    <!-- JavaScript Files -->
+    <!-- VAD (Voice Activity Detection) Libraries -->
+    <script src="https://cdn.jsdelivr.net/npm/onnxruntime-web@1.14.0/dist/ort.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@ricky0123/vad-web@0.0.22/dist/bundle.min.js"></script>
+    
+    <!-- Legacy RecordRTC (keeping for fallback) -->
+    <script src="https://cdn.jsdelivr.net/gh/muaz-khan/RecordRTC@latest/RecordRTC.min.js"></script>
+    <script src="js/audio-recorder.js"></script>
+    <script src="js/audio-visualizer.js"></script>
+    <script src="js/noise-generator.js"></script>
+    <script src="js/main-api.js"></script>
+
+    <!-- Initialize Application -->
+    <script>
+        // Initialize global variables - Updated for GitHub Pages/HF deployment
+        window.APP_CONFIG = {
+            maxDuration: 10,
+            sampleRate: 16000,
+            startTime: Date.now(),
+            selectedMethod: 'ml_mfcc',
+            // API Configuration for HF Spaces backend
+            apiBaseUrl: 'https://paranoiid-streaming-digit-classifier.hf.space',
+            endpoints: {
+                processAudio: '/api/process_audio',
+                processChunk: '/api/process_audio_chunk',
+                health: '/api/health',
+                processors: '/api/processors'
+            }
+        };
+        
+        // Start session timer
+        function updateSessionTime() {
+            const elapsed = Math.floor((Date.now() - window.APP_CONFIG.startTime) / 1000);
+            const minutes = Math.floor(elapsed / 60);
+            const seconds = elapsed % 60;
+            document.getElementById('sessionTime').textContent = 
+                `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        }
+        
+        setInterval(updateSessionTime, 1000);
+        
+        // UI Interaction Functions (preserved from original)
+        function toggleCollapsible(element) {
+            const content = element.nextElementSibling;
+            const toggle = element.querySelector('.collapsible-toggle');
+            
+            if (content.classList.contains('active')) {
+                content.classList.remove('active');
+                element.classList.remove('active');
+                toggle.textContent = '▶';
+            } else {
+                content.classList.add('active');
+                element.classList.add('active');
+                toggle.textContent = '▼';
+            }
+        }
+        
+        function selectMethod(methodName) {
+            // Remove previous selection
+            document.querySelectorAll('.method-cabinet').forEach(cabinet => {
+                cabinet.classList.remove('selected');
+            });
+            
+            // Select new method
+            const selectedCabinet = document.querySelector(`[data-method="${methodName}"]`);
+            if (selectedCabinet) {
+                selectedCabinet.classList.add('selected');
+                selectedCabinet.querySelector('input[type="radio"]').checked = true;
+                window.APP_CONFIG.selectedMethod = methodName;
+                
+                console.log(`Selected method: ${methodName}`);
+            }
+        }
+        
+        function toggleRobustnessPopup() {
+            const overlay = document.getElementById('robustnessOverlay');
+            const popup = document.getElementById('robustnessPopup');
+            
+            if (popup.classList.contains('active')) {
+                closeRobustnessPopup();
+            } else {
+                overlay.classList.add('active');
+                popup.classList.add('active');
+            }
+        }
+        
+        function closeRobustnessPopup() {
+            const overlay = document.getElementById('robustnessOverlay');
+            const popup = document.getElementById('robustnessPopup');
+            
+            overlay.classList.remove('active');
+            popup.classList.remove('active');
+        }
+        
+        function applyRobustnessSettings() {
+            const noiseType = document.getElementById('noiseType').value;
+            const noiseLevel = document.getElementById('noiseLevel').value;
+            
+            console.log(`Applied robustness settings: ${noiseType} noise at level ${noiseLevel}`);
+            
+            // Update noise level display
+            document.getElementById('noiseLevelValue').textContent = noiseLevel;
+            
+            closeRobustnessPopup();
+        }
+        
+        function updatePredictionDisplay(methodName, result) {
+            console.log(`updatePredictionDisplay called:`, {
+                methodName,
+                result,
+                predicted_digit: result.predicted_digit,
+                confidence: result.confidence,
+                inference_time: result.inference_time
+            });
+            
+            // Update prediction display for specific method
+            const predictionElement = document.getElementById(`prediction_${methodName}`);
+            const confidenceElement = document.getElementById(`confidence_${methodName}`);
+            const timeElement = document.getElementById(`time_${methodName}`);
+            
+            if (predictionElement && result.predicted_digit !== undefined) {
+                predictionElement.textContent = result.predicted_digit;
+                
+                // Add glow animation
+                const cabinet = document.querySelector(`[data-method="${methodName}"]`);
+                if (cabinet) {
+                    cabinet.classList.add('prediction-glow');
+                    setTimeout(() => {
+                        cabinet.classList.remove('prediction-glow');
+                    }, 800);
+                }
+            }
+            
+            if (confidenceElement && result.confidence !== undefined) {
+                const confidencePercent = Math.round(result.confidence * 100);
+                confidenceElement.textContent = `${confidencePercent}%`;
+            }
+            
+            if (timeElement && result.inference_time !== undefined) {
+                const timeMs = Math.round(result.inference_time * 1000);
+                timeElement.textContent = `${timeMs}ms`;
+            }
+            
+            // Update the real-time prediction box
+            const realtimePrediction = document.getElementById('realtimePrediction');
+            if (realtimePrediction && result.predicted_digit !== undefined) {
+                realtimePrediction.textContent = result.predicted_digit;
+                
+                // Add pulse animation effect
+                realtimePrediction.style.transform = 'scale(1.2)';
+                realtimePrediction.style.textShadow = '0 0 20px #ffd700, 0 0 40px #ffd700';
+                
+                setTimeout(() => {
+                    realtimePrediction.style.transform = 'scale(1)';
+                    realtimePrediction.style.textShadow = '0 0 10px #ffd700, 0 0 20px #ffd700';
+                }, 300);
+            }
+        }
+        
+        // Noise level slider update
+        document.addEventListener('DOMContentLoaded', function() {
+            const noiseSlider = document.getElementById('noiseLevel');
+            const noiseDisplay = document.getElementById('noiseLevelValue');
+            
+            if (noiseSlider && noiseDisplay) {
+                noiseSlider.addEventListener('input', function() {
+                    noiseDisplay.textContent = this.value;
+                });
+            }
+        });
+    </script>
+</body>
+</html>
