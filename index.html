@@ -184,18 +184,18 @@
                 </div>
             </div>
 
-            <!-- External API Cabinet -->
-            <div class="method-cabinet" data-method="external_api" onclick="selectMethod('external_api')">
-                <input type="radio" name="method" value="external_api" id="method_external_api" style="display: none;">
+            <!-- External API Cabinet (Disabled) -->
+            <div class="method-cabinet disabled" data-method="external_api" style="opacity: 0.5; pointer-events: none;">
+                <input type="radio" name="method" value="external_api" id="method_external_api" style="display: none;" disabled>
                 <div class="method-header">
                     <h3 class="method-title">External API</h3>
-                    <p class="method-subtitle">Whisper API</p>
-                    <div class="status-indicator" id="status_external_api"></div>
+                    <p class="method-subtitle">Whisper API (Disabled)</p>
+                    <div class="status-indicator error" id="status_external_api"></div>
                 </div>
                 <div class="prediction-box">
                     <div class="prediction-item">
                         <span>Predicted Digit:</span>
-                        <span class="prediction-value" id="prediction_external_api">?</span>
+                        <span class="prediction-value" id="prediction_external_api">N/A</span>
                     </div>
                     <div class="prediction-item">
                         <span>Confidence:</span>
@@ -203,11 +203,11 @@
                     </div>
                     <div class="prediction-item">
                         <span>Inference Time:</span>
-                        <span class="prediction-value" id="time_external_api">0.0ms</span>
+                        <span class="prediction-value" id="time_external_api">N/A</span>
                     </div>
                     <div class="prediction-item">
-                        <span>Latency:</span>
-                        <span class="prediction-value">~2000ms</span>
+                        <span>Status:</span>
+                        <span class="prediction-value">Disabled</span>
                     </div>
                 </div>
             </div>
@@ -341,6 +341,7 @@
     
     <!-- Legacy RecordRTC (keeping for fallback) -->
     <script src="https://cdn.jsdelivr.net/gh/muaz-khan/RecordRTC@latest/RecordRTC.min.js"></script>
+    <script src="js/vad-audio-recorder.js"></script>
     <script src="js/audio-recorder.js"></script>
     <script src="js/audio-visualizer.js"></script>
     <script src="js/noise-generator.js"></script>
@@ -392,16 +393,23 @@
         }
         
         function selectMethod(methodName) {
+            // Skip external API (disabled)
+            if (methodName === 'external_api') {
+                console.log('External API is disabled');
+                return;
+            }
+            
             // Remove previous selection
-            document.querySelectorAll('.method-cabinet').forEach(cabinet => {
+            document.querySelectorAll('.method-cabinet:not(.disabled)').forEach(cabinet => {
                 cabinet.classList.remove('selected');
             });
             
             // Select new method
-            const selectedCabinet = document.querySelector(`[data-method="${methodName}"]`);
+            const selectedCabinet = document.querySelector(`[data-method="${methodName}"]:not(.disabled)`);
             if (selectedCabinet) {
                 selectedCabinet.classList.add('selected');
-                selectedCabinet.querySelector('input[type="radio"]').checked = true;
+                const radio = selectedCabinet.querySelector('input[type="radio"]');
+                if (radio) radio.checked = true;
                 window.APP_CONFIG.selectedMethod = methodName;
                 
                 console.log(`Selected method: ${methodName}`);

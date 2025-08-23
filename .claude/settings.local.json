@@ -14,7 +14,9 @@
       "Bash(git commit:*)",
       "Bash(git push:*)",
       "Bash(rm:*)",
-      "Bash(git rm:*)"
+      "Bash(git rm:*)",
+      "Bash(git clone:*)",
+      "Bash(pip freeze)"
     ],
     "deny": [],
     "ask": [],

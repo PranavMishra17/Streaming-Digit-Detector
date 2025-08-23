@@ -1,240 +1,264 @@
 /**
- * VAD-Based Audio Recorder using @ricky0123/vad-web
- * Provides superior voice activity detection with Silero VAD model
+ * VAD-enabled Audio Recorder using @ricky0123/vad-web
+ * Provides automatic voice activity detection for hands-free recording
  */
 
 class VADAudioRecorder {
     constructor() {
-        this.vad = null;
+        this.stream = null;
         this.isListening = false;
-        this.isInitialized = false;
-        this.sessionId = null;
+        this.isRecording = false;
+        this.vadModel = null;
+        this.audioContext = null;
+        this.mediaRecorder = null;
+        this.recordedChunks = [];
         
-        // Callback functions
+        // Callbacks
         this.onSpeechStart = null;
         this.onSpeechEnd = null;
-        this.onChunkReady = null;
         this.onError = null;
-        this.onDigitDetected = null;
+        this.onChunkReady = null;
         
-        // Configuration
-        this.vadConfig = {
-            preSpeechPadFrames: 10,     // Padding before speech (frames)
-            redemptionFrames: 8,        // Frames to wait before ending speech
-            frameSamples: 1536,         // Samples per frame
-            minSpeechFrames: 3,         // Minimum frames for valid speech
-            positiveSpeechThreshold: 0.5, // VAD confidence threshold
-            negativeSpeechThreshold: 0.35
+        // VAD settings
+        this.vadOptions = {
+            positiveSpeechThreshold: 0.5,
+            negativeSpeechThreshold: 0.35,
+            preSpeechPadFrames: 1,
+            redemptionFrames: 8,
+            frameSamples: 1536,
+            minSpeechFrames: 4
         };
         
-        // Audio processing
-        this.sampleRate = 16000;
-        this.processingActive = false;
+        // Recording state
+        this.speechStartTime = null;
+        this.lastAudioTime = Date.now();
+        this.silenceTimeout = null;
+        this.maxSilenceDuration = 2000; // 2 seconds of silence to stop
         
-        // Audio analysis for visualization
-        this.audioContext = null;
-        this.analyser = null;
-        this.stream = null;
-        this.recordingStartTime = null;
-        
-        // Bind methods
-        this.handleSpeechStart = this.handleSpeechStart.bind(this);
-        this.handleSpeechEnd = this.handleSpeechEnd.bind(this);
-        this.handleError = this.handleError.bind(this);
+        console.log('[VAD] VAD Audio Recorder initialized');
     }
     
-    /**
-     * Initialize the VAD system
-     */
     async initialize() {
         try {
-            console.log('Initializing VAD-based audio recorder...');
-            
-            // Check if VAD library is available
-            if (typeof vad === 'undefined') {
-                throw new Error('VAD library not loaded. Make sure @ricky0123/vad-web is included.');
+            // Initialize VAD model
+            if (typeof vad !== 'undefined') {
+                console.log('[VAD] Loading VAD model...');
+                this.vadModel = await vad.MicVAD.new(this.vadOptions);
+                console.log('[VAD] VAD model loaded successfully');
+                return true;
+            } else {
+                console.warn('[VAD] VAD library not available');
+                return false;
             }
-            
-            // Set up audio context for visualization
-            await this.setupAudioContext();
-            
-            // Initialize the VAD
-            this.vad = await vad.MicVAD.new({
-                onSpeechStart: this.handleSpeechStart,
-                onSpeechEnd: this.handleSpeechEnd,
-                onVADMisfire: () => {
-                    console.log('VAD misfire detected - ignoring short noise');
-                },
-                ...this.vadConfig
-            });
-            
-            this.isInitialized = true;
-            console.log('VAD audio recorder initialized successfully');
-            
         } catch (error) {
-            console.error('Failed to initialize VAD:', error);
-            this.handleError(error);
-            throw error;
+            console.error('[VAD] Failed to initialize VAD:', error);
+            if (this.onError) this.onError(error);
+            return false;
         }
     }
     
-    /**
-     * Start listening for speech
-     */
     async startListening() {
         try {
-            if (!this.isInitialized) {
-                await this.initialize();
+            if (this.isListening) return;
+            
+            console.log('[VAD] Starting VAD listening...');
+            
+            // Get microphone access
+            this.stream = await navigator.mediaDevices.getUserMedia({
+                audio: {
+                    sampleRate: 16000,
+                    channelCount: 1,
+                    echoCancellation: true,
+                    noiseSuppression: true,
+                    autoGainControl: true
+                }
+            });
+            
+            // Initialize audio context
+            this.audioContext = new (window.AudioContext || window.webkitAudioContext)({
+                sampleRate: 16000
+            });
+            
+            // Initialize VAD if not already done
+            if (!this.vadModel) {
+                const initialized = await this.initialize();
+                if (!initialized) {
+                    throw new Error('VAD initialization failed');
+                }
             }
             
-            if (this.isListening) {
-                console.warn('Already listening');
-                return;
-            }
+            // Start VAD processing
+            await this.vadModel.start(this.stream);
             
-            console.log('Starting VAD listening...');
-            await this.vad.start();
+            // Set up VAD callbacks
+            this.vadModel.onSpeechStart = () => {
+                console.log('[VAD] Speech detected - starting recording');
+                this.startRecording();
+            };
+            
+            this.vadModel.onSpeechEnd = (audio) => {
+                console.log('[VAD] Speech ended - processing audio');
+                this.stopRecording(audio);
+            };
+            
+            this.vadModel.onVADMisfire = () => {
+                console.log('[VAD] VAD misfire - ignoring');
+            };
+            
             this.isListening = true;
-            this.recordingStartTime = Date.now();
-            
-            console.log('VAD listening started successfully');
+            console.log('[VAD] VAD listening started');
             
         } catch (error) {
-            console.error('Failed to start listening:', error);
-            this.handleError(error);
-            throw error;
+            console.error('[VAD] Failed to start listening:', error);
+            if (this.onError) this.onError(error);
         }
     }
     
-    /**
-     * Stop listening for speech
-     */
     async stopListening() {
         try {
-            if (!this.isListening) {
-                console.warn('Not currently listening');
-                return;
+            if (!this.isListening) return;
+            
+            console.log('[VAD] Stopping VAD listening...');
+            
+            // Stop VAD
+            if (this.vadModel) {
+                await this.vadModel.pause();
             }
             
-            console.log('Stopping VAD listening...');
-            
-            if (this.vad) {
-                await this.vad.pause();
+            // Stop any ongoing recording
+            if (this.isRecording) {
+                this.forceStopRecording();
             }
             
-            this.isListening = false;
-            this.recordingStartTime = null;
-            console.log('VAD listening stopped successfully');
-            
-        } catch (error) {
-            console.error('Failed to stop listening:', error);
-            this.handleError(error);
-        }
-    }
-    
-    /**
-     * Destroy the VAD instance and cleanup
-     */
-    async destroy() {
-        try {
-            if (this.isListening) {
-                await this.stopListening();
-            }
-            
-            if (this.vad) {
-                // VAD cleanup if available
-                this.vad = null;
-            }
-            
-            // Clean up audio context and stream
-            if (this.audioContext && this.audioContext.state !== 'closed') {
-                this.audioContext.close();
-                this.audioContext = null;
-            }
-            
+            // Clean up media stream
             if (this.stream) {
                 this.stream.getTracks().forEach(track => track.stop());
                 this.stream = null;
             }
             
-            this.isInitialized = false;
-            console.log('VAD audio recorder destroyed');
+            // Clean up audio context
+            if (this.audioContext && this.audioContext.state !== 'closed') {
+                await this.audioContext.close();
+                this.audioContext = null;
+            }
+            
+            this.isListening = false;
+            console.log('[VAD] VAD listening stopped');
             
         } catch (error) {
-            console.error('Error during VAD cleanup:', error);
+            console.error('[VAD] Error stopping VAD:', error);
         }
     }
     
-    /**
-     * Handle speech start event
-     */
-    handleSpeechStart() {
-        console.log('🎤 Speech detected - recording started');
+    startRecording() {
+        if (this.isRecording) return;
+        
+        this.isRecording = true;
+        this.speechStartTime = Date.now();
+        this.recordedChunks = [];
+        
+        // Set up MediaRecorder for backup audio capture
+        try {
+            this.mediaRecorder = new MediaRecorder(this.stream, {
+                mimeType: 'audio/webm;codecs=opus'
+            });
+            
+            this.mediaRecorder.ondataavailable = (event) => {
+                if (event.data.size > 0) {
+                    this.recordedChunks.push(event.data);
+                }
+            };
+            
+            this.mediaRecorder.start(100); // Collect data every 100ms
+            
+        } catch (error) {
+            console.warn('[VAD] MediaRecorder setup failed:', error);
+        }
+        
+        // Start silence detection
+        this.lastAudioTime = Date.now();
+        this.startSilenceDetection();
         
         if (this.onSpeechStart) {
             this.onSpeechStart();
         }
+        
+        console.log('[VAD] Recording started');
     }
     
-    /**
-     * Handle speech end event with audio data
-     */
-    async handleSpeechEnd(audioData) {
-        try {
-            console.log(`🔇 Speech ended - processing ${audioData.length} samples`);
-            
-            if (this.processingActive) {
-                console.log('Previous audio still processing, skipping...');
-                return;
-            }
-            
-            this.processingActive = true;
-            
-            // Validate audio data
-            if (!audioData || audioData.length === 0) {
-                console.warn('Empty audio data received');
-                return;
-            }
-            
-            // Check minimum duration (e.g., 200ms minimum)
-            const minSamples = this.sampleRate * 0.2; // 200ms
-            if (audioData.length < minSamples) {
-                console.log(`Audio too short: ${audioData.length} samples (min: ${minSamples})`);
-                return;
-            }
-            
-            // Convert Float32Array to WAV format
-            const wavBuffer = this.encodeWAV(audioData, this.sampleRate);
-            const audioBlob = new Blob([wavBuffer], { type: 'audio/wav' });
-            
-            console.log(`Audio converted to WAV: ${audioBlob.size} bytes`);
-            
-            // Calculate duration
-            const duration = (audioData.length / this.sampleRate) * 1000; // milliseconds
-            
-            // Trigger callbacks
-            if (this.onSpeechEnd) {
-                this.onSpeechEnd(audioBlob, duration);
-            }
-            
-            if (this.onChunkReady) {
-                this.onChunkReady(audioBlob, duration);
-            }
-            
-        } catch (error) {
-            console.error('Error processing speech end:', error);
-            this.handleError(error);
-        } finally {
-            this.processingActive = false;
+    stopRecording(vadAudio) {
+        if (!this.isRecording) return;
+        
+        this.isRecording = false;
+        
+        // Stop silence detection
+        if (this.silenceTimeout) {
+            clearTimeout(this.silenceTimeout);
+            this.silenceTimeout = null;
+        }
+        
+        // Stop MediaRecorder
+        if (this.mediaRecorder && this.mediaRecorder.state !== 'inactive') {
+            this.mediaRecorder.stop();
+        }
+        
+        // Calculate duration
+        const duration = Date.now() - this.speechStartTime;
+        
+        // Convert VAD audio to blob
+        let audioBlob = null;
+        if (vadAudio && vadAudio.length > 0) {
+            // VAD audio is Float32Array, convert to WAV
+            audioBlob = this.float32ArrayToWAVBlob(vadAudio, 16000);
+        } else if (this.recordedChunks.length > 0) {
+            // Fallback to MediaRecorder audio
+            audioBlob = new Blob(this.recordedChunks, { type: 'audio/webm' });
+        }
+        
+        if (audioBlob && this.onSpeechEnd) {
+            this.onSpeechEnd(audioBlob, duration);
+        }
+        
+        // Also trigger chunk callback for streaming
+        if (audioBlob && this.onChunkReady) {
+            this.onChunkReady(audioBlob, duration);
+        }
+        
+        console.log(`[VAD] Recording stopped - duration: ${duration}ms`);
+    }
+    
+    forceStopRecording() {
+        if (this.isRecording) {
+            this.stopRecording(null);
         }
     }
     
-    /**
-     * Convert Float32Array audio data to WAV format
-     */
-    encodeWAV(samples, sampleRate) {
-        const buffer = new ArrayBuffer(44 + samples.length * 2);
-        const view = new DataView(buffer);
+    startSilenceDetection() {
+        const checkSilence = () => {
+            if (!this.isRecording) return;
+            
+            const now = Date.now();
+            const silenceDuration = now - this.lastAudioTime;
+            
+            if (silenceDuration > this.maxSilenceDuration) {
+                console.log('[VAD] Max silence duration reached, stopping recording');
+                this.forceStopRecording();
+                return;
+            }
+            
+            // Continue checking
+            this.silenceTimeout = setTimeout(checkSilence, 500);
+        };
+        
+        // Start the silence check
+        this.silenceTimeout = setTimeout(checkSilence, this.maxSilenceDuration);
+    }
+    
+    float32ArrayToWAVBlob(float32Array, sampleRate) {
+        // Convert Float32Array to 16-bit PCM
+        const length = float32Array.length;
+        const arrayBuffer = new ArrayBuffer(44 + length * 2);
+        const view = new DataView(arrayBuffer);
         
         // WAV header
         const writeString = (offset, string) => {
@@ -243,194 +267,45 @@ class VADAudioRecorder {
             }
         };
         
-        // RIFF chunk descriptor
         writeString(0, 'RIFF');
-        view.setUint32(4, 36 + samples.length * 2, true); // File size - 8
+        view.setUint32(4, 36 + length * 2, true);
         writeString(8, 'WAVE');
-        
-        // fmt sub-chunk
         writeString(12, 'fmt ');
-        view.setUint32(16, 16, true); // Subchunk1Size for PCM
-        view.setUint16(20, 1, true);  // AudioFormat (PCM)
-        view.setUint16(22, 1, true);  // NumChannels (mono)
-        view.setUint32(24, sampleRate, true); // SampleRate
-        view.setUint32(28, sampleRate * 2, true); // ByteRate
-        view.setUint16(32, 2, true);  // BlockAlign
-        view.setUint16(34, 16, true); // BitsPerSample
-        
-        // data sub-chunk
+        view.setUint32(16, 16, true);
+        view.setUint16(20, 1, true);
+        view.setUint16(22, 1, true);
+        view.setUint32(24, sampleRate, true);
+        view.setUint32(28, sampleRate * 2, true);
+        view.setUint16(32, 2, true);
+        view.setUint16(34, 16, true);
         writeString(36, 'data');
-        view.setUint32(40, samples.length * 2, true); // Subchunk2Size
+        view.setUint32(40, length * 2, true);
         
         // Convert float samples to 16-bit PCM
         let offset = 44;
-        for (let i = 0; i < samples.length; i++) {
-            const sample = Math.max(-1, Math.min(1, samples[i]));
+        for (let i = 0; i < length; i++) {
+            const sample = Math.max(-1, Math.min(1, float32Array[i]));
             view.setInt16(offset, sample * 0x7FFF, true);
             offset += 2;
         }
         
-        return buffer;
+        return new Blob([arrayBuffer], { type: 'audio/wav' });
     }
     
-    /**
-     * Convert ArrayBuffer to base64 string
-     */
-    arrayBufferToBase64(buffer) {
-        const bytes = new Uint8Array(buffer);
-        let binary = '';
-        for (let i = 0; i < bytes.byteLength; i++) {
-            binary += String.fromCharCode(bytes[i]);
-        }
-        return btoa(binary);
+    cleanup() {
+        this.stopListening();
     }
     
-    /**
-     * Handle errors
-     */
-    handleError(error) {
-        console.error('VAD Audio Recorder Error:', error);
-        
-        if (this.onError) {
-            this.onError(error);
-        }
+    // Compatibility methods for existing code
+    async start() {
+        return this.startListening();
     }
     
-    /**
-     * Get current status
-     */
-    getStatus() {
-        return {
-            isInitialized: this.isInitialized,
-            isListening: this.isListening,
-            processingActive: this.processingActive,
-            vadAvailable: typeof vad !== 'undefined',
-            sampleRate: this.sampleRate
-        };
-    }
-    
-    /**
-     * Update VAD configuration
-     */
-    updateConfig(newConfig) {
-        this.vadConfig = { ...this.vadConfig, ...newConfig };
-        console.log('VAD configuration updated:', this.vadConfig);
-    }
-    
-    /**
-     * Set session ID for this recording session
-     */
-    setSessionId(sessionId) {
-        this.sessionId = sessionId;
-        console.log('VAD recorder session ID set:', sessionId);
-    }
-    
-    /**
-     * Get current audio level for visualization
-     */
-    getCurrentAudioLevel() {
-        if (!this.analyser) {
-            return 0;
-        }
-        
-        const bufferLength = this.analyser.frequencyBinCount;
-        const dataArray = new Uint8Array(bufferLength);
-        this.analyser.getByteFrequencyData(dataArray);
-        
-        // Calculate RMS (Root Mean Square) for audio level
-        let sum = 0;
-        for (let i = 0; i < bufferLength; i++) {
-            sum += dataArray[i] * dataArray[i];
-        }
-        const rms = Math.sqrt(sum / bufferLength);
-        
-        // Normalize to 0-1 range
-        return rms / 255;
-    }
-    
-    /**
-     * Get time domain data for waveform visualization
-     */
-    getTimeDomainData() {
-        if (!this.analyser) {
-            return new Uint8Array(0);
-        }
-        
-        const bufferLength = this.analyser.fftSize;
-        const dataArray = new Uint8Array(bufferLength);
-        this.analyser.getByteTimeDomainData(dataArray);
-        return dataArray;
-    }
-    
-    /**
-     * Get frequency data for spectrum visualization
-     */
-    getFrequencyData() {
-        if (!this.analyser) {
-            return new Uint8Array(0);
-        }
-        
-        const bufferLength = this.analyser.frequencyBinCount;
-        const dataArray = new Uint8Array(bufferLength);
-        this.analyser.getByteFrequencyData(dataArray);
-        return dataArray;
-    }
-    
-    /**
-     * Get recording property for compatibility
-     */
-    get recording() {
-        return this.isListening;
-    }
-    
-    /**
-     * Get duration property for compatibility
-     */
-    get duration() {
-        // Return approximate duration since listening started
-        if (!this.isListening || !this.recordingStartTime) {
-            return 0;
-        }
-        return Date.now() - this.recordingStartTime;
-    }
-    
-    /**
-     * Set up audio context for visualization
-     */
-    async setupAudioContext() {
-        try {
-            // Request microphone access
-            this.stream = await navigator.mediaDevices.getUserMedia({
-                audio: {
-                    sampleRate: this.sampleRate,
-                    echoCancellation: true,
-                    noiseSuppression: true,
-                    autoGainControl: true
-                }
-            });
-            
-            // Set up audio context
-            this.audioContext = new (window.AudioContext || window.webkitAudioContext)({
-                sampleRate: this.sampleRate
-            });
-            
-            const source = this.audioContext.createMediaStreamSource(this.stream);
-            
-            // Create analyser for visualization
-            this.analyser = this.audioContext.createAnalyser();
-            this.analyser.fftSize = 2048;
-            source.connect(this.analyser);
-            
-            console.log('Audio context setup complete for visualization');
-            
-        } catch (error) {
-            console.error('Failed to setup audio context:', error);
-            throw error;
-        }
+    stop() {
+        this.forceStopRecording();
+        return this.stopListening();
     }
 }
 
-// Export for use in other modules
-if (typeof window !== 'undefined') {
-    window.VADAudioRecorder = VADAudioRecorder;
-}
+// Make it globally available
+window.VADAudioRecorder = VADAudioRecorder;

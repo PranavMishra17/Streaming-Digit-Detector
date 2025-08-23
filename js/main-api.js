@@ -241,10 +241,18 @@ class AudioDigitApp {
     }
 
     async initializeComponents() {
-        // Initialize basic audio recorder (using existing audio-recorder.js)
-        if (typeof AudioRecorder !== 'undefined') {
+        // Initialize VAD audio recorder first
+        if (typeof VADAudioRecorder !== 'undefined') {
+            this.audioRecorder = new VADAudioRecorder();
+            this.setupVADAudioRecorderCallbacks();
+            console.log('[INFO] VAD Audio Recorder initialized');
+        } else if (typeof AudioRecorder !== 'undefined') {
+            // Fallback to basic audio recorder
             this.audioRecorder = new AudioRecorder();
             this.setupAudioRecorderCallbacks();
+            console.log('[INFO] Basic Audio Recorder initialized');
+        } else {
+            console.warn('[WARN] No audio recorder available');
         }
         
         // Initialize audio visualizer (using existing audio-visualizer.js)
@@ -255,15 +263,60 @@ class AudioDigitApp {
                 showGrid: true,
                 retroGlow: true
             });
+            console.log('[INFO] Audio Visualizer initialized');
         }
         
         // Initialize noise generator (using existing noise-generator.js)
         if (typeof NoiseGenerator !== 'undefined') {
             this.noiseGenerator = new NoiseGenerator();
             await this.noiseGenerator.initialize();
+            console.log('[INFO] Noise Generator initialized');
         }
         
         console.log('[INFO] Core components initialized');
+    }
+
+    setupVADAudioRecorderCallbacks() {
+        if (!this.audioRecorder) return;
+        
+        this.audioRecorder.onSpeechStart = () => {
+            this.state.isRecording = true;
+            this.updateRecordingState();
+            console.log('[VAD] Speech detected - recording started');
+            
+            // Start audio visualization if available
+            if (this.audioVisualizer && typeof this.audioVisualizer.start === 'function') {
+                this.audioVisualizer.startStream();
+            }
+        };
+        
+        this.audioRecorder.onSpeechEnd = (audioBlob, duration) => {
+            this.state.isRecording = false;
+            this.state.hasRecordedAudio = true;
+            this.state.currentAudioBlob = audioBlob;
+            this.updateRecordingState();
+            this.updateAudioInfo(duration);
+            
+            // Stop audio visualization
+            if (this.audioVisualizer && typeof this.audioVisualizer.stop === 'function') {
+                this.audioVisualizer.stop();
+            }
+            
+            // Auto-process the recorded audio
+            this.processRecordedAudio();
+            console.log(`[VAD] Speech ended - processing ${duration}ms of audio`);
+        };
+        
+        this.audioRecorder.onError = (error) => {
+            console.error('[ERROR] VAD Recording error:', error);
+            this.state.isRecording = false;
+            this.updateRecordingState();
+        };
+        
+        this.audioRecorder.onChunkReady = (audioBlob, duration) => {
+            console.log(`[VAD] Audio chunk ready: ${duration}ms`);
+            // This could be used for real-time streaming if needed
+        };
     }
 
     setupAudioRecorderCallbacks() {
@@ -320,16 +373,28 @@ class AudioDigitApp {
             if (this.state.isRecording || !this.state.apiConnected) return;
             
             // Check if recorder is available
-            if (!this.audioRecorder || typeof this.audioRecorder.start !== 'function') {
-                console.warn('[WARN] Audio recorder not available, using simplified recording');
+            if (!this.audioRecorder) {
+                console.warn('[WARN] Audio recorder not available');
                 return;
             }
             
-            await this.audioRecorder.start();
-            
-            // Start visualization if available
-            if (this.audioVisualizer && typeof this.audioVisualizer.start === 'function') {
-                this.audioVisualizer.start(this.audioRecorder);
+            // For VAD recorder, start listening for speech
+            if (typeof this.audioRecorder.startListening === 'function') {
+                console.log('[INFO] Starting VAD listening for speech detection...');
+                await this.audioRecorder.startListening();
+                
+                // Update UI to show listening state
+                this.elements.recordingStatus.textContent = 'Listening for speech... (Say a digit 0-9)';
+                this.elements.recordingStatus.style.color = '#ffaa00';
+                this.elements.startRecording.disabled = true;
+                this.elements.stopRecording.disabled = false;
+                
+            } else if (typeof this.audioRecorder.start === 'function') {
+                // Fallback to basic recorder
+                await this.audioRecorder.start();
+            } else {
+                console.warn('[WARN] No compatible recording method found');
+                return;
             }
             
         } catch (error) {
@@ -341,10 +406,25 @@ class AudioDigitApp {
     }
 
     stopRecording() {
-        if (!this.state.isRecording || !this.audioRecorder) return;
+        if (!this.audioRecorder) return;
         
-        this.audioRecorder.stop();
+        // For VAD recorder, stop listening
+        if (typeof this.audioRecorder.stopListening === 'function') {
+            console.log('[INFO] Stopping VAD listening...');
+            this.audioRecorder.stopListening();
+            
+            // Update UI
+            this.elements.recordingStatus.textContent = 'Ready to listen... (Press SPACE or click start)';
+            this.elements.recordingStatus.style.color = '#00ff00';
+            this.elements.startRecording.disabled = false;
+            this.elements.stopRecording.disabled = true;
+            
+        } else if (typeof this.audioRecorder.stop === 'function') {
+            // Fallback to basic recorder
+            this.audioRecorder.stop();
+        }
         
+        // Stop visualization if running
         if (this.audioVisualizer && typeof this.audioVisualizer.stop === 'function') {
             this.audioVisualizer.stop();
         }
