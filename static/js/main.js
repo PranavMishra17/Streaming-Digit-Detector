@@ -83,7 +83,19 @@ class AudioDigitApp {
      */
     async initializeComponents() {
         // Initialize VAD-based audio recorder
-        this.audioRecorder = new VADAudioRecorder();
+        try {
+            this.audioRecorder = new VADAudioRecorder();
+            console.log('[INFO] VAD Audio Recorder initialized');
+        } catch (error) {
+            console.error('Failed to create VAD Audio Recorder:', error);
+            // Fallback to regular AudioRecorder if available
+            if (typeof AudioRecorder !== 'undefined') {
+                console.log('[WARN] Falling back to regular AudioRecorder');
+                this.audioRecorder = new AudioRecorder();
+            } else {
+                throw new Error('No audio recorder available');
+            }
+        }
         
         // Set up VAD audio recorder callbacks
         this.audioRecorder.onSpeechStart = () => {
@@ -435,7 +447,11 @@ class AudioDigitApp {
             await this.audioRecorder.startListening();
             
             // Start visualization
-            this.audioVisualizer.start(this.audioRecorder);
+            if (this.audioVisualizer && typeof this.audioVisualizer.start === 'function') {
+                this.audioVisualizer.start(this.audioRecorder);
+            } else {
+                console.warn('Audio visualizer not available or start method missing');
+            }
             
         } catch (error) {
             console.error('Failed to start recording:', error);

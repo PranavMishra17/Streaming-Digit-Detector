@@ -48,7 +48,7 @@ class VADAudioRecorder {
      */
     async initialize() {
         try {
-            console.log('Initializing VAD-based audio recorder...');
+            console.log('[VAD] Loading VAD model...');
             
             // Check if VAD library is available
             if (typeof vad === 'undefined') {
@@ -58,18 +58,23 @@ class VADAudioRecorder {
             // Set up audio context for visualization
             await this.setupAudioContext();
             
-            // Initialize the VAD
+            // Initialize the VAD with proper configuration
             this.vad = await vad.MicVAD.new({
                 onSpeechStart: this.handleSpeechStart,
                 onSpeechEnd: this.handleSpeechEnd,
                 onVADMisfire: () => {
-                    console.log('VAD misfire detected - ignoring short noise');
+                    console.log('[VAD] VAD misfire');
                 },
-                ...this.vadConfig
+                preSpeechPadFrames: this.vadConfig.preSpeechPadFrames,
+                redemptionFrames: this.vadConfig.redemptionFrames,
+                frameSamples: this.vadConfig.frameSamples,
+                minSpeechFrames: this.vadConfig.minSpeechFrames,
+                positiveSpeechThreshold: this.vadConfig.positiveSpeechThreshold,
+                negativeSpeechThreshold: this.vadConfig.negativeSpeechThreshold
             });
             
             this.isInitialized = true;
-            console.log('VAD audio recorder initialized successfully');
+            console.log('[VAD] VAD model loaded successfully');
             
         } catch (error) {
             console.error('Failed to initialize VAD:', error);
@@ -92,12 +97,12 @@ class VADAudioRecorder {
                 return;
             }
             
-            console.log('Starting VAD listening...');
+            console.log('[VAD] Starting VAD listening...');
             await this.vad.start();
             this.isListening = true;
             this.recordingStartTime = Date.now();
             
-            console.log('VAD listening started successfully');
+            console.log('[VAD] VAD listening started');
             
         } catch (error) {
             console.error('Failed to start listening:', error);
@@ -169,7 +174,7 @@ class VADAudioRecorder {
      * Handle speech start event
      */
     handleSpeechStart() {
-        console.log('🎤 Speech detected - recording started');
+        console.log('[VAD] Detected speech start');
         
         if (this.onSpeechStart) {
             this.onSpeechStart();
@@ -181,10 +186,10 @@ class VADAudioRecorder {
      */
     async handleSpeechEnd(audioData) {
         try {
-            console.log(`🔇 Speech ended - processing ${audioData.length} samples`);
+            console.log(`[VAD] Detected speech end - processing ${audioData.length} samples`);
             
             if (this.processingActive) {
-                console.log('Previous audio still processing, skipping...');
+                console.log('[VAD] Previous audio still processing, skipping...');
                 return;
             }
             
@@ -192,14 +197,14 @@ class VADAudioRecorder {
             
             // Validate audio data
             if (!audioData || audioData.length === 0) {
-                console.warn('Empty audio data received');
+                console.warn('[VAD] Empty audio data received');
                 return;
             }
             
             // Check minimum duration (e.g., 200ms minimum)
             const minSamples = this.sampleRate * 0.2; // 200ms
             if (audioData.length < minSamples) {
-                console.log(`Audio too short: ${audioData.length} samples (min: ${minSamples})`);
+                console.log(`[VAD] Audio too short: ${audioData.length} samples (min: ${minSamples})`);
                 return;
             }
             
@@ -207,7 +212,7 @@ class VADAudioRecorder {
             const wavBuffer = this.encodeWAV(audioData, this.sampleRate);
             const audioBlob = new Blob([wavBuffer], { type: 'audio/wav' });
             
-            console.log(`Audio converted to WAV: ${audioBlob.size} bytes`);
+            console.log(`[VAD] Audio converted to WAV: ${audioBlob.size} bytes`);
             
             // Calculate duration
             const duration = (audioData.length / this.sampleRate) * 1000; // milliseconds
@@ -222,7 +227,7 @@ class VADAudioRecorder {
             }
             
         } catch (error) {
-            console.error('Error processing speech end:', error);
+            console.error('[VAD] Error processing speech end:', error);
             this.handleError(error);
         } finally {
             this.processingActive = false;
