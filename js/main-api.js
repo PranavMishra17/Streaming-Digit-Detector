@@ -282,11 +282,11 @@ class AudioDigitApp {
         this.audioRecorder.onSpeechStart = () => {
             this.state.isRecording = true;
             this.updateRecordingState();
-            console.log('[VAD] Speech detected - recording started');
+            console.log('🎤 Speech detected - recording started');
             
             // Start audio visualization if available
             if (this.audioVisualizer && typeof this.audioVisualizer.start === 'function') {
-                this.audioVisualizer.startStream();
+                this.audioVisualizer.start(this.audioRecorder);
             }
         };
         
@@ -304,7 +304,7 @@ class AudioDigitApp {
             
             // Auto-process the recorded audio
             this.processRecordedAudio();
-            console.log(`[VAD] Speech ended - processing ${duration}ms of audio`);
+            console.log(`🔇 Speech ended - processing ${duration}ms of audio`);
         };
         
         this.audioRecorder.onError = (error) => {
@@ -314,7 +314,7 @@ class AudioDigitApp {
         };
         
         this.audioRecorder.onChunkReady = (audioBlob, duration) => {
-            console.log(`[VAD] Audio chunk ready: ${duration}ms`);
+            console.log(`🎵 Audio chunk ready: ${duration}ms`);
             // This could be used for real-time streaming if needed
         };
     }
