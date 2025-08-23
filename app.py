@@ -902,7 +902,7 @@ def health_check():
             'status': 'healthy',
             'timestamp': time.time(),
             'processors': processor_health,
-            'version': '1.0.0'
+            'version': '1.1.0'
         })
     
     except Exception as e:
