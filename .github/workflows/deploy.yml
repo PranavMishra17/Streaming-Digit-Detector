@@ -1,4 +1,4 @@
-name: Deploy to Vercel and HF Spaces
+name: Deploy Frontend to GitHub Pages
 
 on:
   push:
@@ -6,60 +6,50 @@ on:
       - hf  # Deploy when pushing to hf branch
   workflow_dispatch:  # Allow manual deployment
 
+# Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Allow only one concurrent deployment, skipping runs queued between the run in-progress and latest queued.
+# However, do NOT cancel in-progress runs as we want to allow these production deployments to complete.
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
 jobs:
   deploy-frontend:
-    name: Deploy Frontend to Vercel
+    name: Deploy Frontend to GitHub Pages
     runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
     
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
         
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '18'
-          
-      - name: Install Vercel CLI
-        run: npm install -g vercel
+      - name: Setup Pages
+        uses: actions/configure-pages@v4
         
-      - name: Deploy to Vercel
+      - name: Prepare frontend files
         run: |
-          cd frontend
-          vercel deploy --prod --token ${{ secrets.VERCEL_TOKEN }}
-        env:
-          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
-          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
-
-  deploy-backend:
-    name: Deploy Backend to HF Spaces (Manual)
-    runs-on: ubuntu-latest
-    if: github.event_name == 'workflow_dispatch'  # Only run manually
-    
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-        
-      - name: Setup Python
-        uses: actions/setup-python@v4
+          # Copy frontend files to a clean deployment directory
+          mkdir -p _site
+          cp -r frontend/* _site/
+          
+          # Ensure all assets are in the right place
+          ls -la _site/
+          
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
         with:
-          python-version: '3.9'
+          path: _site
           
-      - name: Install Hugging Face CLI
-        run: |
-          pip install huggingface_hub
-          
-      - name: Deploy to HF Spaces
-        run: |
-          # Note: This is a placeholder - HF Spaces deployment is typically done
-          # by pushing to the HF Spaces git repository or through the web interface
-          echo "Backend deployment to HF Spaces should be done manually"
-          echo "1. Create a new Space at https://huggingface.co/spaces"
-          echo "2. Choose Docker as the SDK"
-          echo "3. Push the backend files (app.py, Dockerfile, requirements_hf.txt, etc.)"
-          echo "4. Update the API URL in the frontend configuration"
-        env:
-          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
 
   test-integration:
     name: Test Frontend-Backend Integration
@@ -74,11 +64,41 @@ jobs:
       - name: Test API connectivity
         run: |
           # Simple test to check if the backend API is accessible
-          # Replace with your actual HF Spaces URL
           API_URL="https://paranoiid-streaming-digit-classifier.hf.space"
           
           echo "Testing API health endpoint..."
-          curl -f "$API_URL/api/health" || echo "API health check failed"
+          curl -f "$API_URL/api/health" || echo "API health check failed - backend may still be building"
           
           echo "Testing processors endpoint..."  
-          curl -f "$API_URL/api/processors" || echo "Processors endpoint failed"
+          curl -f "$API_URL/api/processors" || echo "Processors endpoint failed - backend may still be building"
+          
+      - name: Test frontend deployment
+        run: |
+          # Test if GitHub Pages deployment is working
+          # Note: GitHub Pages URL will be available after first deployment
+          echo "Frontend should be available at: https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}"
+          echo "Check the Pages tab in repository settings to enable GitHub Pages if this is the first deployment"
+
+  backend-deployment-info:
+    name: Backend Deployment Instructions
+    runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch'  # Only show on manual runs
+    
+    steps:
+      - name: Display backend info
+        run: |
+          echo "🚀 DEPLOYMENT STATUS"
+          echo "==================="
+          echo ""
+          echo "✅ Frontend: Will be deployed to GitHub Pages automatically"
+          echo "   URL: https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}"
+          echo ""
+          echo "🔧 Backend: Already deployed to HF Spaces"
+          echo "   URL: https://paranoiid-streaming-digit-classifier.hf.space"
+          echo ""
+          echo "📋 TODO: Enable GitHub Pages in repository settings if this is the first deployment:"
+          echo "   1. Go to Settings > Pages"
+          echo "   2. Select 'Deploy from a branch'"
+          echo "   3. Choose 'GitHub Actions' as source"
+          echo ""
+          echo "🔗 Integration: Frontend will automatically connect to HF Spaces backend"

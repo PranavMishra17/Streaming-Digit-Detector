@@ -8,9 +8,17 @@
       "Bash(python:*)",
       "Bash(curl:*)",
       "Bash(touch:*)",
-      "Bash(cp:*)"
+      "Bash(cp:*)",
+      "Bash(Copy-Item ..app.py .)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)",
+      "Bash(rm:*)"
     ],
     "deny": [],
-    "ask": []
+    "ask": [],
+    "additionalDirectories": [
+      "E:\\e\\Streaming-Digit-Detector"
+    ]
   }
 }
