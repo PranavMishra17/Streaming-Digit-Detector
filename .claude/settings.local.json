@@ -17,7 +17,11 @@
       "Bash(git rm:*)",
       "Bash(git clone:*)",
       "Bash(pip freeze)",
-      "Bash(find:*)"
+      "Bash(find:*)",
+      "Read(/c:\\Users\\prana\\Downloads/**)",
+      "Read(/c:\\Users\\prana\\Downloads/**)",
+      "Read(/c:\\Users\\prana\\Downloads/**)",
+      "Read(/c:\\Users\\prana\\Downloads/**)"
     ],
     "deny": [],
     "ask": [],

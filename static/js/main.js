@@ -83,19 +83,7 @@ class AudioDigitApp {
      */
     async initializeComponents() {
         // Initialize VAD-based audio recorder
-        try {
-            this.audioRecorder = new VADAudioRecorder();
-            console.log('[INFO] VAD Audio Recorder initialized');
-        } catch (error) {
-            console.error('Failed to create VAD Audio Recorder:', error);
-            // Fallback to regular AudioRecorder if available
-            if (typeof AudioRecorder !== 'undefined') {
-                console.log('[WARN] Falling back to regular AudioRecorder');
-                this.audioRecorder = new AudioRecorder();
-            } else {
-                throw new Error('No audio recorder available');
-            }
-        }
+        this.audioRecorder = new VADAudioRecorder();
         
         // Set up VAD audio recorder callbacks
         this.audioRecorder.onSpeechStart = () => {
@@ -177,6 +165,8 @@ class AudioDigitApp {
         };
         }
         
+        addLogEntry('[INFO] VAD Audio Recorder initialized', 'info');
+        
         // Initialize audio visualizer
         this.audioVisualizer = new AudioVisualizer(this.elements.audioCanvas, {
             waveColor: '#00ff00',
@@ -185,10 +175,12 @@ class AudioDigitApp {
             showText: true,
             retroGlow: true
         });
+        addLogEntry('[INFO] Audio Visualizer initialized', 'info');
         
         // Initialize noise generator
         this.noiseGenerator = new NoiseGenerator();
         await this.noiseGenerator.initialize();
+        addLogEntry('[INFO] Noise Generator initialized', 'info');
         
         addLogEntry('[INFO] Core components initialized', 'info');
     }
@@ -447,11 +439,7 @@ class AudioDigitApp {
             await this.audioRecorder.startListening();
             
             // Start visualization
-            if (this.audioVisualizer && typeof this.audioVisualizer.start === 'function') {
-                this.audioVisualizer.start(this.audioRecorder);
-            } else {
-                console.warn('Audio visualizer not available or start method missing');
-            }
+            this.audioVisualizer.start(this.audioRecorder);
             
         } catch (error) {
             console.error('Failed to start recording:', error);
