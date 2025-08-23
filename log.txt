@@ -1,0 +1,941 @@
+2025-08-23 15:20:12,143 - numba.core.ssa - DEBUG - ==== SSA block analysis pass on 80
+2025-08-23 15:20:12,143 - numba.core.ssa - DEBUG - Running <numba.core.ssa._GatherDefsHandler object at 0x7f7cc5b61ae0>
+2025-08-23 15:20:12,143 - numba.core.ssa - DEBUG - on stmt: $80for_iter.1.1 = iternext(value=$phi80.0.1)
+2025-08-23 15:20:12,143 - numba.core.ssa - DEBUG - on stmt: $80for_iter.2.1 = pair_first(value=$80for_iter.1.1)
+2025-08-23 15:20:12,143 - numba.core.ssa - DEBUG - on stmt: $80for_iter.3.1 = pair_second(value=$80for_iter.1.1)
+2025-08-23 15:20:12,143 - numba.core.ssa - DEBUG - on stmt: $phi82.1.1 = $80for_iter.2.1
+2025-08-23 15:20:12,143 - numba.core.ssa - DEBUG - on stmt: branch $80for_iter.3.1, 82, 166
+2025-08-23 15:20:12,143 - numba.core.ssa - DEBUG - ==== SSA block analysis pass on 82
+2025-08-23 15:20:12,144 - numba.core.ssa - DEBUG - Running <numba.core.ssa._GatherDefsHandler object at 0x7f7cc5b61ae0>
+2025-08-23 15:20:12,144 - numba.core.ssa - DEBUG - on stmt: index00 = $phi82.1.1
+2025-08-23 15:20:12,144 - numba.core.ssa - DEBUG - on stmt: jump 90
+2025-08-23 15:20:12,144 - numba.core.ssa - DEBUG - ==== SSA block analysis pass on 166
+2025-08-23 15:20:12,144 - numba.core.ssa - DEBUG - Running <numba.core.ssa._GatherDefsHandler object at 0x7f7cc5b61ae0>
+2025-08-23 15:20:12,144 - numba.core.ssa - DEBUG - on stmt: $92return_value.1.1 = cast(value=out0)
+2025-08-23 15:20:12,144 - numba.core.ssa - DEBUG - on stmt: return $92return_value.1.1
+2025-08-23 15:20:12,144 - numba.core.ssa - DEBUG - ==== SSA block analysis pass on 90
+2025-08-23 15:20:12,144 - numba.core.ssa - DEBUG - Running <numba.core.ssa._GatherDefsHandler object at 0x7f7cc5b61ae0>
+2025-08-23 15:20:12,144 - numba.core.ssa - DEBUG - on stmt: $const4.1.1 = const(int, 1)
+2025-08-23 15:20:12,144 - numba.core.ssa - DEBUG - on stmt: stencil_index = $const4.1.1 + index00
+2025-08-23 15:20:12,144 - numba.core.ssa - DEBUG - on stmt: $6binary_subscr.2 = getitem(value=x, index=stencil_index, fn=<built-in function getitem>)
+2025-08-23 15:20:12,144 - numba.core.ssa - DEBUG - on stmt: $const10.4.2 = const(int, -1)
+2025-08-23 15:20:12,144 - numba.core.ssa - DEBUG - on stmt: stencil_index.1 = $const10.4.2 + index00
+2025-08-23 15:20:12,144 - numba.core.ssa - DEBUG - on stmt: $12binary_subscr.5 = getitem(value=x, index=stencil_index.1, fn=<built-in function getitem>)
+2025-08-23 15:20:12,144 - numba.core.ssa - DEBUG - on stmt: $14binary_add.6 = $6binary_subscr.2 + $12binary_subscr.5
+2025-08-23 15:20:12,144 - numba.core.ssa - DEBUG - on stmt: $const16.7.3 = const(int, 2)
+2025-08-23 15:20:12,144 - numba.core.ssa - DEBUG - on stmt: $const20.9.4 = const(int, 0)
+2025-08-23 15:20:12,144 - numba.core.ssa - DEBUG - on stmt: stencil_index.2 = $const20.9.4 + index00
+2025-08-23 15:20:12,144 - numba.core.ssa - DEBUG - on stmt: $22binary_subscr.10 = getitem(value=x, index=stencil_index.2, fn=<built-in function getitem>)
+2025-08-23 15:20:12,145 - numba.core.ssa - DEBUG - on stmt: $24binary_multiply.11 = $const16.7.3 * $22binary_subscr.10
+2025-08-23 15:20:12,145 - numba.core.ssa - DEBUG - on stmt: a = $14binary_add.6 - $24binary_multiply.11
+2025-08-23 15:20:12,145 - numba.core.ssa - DEBUG - on stmt: $const32.14.1 = const(int, 1)
+2025-08-23 15:20:12,145 - numba.core.ssa - DEBUG - on stmt: stencil_index.3 = $const32.14.1 + index00
+2025-08-23 15:20:12,145 - numba.core.ssa - DEBUG - on stmt: $34binary_subscr.15 = getitem(value=x, index=stencil_index.3, fn=<built-in function getitem>)
+2025-08-23 15:20:12,145 - numba.core.ssa - DEBUG - on stmt: $const38.17.2 = const(int, -1)
+2025-08-23 15:20:12,145 - numba.core.ssa - DEBUG - on stmt: stencil_index.4 = $const38.17.2 + index00
+2025-08-23 15:20:12,145 - numba.core.ssa - DEBUG - on stmt: $40binary_subscr.18 = getitem(value=x, index=stencil_index.4, fn=<built-in function getitem>)
+2025-08-23 15:20:12,145 - numba.core.ssa - DEBUG - on stmt: $42binary_subtract.19 = $34binary_subscr.15 - $40binary_subscr.18
+2025-08-23 15:20:12,145 - numba.core.ssa - DEBUG - on stmt: $const44.20.3 = const(int, 2)
+2025-08-23 15:20:12,145 - numba.core.ssa - DEBUG - on stmt: b = $42binary_subtract.19 / $const44.20.3
+2025-08-23 15:20:12,145 - numba.core.ssa - DEBUG - on stmt: $50load_global.22 = global(np: <module 'numpy' from '/home/user/.local/lib/python3.10/site-packages/numpy/__init__.py'>)
+2025-08-23 15:20:12,146 - numba.core.ssa - DEBUG - on stmt: $52load_method.23 = getattr(value=$50load_global.22, attr=abs)
+2025-08-23 15:20:12,146 - numba.core.ssa - DEBUG - on stmt: $56call_method.25 = call $52load_method.23(b, func=$52load_method.23, args=[Var(b, pitch.py:429)], kws=(), vararg=None, varkwarg=None, target=None)
+2025-08-23 15:20:12,146 - numba.core.ssa - DEBUG - on stmt: $58load_global.26 = global(np: <module 'numpy' from '/home/user/.local/lib/python3.10/site-packages/numpy/__init__.py'>)
+2025-08-23 15:20:12,146 - numba.core.ssa - DEBUG - on stmt: $60load_method.27 = getattr(value=$58load_global.26, attr=abs)
+2025-08-23 15:20:12,146 - numba.core.ssa - DEBUG - on stmt: $64call_method.29 = call $60load_method.27(a, func=$60load_method.27, args=[Var(a, pitch.py:428)], kws=(), vararg=None, varkwarg=None, target=None)
+2025-08-23 15:20:12,146 - numba.core.ssa - DEBUG - on stmt: $66compare_op.30 = $56call_method.25 >= $64call_method.29
+2025-08-23 15:20:12,146 - numba.core.ssa - DEBUG - on stmt: bool68 = global(bool: <class 'bool'>)
+2025-08-23 15:20:12,146 - numba.core.ssa - DEBUG - on stmt: $68pred = call bool68($66compare_op.30, func=bool68, args=(Var($66compare_op.30, pitch.py:431),), kws=(), vararg=None, varkwarg=None, target=None)
+2025-08-23 15:20:12,147 - numba.core.ssa - DEBUG - on stmt: branch $68pred, 91, 161
+2025-08-23 15:20:12,147 - numba.core.ssa - DEBUG - ==== SSA block analysis pass on 91
+2025-08-23 15:20:12,147 - numba.core.ssa - DEBUG - Running <numba.core.ssa._GatherDefsHandler object at 0x7f7cc5b61ae0>
+2025-08-23 15:20:12,147 - numba.core.ssa - DEBUG - on stmt: $const70.0.4 = const(int, 0)
+2025-08-23 15:20:12,147 - numba.core.ssa - DEBUG - on stmt: $72return_value.1 = cast(value=$const70.0.4)
+2025-08-23 15:20:12,147 - numba.core.ssa - DEBUG - on stmt: out0[index00] = $72return_value.1
+2025-08-23 15:20:12,147 - numba.core.ssa - DEBUG - on stmt: jump 165
+2025-08-23 15:20:12,147 - numba.core.ssa - DEBUG - ==== SSA block analysis pass on 161
+2025-08-23 15:20:12,147 - numba.core.ssa - DEBUG - Running <numba.core.ssa._GatherDefsHandler object at 0x7f7cc5b61ae0>
+2025-08-23 15:20:12,147 - numba.core.ssa - DEBUG - on stmt: $76unary_negative.1 = unary(fn=<built-in function neg>, value=b)
+2025-08-23 15:20:12,147 - numba.core.ssa - DEBUG - on stmt: $80binary_true_divide.3 = $76unary_negative.1 / a
+2025-08-23 15:20:12,147 - numba.core.ssa - DEBUG - on stmt: $82return_value.4 = cast(value=$80binary_true_divide.3)
+2025-08-23 15:20:12,147 - numba.core.ssa - DEBUG - on stmt: out0[index00] = $82return_value.4
+2025-08-23 15:20:12,147 - numba.core.ssa - DEBUG - on stmt: jump 165
+2025-08-23 15:20:12,148 - numba.core.ssa - DEBUG - ==== SSA block analysis pass on 165
+2025-08-23 15:20:12,148 - numba.core.ssa - DEBUG - Running <numba.core.ssa._GatherDefsHandler object at 0x7f7cc5b61ae0>
+2025-08-23 15:20:12,148 - numba.core.ssa - DEBUG - on stmt: jump 80
+2025-08-23 15:20:12,148 - numba.core.ssa - DEBUG - defs defaultdict(<class 'list'>,
+            {'$10load_attr.3.1': [(<numba.core.ir.Assign object at 0x7f7cc58fd600>,
+                                   0)],
+             '$12binary_subscr.5': [(<numba.core.ir.Assign object at 0x7f7cc58a5b40>,
+                                     90)],
+             '$14binary_add.6': [(<numba.core.ir.Assign object at 0x7f7cd42ceb00>,
+                                  90)],
+             '$14load_global.5.1': [(<numba.core.ir.Assign object at 0x7f7cc58fcac0>,
+                                     0)],
+             '$16load_attr.6.1': [(<numba.core.ir.Assign object at 0x7f7cc58fc940>,
+                                   0)],
+             '$22binary_subscr.10': [(<numba.core.ir.Assign object at 0x7f7cc58fd420>,
+                                      90)],
+             '$24binary_multiply.11': [(<numba.core.ir.Assign object at 0x7f7cd40d98a0>,
+                                        90)],
+             '$32build_slice.13.1': [(<numba.core.ir.Assign object at 0x7f7cc58feef0>,
+                                      0)],
+             '$32build_slice.14.1': [(<numba.core.ir.Assign object at 0x7f7cc58fca00>,
+                                      0)],
+             '$34binary_subscr.15': [(<numba.core.ir.Assign object at 0x7f7cc58fd9f0>,
+                                      90)],
+             '$40binary_subscr.18': [(<numba.core.ir.Assign object at 0x7f7cc58fe350>,
+                                      90)],
+             '$42binary_subtract.19': [(<numba.core.ir.Assign object at 0x7f7cc5b5b310>,
+                                        90)],
+             '$44build_slice.19.1': [(<numba.core.ir.Assign object at 0x7f7cc587a800>,
+                                      0)],
+             '$44build_slice.20.1': [(<numba.core.ir.Assign object at 0x7f7cc5879870>,
+                                      0)],
+             '$48load_global.21.1': [(<numba.core.ir.Assign object at 0x7f7cc5879960>,
+                                      0)],
+             '$50load_global.22': [(<numba.core.ir.Assign object at 0x7f7cd423aef0>,
+                                    90)],
+             '$50load_global.22.1': [(<numba.core.ir.Assign object at 0x7f7cc5879180>,
+                                      0)],
+             '$52load_method.23': [(<numba.core.ir.Assign object at 0x7f7cd468cb50>,
+                                    90)],
+             '$56call_function.25.1': [(<numba.core.ir.Assign object at 0x7f7cc587a020>,
+                                        0)],
+             '$56call_method.25': [(<numba.core.ir.Assign object at 0x7f7cd4256230>,
+                                    90)],
+             '$58load_global.26': [(<numba.core.ir.Assign object at 0x7f7cd42555d0>,
+                                    90)],
+             '$58unary_negative.26.1': [(<numba.core.ir.Assign object at 0x7f7cc5878e50>,
+                                         0)],
+             '$60load_method.27': [(<numba.core.ir.Assign object at 0x7f7cd41c0790>,
+                                    90)],
+             '$64binary_subscr.29.1': [(<numba.core.ir.Assign object at 0x7f7cc5878ee0>,
+                                        0)],
+             '$64call_method.29': [(<numba.core.ir.Assign object at 0x7f7cd41c1840>,
+                                    90)],
+             '$66compare_op.30': [(<numba.core.ir.Assign object at 0x7f7cd41c0880>,
+                                   90)],
+             '$66load_global.30.1': [(<numba.core.ir.Assign object at 0x7f7cc5878fa0>,
+                                      0)],
+             '$68pred': [(<numba.core.ir.Assign object at 0x7f7cd422f370>, 90)],
+             '$6binary_subscr.2': [(<numba.core.ir.Assign object at 0x7f7cc58a4850>,
+                                    90)],
+             '$72call_function.33.1': [(<numba.core.ir.Assign object at 0x7f7cc5879540>,
+                                        0)],
+             '$72return_value.1': [(<numba.core.ir.Assign object at 0x7f7cd4166cb0>,
+                                    91)],
+             '$74binary_subtract.34.1': [(<numba.core.ir.Assign object at 0x7f7cc5879510>,
+                                          0)],
+             '$76call_function.35.1': [(<numba.core.ir.Assign object at 0x7f7cc587a200>,
+                                        0)],
+             '$76unary_negative.1': [(<numba.core.ir.Assign object at 0x7f7cd4007c10>,
+                                      161)],
+             '$78get_iter.36.1': [(<numba.core.ir.Assign object at 0x7f7cc5879b40>,
+                                   0)],
+             '$80binary_true_divide.3': [(<numba.core.ir.Assign object at 0x7f7cd4006b90>,
+                                          161)],
+             '$80for_iter.1.1': [(<numba.core.ir.Assign object at 0x7f7cc587b670>,
+                                  80)],
+             '$80for_iter.2.1': [(<numba.core.ir.Assign object at 0x7f7cc587b190>,
+                                  80)],
+             '$80for_iter.3.1': [(<numba.core.ir.Assign object at 0x7f7cc587b250>,
+                                  80)],
+             '$82return_value.4': [(<numba.core.ir.Assign object at 0x7f7cd4006ec0>,
+                                    161)],
+             '$8load_global.2.1': [(<numba.core.ir.Assign object at 0x7f7cc58fdb70>,
+                                    0)],
+             '$92return_value.1.1': [(<numba.core.ir.Assign object at 0x7f7cc5879fc0>,
+                                      166)],
+             '$const10.4.2': [(<numba.core.ir.Assign object at 0x7f7cc59eaaa0>,
+                               90)],
+             '$const16.7.3': [(<numba.core.ir.Assign object at 0x7f7cd42cfdf0>,
+                               90)],
+             '$const20.9.4': [(<numba.core.ir.Assign object at 0x7f7cd40cf820>,
+                               90)],
+             '$const24.9.2.1': [(<numba.core.ir.Assign object at 0x7f7cc58fe650>,
+                                 0)],
+             '$const28.11.0.1': [(<numba.core.ir.Assign object at 0x7f7cc58fda20>,
+                                  0)],
+             '$const30.12.3.1': [(<numba.core.ir.Assign object at 0x7f7cc58fdba0>,
+                                  0)],
+             '$const32.14.1': [(<numba.core.ir.Assign object at 0x7f7cd40d2b90>,
+                                90)],
+             '$const36.15.2.1': [(<numba.core.ir.Assign object at 0x7f7cc58fec20>,
+                                  0)],
+             '$const38.17.2': [(<numba.core.ir.Assign object at 0x7f7cd40d6350>,
+                                90)],
+             '$const4.1.1': [(<numba.core.ir.Assign object at 0x7f7cc4b4dd80>,
+                              90)],
+             '$const40.17.4.1': [(<numba.core.ir.Assign object at 0x7f7cc58fe140>,
+                                  0)],
+             '$const42.18.0.1': [(<numba.core.ir.Assign object at 0x7f7cc587a170>,
+                                  0)],
+             '$const44.20.3': [(<numba.core.ir.Assign object at 0x7f7cc5b5bbb0>,
+                                90)],
+             '$const52.23.2.1': [(<numba.core.ir.Assign object at 0x7f7cc587b9a0>,
+                                  0)],
+             '$const54.24.4.1': [(<numba.core.ir.Assign object at 0x7f7cc5878b80>,
+                                  0)],
+             '$const62.28.2.1': [(<numba.core.ir.Assign object at 0x7f7cc587bb80>,
+                                  0)],
+             '$const68.31.2.1': [(<numba.core.ir.Assign object at 0x7f7cc5878d00>,
+                                  0)],
+             '$const70.0.4': [(<numba.core.ir.Assign object at 0x7f7cd4167ca0>,
+                               91)],
+             '$const70.32.3.1': [(<numba.core.ir.Assign object at 0x7f7cc587ac80>,
+                                  0)],
+             '$phi80.0.1': [(<numba.core.ir.Assign object at 0x7f7cc58fe980>,
+                             0)],
+             '$phi82.1.1': [(<numba.core.ir.Assign object at 0x7f7cc5879300>,
+                             80)],
+             'a': [(<numba.core.ir.Assign object at 0x7f7cd40d9b70>, 90)],
+             'b': [(<numba.core.ir.Assign object at 0x7f7cd44c07f0>, 90)],
+             'bool68': [(<numba.core.ir.Assign object at 0x7f7cd44369e0>, 90)],
+             'full_shape0': [(<numba.core.ir.Assign object at 0x7f7cc58ff370>,
+                              0)],
+             'index00': [(<numba.core.ir.Assign object at 0x7f7cc5879900>, 82)],
+             'out0': [(<numba.core.ir.Assign object at 0x7f7cc58fdc60>, 0)],
+             'stencil_index': [(<numba.core.ir.Assign object at 0x7f7cc58a4e80>,
+                                90)],
+             'stencil_index.1': [(<numba.core.ir.Assign object at 0x7f7cc58a5510>,
+                                  90)],
+             'stencil_index.2': [(<numba.core.ir.Assign object at 0x7f7cc5766e60>,
+                                  90)],
+             'stencil_index.3': [(<numba.core.ir.Assign object at 0x7f7cc58fd660>,
+                                  90)],
+             'stencil_index.4': [(<numba.core.ir.Assign object at 0x7f7cc58ff280>,
+                                  90)],
+             'x': [(<numba.core.ir.Assign object at 0x7f7cc58fea40>, 0)]})
+2025-08-23 15:20:12,153 - numba.core.ssa - DEBUG - SSA violators <numba.core.utils.OrderedSet object at 0x7f7cc5b61ae0>
+2025-08-23 15:20:12,160 - numba.core.byteflow - DEBUG - bytecode dump:
+>          0	NOP(arg=None, lineno=4454)
+           2	LOAD_GLOBAL(arg=0, lineno=4455)
+           4	LOAD_FAST(arg=0, lineno=4455)
+           6	LOAD_FAST(arg=1, lineno=4455)
+           8	LOAD_DEREF(arg=0, lineno=4455)
+          10	CALL_FUNCTION(arg=3, lineno=4455)
+          12	RETURN_VALUE(arg=None, lineno=4455)
+2025-08-23 15:20:12,160 - numba.core.byteflow - DEBUG - pending: deque([State(pc_initial=0 nstack_initial=0)])
+2025-08-23 15:20:12,160 - numba.core.byteflow - DEBUG - stack: []
+2025-08-23 15:20:12,160 - numba.core.byteflow - DEBUG - state.pc_initial: State(pc_initial=0 nstack_initial=0)
+2025-08-23 15:20:12,160 - numba.core.byteflow - DEBUG - dispatch pc=0, inst=NOP(arg=None, lineno=4454)
+2025-08-23 15:20:12,160 - numba.core.byteflow - DEBUG - stack []
+2025-08-23 15:20:12,160 - numba.core.byteflow - DEBUG - dispatch pc=2, inst=LOAD_GLOBAL(arg=0, lineno=4455)
+2025-08-23 15:20:12,160 - numba.core.byteflow - DEBUG - stack []
+2025-08-23 15:20:12,160 - numba.core.byteflow - DEBUG - dispatch pc=4, inst=LOAD_FAST(arg=0, lineno=4455)
+2025-08-23 15:20:12,160 - numba.core.byteflow - DEBUG - stack ['$2load_global.0']
+2025-08-23 15:20:12,160 - numba.core.byteflow - DEBUG - dispatch pc=6, inst=LOAD_FAST(arg=1, lineno=4455)
+2025-08-23 15:20:12,161 - numba.core.byteflow - DEBUG - stack ['$2load_global.0', '$shape4.1']
+2025-08-23 15:20:12,161 - numba.core.byteflow - DEBUG - dispatch pc=8, inst=LOAD_DEREF(arg=0, lineno=4455)
+2025-08-23 15:20:12,161 - numba.core.byteflow - DEBUG - stack ['$2load_global.0', '$shape4.1', '$dtype6.2']
+2025-08-23 15:20:12,161 - numba.core.byteflow - DEBUG - dispatch pc=10, inst=CALL_FUNCTION(arg=3, lineno=4455)
+2025-08-23 15:20:12,161 - numba.core.byteflow - DEBUG - stack ['$2load_global.0', '$shape4.1', '$dtype6.2', '$8load_deref.3']
+2025-08-23 15:20:12,161 - numba.core.byteflow - DEBUG - dispatch pc=12, inst=RETURN_VALUE(arg=None, lineno=4455)
+2025-08-23 15:20:12,161 - numba.core.byteflow - DEBUG - stack ['$10call_function.4']
+2025-08-23 15:20:12,161 - numba.core.byteflow - DEBUG - end state. edges=[]
+2025-08-23 15:20:12,161 - numba.core.byteflow - DEBUG - -------------------------Prune PHIs-------------------------
+2025-08-23 15:20:12,161 - numba.core.byteflow - DEBUG - Used_phis: defaultdict(<class 'set'>, {State(pc_initial=0 nstack_initial=0): set()})
+2025-08-23 15:20:12,161 - numba.core.byteflow - DEBUG - defmap: {}
+2025-08-23 15:20:12,161 - numba.core.byteflow - DEBUG - phismap: defaultdict(<class 'set'>, {})
+2025-08-23 15:20:12,162 - numba.core.byteflow - DEBUG - changing phismap: defaultdict(<class 'set'>, {})
+2025-08-23 15:20:12,162 - numba.core.byteflow - DEBUG - keep phismap: {}
+2025-08-23 15:20:12,162 - numba.core.byteflow - DEBUG - new_out: defaultdict(<class 'dict'>, {})
+2025-08-23 15:20:12,162 - numba.core.byteflow - DEBUG - ----------------------DONE Prune PHIs-----------------------
+2025-08-23 15:20:12,162 - numba.core.byteflow - DEBUG - block_infos State(pc_initial=0 nstack_initial=0):
+AdaptBlockInfo(insts=((0, {}), (2, {'res': '$2load_global.0'}), (4, {'res': '$shape4.1'}), (6, {'res': '$dtype6.2'}), (8, {'res': '$8load_deref.3'}), (10, {'func': '$2load_global.0', 'args': ['$shape4.1', '$dtype6.2', '$8load_deref.3'], 'res': '$10call_function.4'}), (12, {'retval': '$10call_function.4', 'castval': '$12return_value.5'})), outgoing_phis={}, blockstack=(), active_try_block=None, outgoing_edgepushed={})
+2025-08-23 15:20:12,162 - numba.core.interpreter - DEBUG - label 0:
+    shape = arg(0, name=shape)               ['shape']
+    dtype = arg(1, name=dtype)               ['dtype']
+    $2load_global.0 = global(numpy_empty_nd: <intrinsic numpy_empty_nd>) ['$2load_global.0']
+    $8load_deref.3 = freevar(retty: array(float64, 1d, C)) ['$8load_deref.3']
+    $10call_function.4 = call $2load_global.0(shape, dtype, $8load_deref.3, func=$2load_global.0, args=[Var(shape, arrayobj.py:4454), Var(dtype, arrayobj.py:4454), Var($8load_deref.3, arrayobj.py:4455)], kws=(), vararg=None, varkwarg=None, target=None) ['$10call_function.4', '$2load_global.0', '$8load_deref.3', 'dtype', 'shape']
+    $12return_value.5 = cast(value=$10call_function.4) ['$10call_function.4', '$12return_value.5']
+    return $12return_value.5                 ['$12return_value.5']
+
+2025-08-23 15:20:12,165 - numba.core.ssa - DEBUG - ==== SSA block analysis pass on 0
+2025-08-23 15:20:12,165 - numba.core.ssa - DEBUG - Running <numba.core.ssa._GatherDefsHandler object at 0x7f7cc5b62d70>
+2025-08-23 15:20:12,165 - numba.core.ssa - DEBUG - on stmt: shape = arg(0, name=shape)
+2025-08-23 15:20:12,165 - numba.core.ssa - DEBUG - on stmt: dtype = arg(1, name=dtype)
+2025-08-23 15:20:12,165 - numba.core.ssa - DEBUG - on stmt: $2load_global.0 = global(numpy_empty_nd: <intrinsic numpy_empty_nd>)
+2025-08-23 15:20:12,166 - numba.core.ssa - DEBUG - on stmt: $8load_deref.3 = freevar(retty: array(float64, 1d, C))
+2025-08-23 15:20:12,166 - numba.core.ssa - DEBUG - on stmt: $10call_function.4 = call $2load_global.0(shape, dtype, $8load_deref.3, func=$2load_global.0, args=[Var(shape, arrayobj.py:4454), Var(dtype, arrayobj.py:4454), Var($8load_deref.3, arrayobj.py:4455)], kws=(), vararg=None, varkwarg=None, target=None)
+2025-08-23 15:20:12,166 - numba.core.ssa - DEBUG - on stmt: $12return_value.5 = cast(value=$10call_function.4)
+2025-08-23 15:20:12,166 - numba.core.ssa - DEBUG - on stmt: return $12return_value.5
+2025-08-23 15:20:12,166 - numba.core.ssa - DEBUG - defs defaultdict(<class 'list'>,
+            {'$10call_function.4': [(<numba.core.ir.Assign object at 0x7f7cd4073e50>,
+                                     0)],
+             '$12return_value.5': [(<numba.core.ir.Assign object at 0x7f7cd4070340>,
+                                    0)],
+             '$2load_global.0': [(<numba.core.ir.Assign object at 0x7f7cd40710f0>,
+                                  0)],
+             '$8load_deref.3': [(<numba.core.ir.Assign object at 0x7f7cd4071e70>,
+                                 0)],
+             'dtype': [(<numba.core.ir.Assign object at 0x7f7cd4070850>, 0)],
+             'shape': [(<numba.core.ir.Assign object at 0x7f7cc5b63370>, 0)]})
+2025-08-23 15:20:12,166 - numba.core.ssa - DEBUG - SSA violators <numba.core.utils.OrderedSet object at 0x7f7cc5b62d70>
+2025-08-23 15:20:12,670 - numba.core.byteflow - DEBUG - bytecode dump:
+>          0	NOP(arg=None, lineno=439)
+           2	LOAD_GLOBAL(arg=0, lineno=447)
+           4	LOAD_FAST(arg=0, lineno=447)
+           6	CALL_FUNCTION(arg=1, lineno=447)
+           8	LOAD_FAST(arg=1, lineno=447)
+          10	LOAD_CONST(arg=1, lineno=447)
+          12	LOAD_CONST(arg=1, lineno=447)
+          14	BUILD_SLICE(arg=2, lineno=447)
+          16	STORE_SUBSCR(arg=None, lineno=447)
+          18	LOAD_CONST(arg=1, lineno=447)
+          20	RETURN_VALUE(arg=None, lineno=447)
+2025-08-23 15:20:12,670 - numba.core.byteflow - DEBUG - pending: deque([State(pc_initial=0 nstack_initial=0)])
+2025-08-23 15:20:12,670 - numba.core.byteflow - DEBUG - stack: []
+2025-08-23 15:20:12,670 - numba.core.byteflow - DEBUG - state.pc_initial: State(pc_initial=0 nstack_initial=0)
+2025-08-23 15:20:12,670 - numba.core.byteflow - DEBUG - dispatch pc=0, inst=NOP(arg=None, lineno=439)
+2025-08-23 15:20:12,670 - numba.core.byteflow - DEBUG - stack []
+2025-08-23 15:20:12,670 - numba.core.byteflow - DEBUG - dispatch pc=2, inst=LOAD_GLOBAL(arg=0, lineno=447)
+2025-08-23 15:20:12,670 - numba.core.byteflow - DEBUG - stack []
+2025-08-23 15:20:12,670 - numba.core.byteflow - DEBUG - dispatch pc=4, inst=LOAD_FAST(arg=0, lineno=447)
+2025-08-23 15:20:12,670 - numba.core.byteflow - DEBUG - stack ['$2load_global.0']
+2025-08-23 15:20:12,670 - numba.core.byteflow - DEBUG - dispatch pc=6, inst=CALL_FUNCTION(arg=1, lineno=447)
+2025-08-23 15:20:12,670 - numba.core.byteflow - DEBUG - stack ['$2load_global.0', '$x4.1']
+2025-08-23 15:20:12,670 - numba.core.byteflow - DEBUG - dispatch pc=8, inst=LOAD_FAST(arg=1, lineno=447)
+2025-08-23 15:20:12,671 - numba.core.byteflow - DEBUG - stack ['$6call_function.2']
+2025-08-23 15:20:12,671 - numba.core.byteflow - DEBUG - dispatch pc=10, inst=LOAD_CONST(arg=1, lineno=447)
+2025-08-23 15:20:12,671 - numba.core.byteflow - DEBUG - stack ['$6call_function.2', '$y8.3']
+2025-08-23 15:20:12,671 - numba.core.byteflow - DEBUG - dispatch pc=12, inst=LOAD_CONST(arg=1, lineno=447)
+2025-08-23 15:20:12,671 - numba.core.byteflow - DEBUG - stack ['$6call_function.2', '$y8.3', '$const10.4.1']
+2025-08-23 15:20:12,671 - numba.core.byteflow - DEBUG - dispatch pc=14, inst=BUILD_SLICE(arg=2, lineno=447)
+2025-08-23 15:20:12,671 - numba.core.byteflow - DEBUG - stack ['$6call_function.2', '$y8.3', '$const10.4.1', '$const12.5.1']
+2025-08-23 15:20:12,671 - numba.core.byteflow - DEBUG - dispatch pc=16, inst=STORE_SUBSCR(arg=None, lineno=447)
+2025-08-23 15:20:12,671 - numba.core.byteflow - DEBUG - stack ['$6call_function.2', '$y8.3', '$14build_slice.7']
+2025-08-23 15:20:12,671 - numba.core.byteflow - DEBUG - dispatch pc=18, inst=LOAD_CONST(arg=1, lineno=447)
+2025-08-23 15:20:12,671 - numba.core.byteflow - DEBUG - stack []
+2025-08-23 15:20:12,671 - numba.core.byteflow - DEBUG - dispatch pc=20, inst=RETURN_VALUE(arg=None, lineno=447)
+2025-08-23 15:20:12,671 - numba.core.byteflow - DEBUG - stack ['$const18.8.1']
+2025-08-23 15:20:12,671 - numba.core.byteflow - DEBUG - end state. edges=[]
+2025-08-23 15:20:12,671 - numba.core.byteflow - DEBUG - -------------------------Prune PHIs-------------------------
+2025-08-23 15:20:12,671 - numba.core.byteflow - DEBUG - Used_phis: defaultdict(<class 'set'>, {State(pc_initial=0 nstack_initial=0): set()})
+2025-08-23 15:20:12,671 - numba.core.byteflow - DEBUG - defmap: {}
+2025-08-23 15:20:12,671 - numba.core.byteflow - DEBUG - phismap: defaultdict(<class 'set'>, {})
+2025-08-23 15:20:12,671 - numba.core.byteflow - DEBUG - changing phismap: defaultdict(<class 'set'>, {})
+2025-08-23 15:20:12,672 - numba.core.byteflow - DEBUG - keep phismap: {}
+2025-08-23 15:20:12,672 - numba.core.byteflow - DEBUG - new_out: defaultdict(<class 'dict'>, {})
+2025-08-23 15:20:12,672 - numba.core.byteflow - DEBUG - ----------------------DONE Prune PHIs-----------------------
+2025-08-23 15:20:12,672 - numba.core.byteflow - DEBUG - block_infos State(pc_initial=0 nstack_initial=0):
+AdaptBlockInfo(insts=((0, {}), (2, {'res': '$2load_global.0'}), (4, {'res': '$x4.1'}), (6, {'func': '$2load_global.0', 'args': ['$x4.1'], 'res': '$6call_function.2'}), (8, {'res': '$y8.3'}), (10, {'res': '$const10.4.1'}), (12, {'res': '$const12.5.1'}), (14, {'start': '$const10.4.1', 'stop': '$const12.5.1', 'step': None, 'res': '$14build_slice.7', 'slicevar': '$14build_slice.6'}), (16, {'target': '$y8.3', 'index': '$14build_slice.7', 'value': '$6call_function.2'}), (18, {'res': '$const18.8.1'}), (20, {'retval': '$const18.8.1', 'castval': '$20return_value.9'})), outgoing_phis={}, blockstack=(), active_try_block=None, outgoing_edgepushed={})
+2025-08-23 15:20:12,672 - numba.core.interpreter - DEBUG - label 0:
+    x = arg(0, name=x)                       ['x']
+    y = arg(1, name=y)                       ['y']
+    $2load_global.0 = global(_pi_stencil: <numba.stencils.stencil.StencilFunc object at 0x7f7cc4a42c50>) ['$2load_global.0']
+    $6call_function.2 = call $2load_global.0(x, func=$2load_global.0, args=[Var(x, pitch.py:439)], kws=(), vararg=None, varkwarg=None, target=None) ['$2load_global.0', '$6call_function.2', 'x']
+    $const10.4.1 = const(NoneType, None)     ['$const10.4.1']
+    $const12.5.1 = const(NoneType, None)     ['$const12.5.1']
+    $14build_slice.6 = global(slice: <class 'slice'>) ['$14build_slice.6']
+    $14build_slice.7 = call $14build_slice.6($const10.4.1, $const12.5.1, func=$14build_slice.6, args=(Var($const10.4.1, pitch.py:447), Var($const12.5.1, pitch.py:447)), kws=(), vararg=None, varkwarg=None, target=None) ['$14build_slice.6', '$14build_slice.7', '$const10.4.1', '$const12.5.1']
+    y[$14build_slice.7] = $6call_function.2  ['$14build_slice.7', '$6call_function.2', 'y']
+    $const18.8.1 = const(NoneType, None)     ['$const18.8.1']
+    $20return_value.9 = cast(value=$const18.8.1) ['$20return_value.9', '$const18.8.1']
+    return $20return_value.9                 ['$20return_value.9']
+
+2025-08-23 15:20:12,676 - numba.core.ssa - DEBUG - ==== SSA block analysis pass on 0
+2025-08-23 15:20:12,676 - numba.core.ssa - DEBUG - Running <numba.core.ssa._GatherDefsHandler object at 0x7f7cc4b25540>
+2025-08-23 15:20:12,676 - numba.core.ssa - DEBUG - on stmt: x = arg(0, name=x)
+2025-08-23 15:20:12,676 - numba.core.ssa - DEBUG - on stmt: y = arg(1, name=y)
+2025-08-23 15:20:12,676 - numba.core.ssa - DEBUG - on stmt: $2load_global.0 = global(_pi_stencil: <numba.stencils.stencil.StencilFunc object at 0x7f7cc4a42c50>)
+2025-08-23 15:20:12,676 - numba.core.ssa - DEBUG - on stmt: $6call_function.2 = call $2load_global.0(x, func=$2load_global.0, args=[Var(x, pitch.py:439)], kws=(), vararg=None, varkwarg=None, target=None)
+2025-08-23 15:20:12,676 - numba.core.ssa - DEBUG - on stmt: $const10.4.1 = const(NoneType, None)
+2025-08-23 15:20:12,676 - numba.core.ssa - DEBUG - on stmt: $const12.5.1 = const(NoneType, None)
+2025-08-23 15:20:12,676 - numba.core.ssa - DEBUG - on stmt: $14build_slice.6 = global(slice: <class 'slice'>)
+2025-08-23 15:20:12,676 - numba.core.ssa - DEBUG - on stmt: $14build_slice.7 = call $14build_slice.6($const10.4.1, $const12.5.1, func=$14build_slice.6, args=(Var($const10.4.1, pitch.py:447), Var($const12.5.1, pitch.py:447)), kws=(), vararg=None, varkwarg=None, target=None)
+2025-08-23 15:20:12,676 - numba.core.ssa - DEBUG - on stmt: y[slice(None, None, None)] = $6call_function.2
+2025-08-23 15:20:12,676 - numba.core.ssa - DEBUG - on stmt: $const18.8.1 = const(NoneType, None)
+2025-08-23 15:20:12,676 - numba.core.ssa - DEBUG - on stmt: $20return_value.9 = cast(value=$const18.8.1)
+2025-08-23 15:20:12,677 - numba.core.ssa - DEBUG - on stmt: return $20return_value.9
+2025-08-23 15:20:12,677 - numba.core.ssa - DEBUG - defs defaultdict(<class 'list'>,
+            {'$14build_slice.6': [(<numba.core.ir.Assign object at 0x7f7cd44ea380>,
+                                   0)],
+             '$14build_slice.7': [(<numba.core.ir.Assign object at 0x7f7cd44ea3e0>,
+                                   0)],
+             '$20return_value.9': [(<numba.core.ir.Assign object at 0x7f7cd44ea2c0>,
+                                    0)],
+             '$2load_global.0': [(<numba.core.ir.Assign object at 0x7f7cd44ebb20>,
+                                  0)],
+             '$6call_function.2': [(<numba.core.ir.Assign object at 0x7f7cd44e9360>,
+                                    0)],
+             '$const10.4.1': [(<numba.core.ir.Assign object at 0x7f7cd44eace0>,
+                               0)],
+             '$const12.5.1': [(<numba.core.ir.Assign object at 0x7f7cd44ea950>,
+                               0)],
+             '$const18.8.1': [(<numba.core.ir.Assign object at 0x7f7cd44eab90>,
+                               0)],
+             'x': [(<numba.core.ir.Assign object at 0x7f7cd44e9ae0>, 0)],
+             'y': [(<numba.core.ir.Assign object at 0x7f7cd44e93f0>, 0)]})
+2025-08-23 15:20:12,677 - numba.core.ssa - DEBUG - SSA violators <numba.core.utils.OrderedSet object at 0x7f7cc4b25540>
+2025-08-23 15:20:12,719 - numba.core.byteflow - DEBUG - bytecode dump:
+>          0	NOP(arg=None, lineno=1)
+           2	LOAD_FAST(arg=0, lineno=2)
+           4	LOAD_ATTR(arg=0, lineno=2)
+           6	STORE_FAST(arg=1, lineno=2)
+           8	LOAD_GLOBAL(arg=1, lineno=3)
+          10	LOAD_ATTR(arg=2, lineno=3)
+          12	LOAD_FAST(arg=1, lineno=3)
+          14	LOAD_GLOBAL(arg=1, lineno=3)
+          16	LOAD_ATTR(arg=3, lineno=3)
+          18	LOAD_CONST(arg=1, lineno=3)
+          20	CALL_FUNCTION_KW(arg=2, lineno=3)
+          22	STORE_FAST(arg=2, lineno=3)
+          24	LOAD_CONST(arg=2, lineno=4)
+          26	LOAD_FAST(arg=2, lineno=4)
+          28	LOAD_CONST(arg=0, lineno=4)
+          30	LOAD_CONST(arg=3, lineno=4)
+          32	BUILD_SLICE(arg=2, lineno=4)
+          34	STORE_SUBSCR(arg=None, lineno=4)
+          36	LOAD_CONST(arg=2, lineno=5)
+          38	LOAD_FAST(arg=2, lineno=5)
+          40	LOAD_CONST(arg=4, lineno=5)
+          42	LOAD_CONST(arg=0, lineno=5)
+          44	BUILD_SLICE(arg=2, lineno=5)
+          46	STORE_SUBSCR(arg=None, lineno=5)
+          48	LOAD_GLOBAL(arg=4, lineno=6)
+          50	LOAD_GLOBAL(arg=5, lineno=6)
+          52	LOAD_CONST(arg=2, lineno=6)
+          54	LOAD_CONST(arg=4, lineno=6)
+          56	CALL_FUNCTION(arg=2, lineno=6)
+          58	UNARY_NEGATIVE(arg=None, lineno=6)
+          60	LOAD_FAST(arg=1, lineno=6)
+          62	LOAD_CONST(arg=2, lineno=6)
+          64	BINARY_SUBSCR(arg=None, lineno=6)
+          66	LOAD_GLOBAL(arg=6, lineno=6)
+          68	LOAD_CONST(arg=2, lineno=6)
+          70	LOAD_CONST(arg=3, lineno=6)
+          72	CALL_FUNCTION(arg=2, lineno=6)
+          74	BINARY_SUBTRACT(arg=None, lineno=6)
+          76	CALL_FUNCTION(arg=2, lineno=6)
+          78	GET_ITER(arg=None, lineno=6)
+>         80	FOR_ITER(arg=4, lineno=6)
+          82	STORE_FAST(arg=3, lineno=6)
+          84	LOAD_CONST(arg=2, lineno=7)
+          86	STORE_FAST(arg=4, lineno=7)
+          88	JUMP_ABSOLUTE(arg=41, lineno=7)
+>         90	LOAD_FAST(arg=2, lineno=8)
+          92	RETURN_VALUE(arg=None, lineno=8)
+2025-08-23 15:20:12,719 - numba.core.byteflow - DEBUG - pending: deque([State(pc_initial=0 nstack_initial=0)])
+2025-08-23 15:20:12,719 - numba.core.byteflow - DEBUG - stack: []
+2025-08-23 15:20:12,720 - numba.core.byteflow - DEBUG - state.pc_initial: State(pc_initial=0 nstack_initial=0)
+2025-08-23 15:20:12,720 - numba.core.byteflow - DEBUG - dispatch pc=0, inst=NOP(arg=None, lineno=1)
+2025-08-23 15:20:12,720 - numba.core.byteflow - DEBUG - stack []
+2025-08-23 15:20:12,720 - numba.core.byteflow - DEBUG - dispatch pc=2, inst=LOAD_FAST(arg=0, lineno=2)
+2025-08-23 15:20:12,720 - numba.core.byteflow - DEBUG - stack []
+2025-08-23 15:20:12,720 - numba.core.byteflow - DEBUG - dispatch pc=4, inst=LOAD_ATTR(arg=0, lineno=2)
+2025-08-23 15:20:12,720 - numba.core.byteflow - DEBUG - stack ['$x2.0']
+2025-08-23 15:20:12,720 - numba.core.byteflow - DEBUG - dispatch pc=6, inst=STORE_FAST(arg=1, lineno=2)
+2025-08-23 15:20:12,720 - numba.core.byteflow - DEBUG - stack ['$4load_attr.1']
+2025-08-23 15:20:12,720 - numba.core.byteflow - DEBUG - dispatch pc=8, inst=LOAD_GLOBAL(arg=1, lineno=3)
+2025-08-23 15:20:12,720 - numba.core.byteflow - DEBUG - stack []
+2025-08-23 15:20:12,720 - numba.core.byteflow - DEBUG - dispatch pc=10, inst=LOAD_ATTR(arg=2, lineno=3)
+2025-08-23 15:20:12,720 - numba.core.byteflow - DEBUG - stack ['$8load_global.2']
+2025-08-23 15:20:12,721 - numba.core.byteflow - DEBUG - dispatch pc=12, inst=LOAD_FAST(arg=1, lineno=3)
+2025-08-23 15:20:12,721 - numba.core.byteflow - DEBUG - stack ['$10load_attr.3']
+2025-08-23 15:20:12,721 - numba.core.byteflow - DEBUG - dispatch pc=14, inst=LOAD_GLOBAL(arg=1, lineno=3)
+2025-08-23 15:20:12,721 - numba.core.byteflow - DEBUG - stack ['$10load_attr.3', '$full_shape012.4']
+2025-08-23 15:20:12,721 - numba.core.byteflow - DEBUG - dispatch pc=16, inst=LOAD_ATTR(arg=3, lineno=3)
+2025-08-23 15:20:12,721 - numba.core.byteflow - DEBUG - stack ['$10load_attr.3', '$full_shape012.4', '$14load_global.5']
+2025-08-23 15:20:12,721 - numba.core.byteflow - DEBUG - dispatch pc=18, inst=LOAD_CONST(arg=1, lineno=3)
+2025-08-23 15:20:12,721 - numba.core.byteflow - DEBUG - stack ['$10load_attr.3', '$full_shape012.4', '$16load_attr.6']
+2025-08-23 15:20:12,721 - numba.core.byteflow - DEBUG - dispatch pc=20, inst=CALL_FUNCTION_KW(arg=2, lineno=3)
+2025-08-23 15:20:12,721 - numba.core.byteflow - DEBUG - stack ['$10load_attr.3', '$full_shape012.4', '$16load_attr.6', '$const18.7.1']
+2025-08-23 15:20:12,721 - numba.core.byteflow - DEBUG - dispatch pc=22, inst=STORE_FAST(arg=2, lineno=3)
+2025-08-23 15:20:12,721 - numba.core.byteflow - DEBUG - stack ['$20call_function_kw.8']
+2025-08-23 15:20:12,721 - numba.core.byteflow - DEBUG - dispatch pc=24, inst=LOAD_CONST(arg=2, lineno=4)
+2025-08-23 15:20:12,721 - numba.core.byteflow - DEBUG - stack []
+2025-08-23 15:20:12,721 - numba.core.byteflow - DEBUG - dispatch pc=26, inst=LOAD_FAST(arg=2, lineno=4)
+2025-08-23 15:20:12,722 - numba.core.byteflow - DEBUG - stack ['$const24.9.2']
+2025-08-23 15:20:12,722 - numba.core.byteflow - DEBUG - dispatch pc=28, inst=LOAD_CONST(arg=0, lineno=4)
+2025-08-23 15:20:12,722 - numba.core.byteflow - DEBUG - stack ['$const24.9.2', '$out026.10']
+2025-08-23 15:20:12,722 - numba.core.byteflow - DEBUG - dispatch pc=30, inst=LOAD_CONST(arg=3, lineno=4)
+2025-08-23 15:20:12,722 - numba.core.byteflow - DEBUG - stack ['$const24.9.2', '$out026.10', '$const28.11.0']
+2025-08-23 15:20:12,722 - numba.core.byteflow - DEBUG - dispatch pc=32, inst=BUILD_SLICE(arg=2, lineno=4)
+2025-08-23 15:20:12,722 - numba.core.byteflow - DEBUG - stack ['$const24.9.2', '$out026.10', '$const28.11.0', '$const30.12.3']
+2025-08-23 15:20:12,722 - numba.core.byteflow - DEBUG - dispatch pc=34, inst=STORE_SUBSCR(arg=None, lineno=4)
+2025-08-23 15:20:12,722 - numba.core.byteflow - DEBUG - stack ['$const24.9.2', '$out026.10', '$32build_slice.14']
+2025-08-23 15:20:12,722 - numba.core.byteflow - DEBUG - dispatch pc=36, inst=LOAD_CONST(arg=2, lineno=5)
+2025-08-23 15:20:12,722 - numba.core.byteflow - DEBUG - stack []
+2025-08-23 15:20:12,722 - numba.core.byteflow - DEBUG - dispatch pc=38, inst=LOAD_FAST(arg=2, lineno=5)
+2025-08-23 15:20:12,722 - numba.core.byteflow - DEBUG - stack ['$const36.15.2']
+2025-08-23 15:20:12,722 - numba.core.byteflow - DEBUG - dispatch pc=40, inst=LOAD_CONST(arg=4, lineno=5)
+2025-08-23 15:20:12,723 - numba.core.byteflow - DEBUG - stack ['$const36.15.2', '$out038.16']
+2025-08-23 15:20:12,723 - numba.core.byteflow - DEBUG - dispatch pc=42, inst=LOAD_CONST(arg=0, lineno=5)
+2025-08-23 15:20:12,723 - numba.core.byteflow - DEBUG - stack ['$const36.15.2', '$out038.16', '$const40.17.4']
+2025-08-23 15:20:12,723 - numba.core.byteflow - DEBUG - dispatch pc=44, inst=BUILD_SLICE(arg=2, lineno=5)
+2025-08-23 15:20:12,723 - numba.core.byteflow - DEBUG - stack ['$const36.15.2', '$out038.16', '$const40.17.4', '$const42.18.0']
+2025-08-23 15:20:12,723 - numba.core.byteflow - DEBUG - dispatch pc=46, inst=STORE_SUBSCR(arg=None, lineno=5)
+2025-08-23 15:20:12,723 - numba.core.byteflow - DEBUG - stack ['$const36.15.2', '$out038.16', '$44build_slice.20']
+2025-08-23 15:20:12,723 - numba.core.byteflow - DEBUG - dispatch pc=48, inst=LOAD_GLOBAL(arg=4, lineno=6)
+2025-08-23 15:20:12,723 - numba.core.byteflow - DEBUG - stack []
+2025-08-23 15:20:12,723 - numba.core.byteflow - DEBUG - dispatch pc=50, inst=LOAD_GLOBAL(arg=5, lineno=6)
+2025-08-23 15:20:12,723 - numba.core.byteflow - DEBUG - stack ['$48load_global.21']
+2025-08-23 15:20:12,723 - numba.core.byteflow - DEBUG - dispatch pc=52, inst=LOAD_CONST(arg=2, lineno=6)
+2025-08-23 15:20:12,723 - numba.core.byteflow - DEBUG - stack ['$48load_global.21', '$50load_global.22']
+2025-08-23 15:20:12,723 - numba.core.byteflow - DEBUG - dispatch pc=54, inst=LOAD_CONST(arg=4, lineno=6)
+2025-08-23 15:20:12,723 - numba.core.byteflow - DEBUG - stack ['$48load_global.21', '$50load_global.22', '$const52.23.2']
+2025-08-23 15:20:12,723 - numba.core.byteflow - DEBUG - dispatch pc=56, inst=CALL_FUNCTION(arg=2, lineno=6)
+2025-08-23 15:20:12,724 - numba.core.byteflow - DEBUG - stack ['$48load_global.21', '$50load_global.22', '$const52.23.2', '$const54.24.4']
+2025-08-23 15:20:12,724 - numba.core.byteflow - DEBUG - dispatch pc=58, inst=UNARY_NEGATIVE(arg=None, lineno=6)
+2025-08-23 15:20:12,724 - numba.core.byteflow - DEBUG - stack ['$48load_global.21', '$56call_function.25']
+2025-08-23 15:20:12,724 - numba.core.byteflow - DEBUG - dispatch pc=60, inst=LOAD_FAST(arg=1, lineno=6)
+2025-08-23 15:20:12,724 - numba.core.byteflow - DEBUG - stack ['$48load_global.21', '$58unary_negative.26']
+2025-08-23 15:20:12,724 - numba.core.byteflow - DEBUG - dispatch pc=62, inst=LOAD_CONST(arg=2, lineno=6)
+2025-08-23 15:20:12,724 - numba.core.byteflow - DEBUG - stack ['$48load_global.21', '$58unary_negative.26', '$full_shape060.27']
+2025-08-23 15:20:12,724 - numba.core.byteflow - DEBUG - dispatch pc=64, inst=BINARY_SUBSCR(arg=None, lineno=6)
+2025-08-23 15:20:12,724 - numba.core.byteflow - DEBUG - stack ['$48load_global.21', '$58unary_negative.26', '$full_shape060.27', '$const62.28.2']
+2025-08-23 15:20:12,724 - numba.core.byteflow - DEBUG - dispatch pc=66, inst=LOAD_GLOBAL(arg=6, lineno=6)
+2025-08-23 15:20:12,724 - numba.core.byteflow - DEBUG - stack ['$48load_global.21', '$58unary_negative.26', '$64binary_subscr.29']
+2025-08-23 15:20:12,724 - numba.core.byteflow - DEBUG - dispatch pc=68, inst=LOAD_CONST(arg=2, lineno=6)
+2025-08-23 15:20:12,724 - numba.core.byteflow - DEBUG - stack ['$48load_global.21', '$58unary_negative.26', '$64binary_subscr.29', '$66load_global.30']
+2025-08-23 15:20:12,724 - numba.core.byteflow - DEBUG - dispatch pc=70, inst=LOAD_CONST(arg=3, lineno=6)
+2025-08-23 15:20:12,725 - numba.core.byteflow - DEBUG - stack ['$48load_global.21', '$58unary_negative.26', '$64binary_subscr.29', '$66load_global.30', '$const68.31.2']
+2025-08-23 15:20:12,725 - numba.core.byteflow - DEBUG - dispatch pc=72, inst=CALL_FUNCTION(arg=2, lineno=6)
+2025-08-23 15:20:12,725 - numba.core.byteflow - DEBUG - stack ['$48load_global.21', '$58unary_negative.26', '$64binary_subscr.29', '$66load_global.30', '$const68.31.2', '$const70.32.3']
+2025-08-23 15:20:12,725 - numba.core.byteflow - DEBUG - dispatch pc=74, inst=BINARY_SUBTRACT(arg=None, lineno=6)
+2025-08-23 15:20:12,725 - numba.core.byteflow - DEBUG - stack ['$48load_global.21', '$58unary_negative.26', '$64binary_subscr.29', '$72call_function.33']
+2025-08-23 15:20:12,725 - numba.core.byteflow - DEBUG - dispatch pc=76, inst=CALL_FUNCTION(arg=2, lineno=6)
+2025-08-23 15:20:12,725 - numba.core.byteflow - DEBUG - stack ['$48load_global.21', '$58unary_negative.26', '$74binary_subtract.34']
+2025-08-23 15:20:12,725 - numba.core.byteflow - DEBUG - dispatch pc=78, inst=GET_ITER(arg=None, lineno=6)
+2025-08-23 15:20:12,725 - numba.core.byteflow - DEBUG - stack ['$76call_function.35']
+2025-08-23 15:20:12,725 - numba.core.byteflow - DEBUG - end state. edges=[Edge(pc=80, stack=('$78get_iter.36',), blockstack=(), npush=0)]
+2025-08-23 15:20:12,725 - numba.core.byteflow - DEBUG - pending: deque([State(pc_initial=80 nstack_initial=1)])
+2025-08-23 15:20:12,725 - numba.core.byteflow - DEBUG - stack: ['$phi80.0']
+2025-08-23 15:20:12,726 - numba.core.byteflow - DEBUG - state.pc_initial: State(pc_initial=80 nstack_initial=1)
+2025-08-23 15:20:12,726 - numba.core.byteflow - DEBUG - dispatch pc=80, inst=FOR_ITER(arg=4, lineno=6)
+2025-08-23 15:20:12,726 - numba.core.byteflow - DEBUG - stack ['$phi80.0']
+2025-08-23 15:20:12,726 - numba.core.byteflow - DEBUG - end state. edges=[Edge(pc=90, stack=(), blockstack=(), npush=0), Edge(pc=82, stack=('$phi80.0', '$80for_iter.2'), blockstack=(), npush=0)]
+2025-08-23 15:20:12,726 - numba.core.byteflow - DEBUG - pending: deque([State(pc_initial=90 nstack_initial=0), State(pc_initial=82 nstack_initial=2)])
+2025-08-23 15:20:12,726 - numba.core.byteflow - DEBUG - stack: []
+2025-08-23 15:20:12,726 - numba.core.byteflow - DEBUG - state.pc_initial: State(pc_initial=90 nstack_initial=0)
+2025-08-23 15:20:12,726 - numba.core.byteflow - DEBUG - dispatch pc=90, inst=LOAD_FAST(arg=2, lineno=8)
+2025-08-23 15:20:12,726 - numba.core.byteflow - DEBUG - stack []
+2025-08-23 15:20:12,726 - numba.core.byteflow - DEBUG - dispatch pc=92, inst=RETURN_VALUE(arg=None, lineno=8)
+2025-08-23 15:20:12,726 - numba.core.byteflow - DEBUG - stack ['$out090.0']
+2025-08-23 15:20:12,726 - numba.core.byteflow - DEBUG - end state. edges=[]
+2025-08-23 15:20:12,726 - numba.core.byteflow - DEBUG - pending: deque([State(pc_initial=82 nstack_initial=2)])
+2025-08-23 15:20:12,726 - numba.core.byteflow - DEBUG - stack: ['$phi82.0', '$phi82.1']
+2025-08-23 15:20:12,726 - numba.core.byteflow - DEBUG - state.pc_initial: State(pc_initial=82 nstack_initial=2)
+2025-08-23 15:20:12,726 - numba.core.byteflow - DEBUG - dispatch pc=82, inst=STORE_FAST(arg=3, lineno=6)
+2025-08-23 15:20:12,726 - numba.core.byteflow - DEBUG - stack ['$phi82.0', '$phi82.1']
+2025-08-23 15:20:12,726 - numba.core.byteflow - DEBUG - dispatch pc=84, inst=LOAD_CONST(arg=2, lineno=7)
+2025-08-23 15:20:12,726 - numba.core.byteflow - DEBUG - stack ['$phi82.0']
+2025-08-23 15:20:12,726 - numba.core.byteflow - DEBUG - dispatch pc=86, inst=STORE_FAST(arg=4, lineno=7)
+2025-08-23 15:20:12,727 - numba.core.byteflow - DEBUG - stack ['$phi82.0', '$const84.2.2']
+2025-08-23 15:20:12,727 - numba.core.byteflow - DEBUG - dispatch pc=88, inst=JUMP_ABSOLUTE(arg=41, lineno=7)
+2025-08-23 15:20:12,727 - numba.core.byteflow - DEBUG - stack ['$phi82.0']
+2025-08-23 15:20:12,727 - numba.core.byteflow - DEBUG - end state. edges=[Edge(pc=80, stack=('$phi82.0',), blockstack=(), npush=0)]
+2025-08-23 15:20:12,727 - numba.core.byteflow - DEBUG - pending: deque([State(pc_initial=80 nstack_initial=1)])
+2025-08-23 15:20:12,727 - numba.core.byteflow - DEBUG - -------------------------Prune PHIs-------------------------
+2025-08-23 15:20:12,727 - numba.core.byteflow - DEBUG - Used_phis: defaultdict(<class 'set'>,
+            {State(pc_initial=0 nstack_initial=0): set(),
+             State(pc_initial=80 nstack_initial=1): {'$phi80.0'},
+             State(pc_initial=82 nstack_initial=2): {'$phi82.1'},
+             State(pc_initial=90 nstack_initial=0): set()})
+2025-08-23 15:20:12,727 - numba.core.byteflow - DEBUG - defmap: {'$phi80.0': State(pc_initial=0 nstack_initial=0),
+ '$phi82.1': State(pc_initial=80 nstack_initial=1)}
+2025-08-23 15:20:12,727 - numba.core.byteflow - DEBUG - phismap: defaultdict(<class 'set'>,
+            {'$phi80.0': {('$78get_iter.36',
+                           State(pc_initial=0 nstack_initial=0)),
+                          ('$phi82.0', State(pc_initial=82 nstack_initial=2))},
+             '$phi82.0': {('$phi80.0', State(pc_initial=80 nstack_initial=1))},
+             '$phi82.1': {('$80for_iter.2',
+                           State(pc_initial=80 nstack_initial=1))}})
+2025-08-23 15:20:12,728 - numba.core.byteflow - DEBUG - changing phismap: defaultdict(<class 'set'>,
+            {'$phi80.0': {('$78get_iter.36',
+                           State(pc_initial=0 nstack_initial=0)),
+                          ('$phi80.0', State(pc_initial=80 nstack_initial=1))},
+             '$phi82.0': {('$78get_iter.36',
+                           State(pc_initial=0 nstack_initial=0))},
+             '$phi82.1': {('$80for_iter.2',
+                           State(pc_initial=80 nstack_initial=1))}})
+2025-08-23 15:20:12,728 - numba.core.byteflow - DEBUG - changing phismap: defaultdict(<class 'set'>,
+            {'$phi80.0': {('$78get_iter.36',
+                           State(pc_initial=0 nstack_initial=0))},
+             '$phi82.0': {('$78get_iter.36',
+                           State(pc_initial=0 nstack_initial=0))},
+             '$phi82.1': {('$80for_iter.2',
+                           State(pc_initial=80 nstack_initial=1))}})
+2025-08-23 15:20:12,728 - numba.core.byteflow - DEBUG - changing phismap: defaultdict(<class 'set'>,
+            {'$phi80.0': {('$78get_iter.36',
+                           State(pc_initial=0 nstack_initial=0))},
+             '$phi82.0': {('$78get_iter.36',
+                           State(pc_initial=0 nstack_initial=0))},
+             '$phi82.1': {('$80for_iter.2',
+                           State(pc_initial=80 nstack_initial=1))}})
+2025-08-23 15:20:12,729 - numba.core.byteflow - DEBUG - keep phismap: {'$phi80.0': {('$78get_iter.36', State(pc_initial=0 nstack_initial=0))},
+ '$phi82.1': {('$80for_iter.2', State(pc_initial=80 nstack_initial=1))}}
+2025-08-23 15:20:12,729 - numba.core.byteflow - DEBUG - new_out: defaultdict(<class 'dict'>,
+            {State(pc_initial=0 nstack_initial=0): {'$phi80.0': '$78get_iter.36'},
+             State(pc_initial=80 nstack_initial=1): {'$phi82.1': '$80for_iter.2'}})
+2025-08-23 15:20:12,729 - numba.core.byteflow - DEBUG - ----------------------DONE Prune PHIs-----------------------
+2025-08-23 15:20:12,729 - numba.core.byteflow - DEBUG - block_infos State(pc_initial=0 nstack_initial=0):
+AdaptBlockInfo(insts=((0, {}), (2, {'res': '$x2.0'}), (4, {'item': '$x2.0', 'res': '$4load_attr.1'}), (6, {'value': '$4load_attr.1'}), (8, {'res': '$8load_global.2'}), (10, {'item': '$8load_global.2', 'res': '$10load_attr.3'}), (12, {'res': '$full_shape012.4'}), (14, {'res': '$14load_global.5'}), (16, {'item': '$14load_global.5', 'res': '$16load_attr.6'}), (18, {'res': '$const18.7.1'}), (20, {'func': '$10load_attr.3', 'args': ['$full_shape012.4', '$16load_attr.6'], 'names': '$const18.7.1', 'res': '$20call_function_kw.8'}), (22, {'value': '$20call_function_kw.8'}), (24, {'res': '$const24.9.2'}), (26, {'res': '$out026.10'}), (28, {'res': '$const28.11.0'}), (30, {'res': '$const30.12.3'}), (32, {'start': '$const28.11.0', 'stop': '$const30.12.3', 'step': None, 'res': '$32build_slice.14', 'slicevar': '$32build_slice.13'}), (34, {'target': '$out026.10', 'index': '$32build_slice.14', 'value': '$const24.9.2'}), (36, {'res': '$const36.15.2'}), (38, {'res': '$out038.16'}), (40, {'res': '$const40.17.4'}), (42, {'res': '$const42.18.0'}), (44, {'start': '$const40.17.4', 'stop': '$const42.18.0', 'step': None, 'res': '$44build_slice.20', 'slicevar': '$44build_slice.19'}), (46, {'target': '$out038.16', 'index': '$44build_slice.20', 'value': '$const36.15.2'}), (48, {'res': '$48load_global.21'}), (50, {'res': '$50load_global.22'}), (52, {'res': '$const52.23.2'}), (54, {'res': '$const54.24.4'}), (56, {'func': '$50load_global.22', 'args': ['$const52.23.2', '$const54.24.4'], 'res': '$56call_function.25'}), (58, {'value': '$56call_function.25', 'res': '$58unary_negative.26'}), (60, {'res': '$full_shape060.27'}), (62, {'res': '$const62.28.2'}), (64, {'index': '$const62.28.2', 'target': '$full_shape060.27', 'res': '$64binary_subscr.29'}), (66, {'res': '$66load_global.30'}), (68, {'res': '$const68.31.2'}), (70, {'res': '$const70.32.3'}), (72, {'func': '$66load_global.30', 'args': ['$const68.31.2', '$const70.32.3'], 'res': '$72call_function.33'}), (74, {'lhs': '$64binary_subscr.29', 'rhs': '$72call_function.33', 'res': '$74binary_subtract.34'}), (76, {'func': '$48load_global.21', 'args': ['$58unary_negative.26', '$74binary_subtract.34'], 'res': '$76call_function.35'}), (78, {'value': '$76call_function.35', 'res': '$78get_iter.36'})), outgoing_phis={'$phi80.0': '$78get_iter.36'}, blockstack=(), active_try_block=None, outgoing_edgepushed={80: ('$78get_iter.36',)})
+2025-08-23 15:20:12,729 - numba.core.byteflow - DEBUG - block_infos State(pc_initial=80 nstack_initial=1):
+AdaptBlockInfo(insts=((80, {'iterator': '$phi80.0', 'pair': '$80for_iter.1', 'indval': '$80for_iter.2', 'pred': '$80for_iter.3'}),), outgoing_phis={'$phi82.1': '$80for_iter.2'}, blockstack=(), active_try_block=None, outgoing_edgepushed={90: (), 82: ('$phi80.0', '$80for_iter.2')})
+2025-08-23 15:20:12,729 - numba.core.byteflow - DEBUG - block_infos State(pc_initial=82 nstack_initial=2):
+AdaptBlockInfo(insts=((82, {'value': '$phi82.1'}), (84, {'res': '$const84.2.2'}), (86, {'value': '$const84.2.2'}), (88, {})), outgoing_phis={}, blockstack=(), active_try_block=None, outgoing_edgepushed={80: ('$phi82.0',)})
+2025-08-23 15:20:12,730 - numba.core.byteflow - DEBUG - block_infos State(pc_initial=90 nstack_initial=0):
+AdaptBlockInfo(insts=((90, {'res': '$out090.0'}), (92, {'retval': '$out090.0', 'castval': '$92return_value.1'})), outgoing_phis={}, blockstack=(), active_try_block=None, outgoing_edgepushed={})
+2025-08-23 15:20:12,731 - numba.core.interpreter - DEBUG - label 0:
+    x = arg(0, name=x)                       ['x']
+    full_shape0 = getattr(value=x, attr=shape) ['full_shape0', 'x']
+    $8load_global.2 = global(np: <module 'numpy' from '/home/user/.local/lib/python3.10/site-packages/numpy/__init__.py'>) ['$8load_global.2']
+    $10load_attr.3 = getattr(value=$8load_global.2, attr=empty) ['$10load_attr.3', '$8load_global.2']
+    $14load_global.5 = global(np: <module 'numpy' from '/home/user/.local/lib/python3.10/site-packages/numpy/__init__.py'>) ['$14load_global.5']
+    $16load_attr.6 = getattr(value=$14load_global.5, attr=float64) ['$14load_global.5', '$16load_attr.6']
+    out0 = call $10load_attr.3(full_shape0, func=$10load_attr.3, args=[Var(full_shape0, <string>:2)], kws=[('dtype', Var($16load_attr.6, <string>:3))], vararg=None, varkwarg=None, target=None) ['$10load_attr.3', '$16load_attr.6', 'full_shape0', 'out0']
+    $const24.9.2 = const(int, 0)             ['$const24.9.2']
+    $const28.11.0 = const(NoneType, None)    ['$const28.11.0']
+    $const30.12.3 = const(int, 1)            ['$const30.12.3']
+    $32build_slice.13 = global(slice: <class 'slice'>) ['$32build_slice.13']
+    $32build_slice.14 = call $32build_slice.13($const28.11.0, $const30.12.3, func=$32build_slice.13, args=(Var($const28.11.0, <string>:4), Var($const30.12.3, <string>:4)), kws=(), vararg=None, varkwarg=None, target=None) ['$32build_slice.13', '$32build_slice.14', '$const28.11.0', '$const30.12.3']
+    out0[$32build_slice.14] = $const24.9.2   ['$32build_slice.14', '$const24.9.2', 'out0']
+    $const36.15.2 = const(int, 0)            ['$const36.15.2']
+    $const40.17.4 = const(int, -1)           ['$const40.17.4']
+    $const42.18.0 = const(NoneType, None)    ['$const42.18.0']
+    $44build_slice.19 = global(slice: <class 'slice'>) ['$44build_slice.19']
+    $44build_slice.20 = call $44build_slice.19($const40.17.4, $const42.18.0, func=$44build_slice.19, args=(Var($const40.17.4, <string>:5), Var($const42.18.0, <string>:5)), kws=(), vararg=None, varkwarg=None, target=None) ['$44build_slice.19', '$44build_slice.20', '$const40.17.4', '$const42.18.0']
+    out0[$44build_slice.20] = $const36.15.2  ['$44build_slice.20', '$const36.15.2', 'out0']
+    $48load_global.21 = global(range: <class 'range'>) ['$48load_global.21']
+    $50load_global.22 = global(min: <built-in function min>) ['$50load_global.22']
+    $const52.23.2 = const(int, 0)            ['$const52.23.2']
+    $const54.24.4 = const(int, -1)           ['$const54.24.4']
+    $56call_function.25 = call $50load_global.22($const52.23.2, $const54.24.4, func=$50load_global.22, args=[Var($const52.23.2, <string>:6), Var($const54.24.4, <string>:6)], kws=(), vararg=None, varkwarg=None, target=None) ['$50load_global.22', '$56call_function.25', '$const52.23.2', '$const54.24.4']
+    $58unary_negative.26 = unary(fn=<built-in function neg>, value=$56call_function.25) ['$56call_function.25', '$58unary_negative.26']
+    $const62.28.2 = const(int, 0)            ['$const62.28.2']
+    $64binary_subscr.29 = getitem(value=full_shape0, index=$const62.28.2, fn=<built-in function getitem>) ['$64binary_subscr.29', '$const62.28.2', 'full_shape0']
+    $66load_global.30 = global(max: <built-in function max>) ['$66load_global.30']
+    $const68.31.2 = const(int, 0)            ['$const68.31.2']
+    $const70.32.3 = const(int, 1)            ['$const70.32.3']
+    $72call_function.33 = call $66load_global.30($const68.31.2, $const70.32.3, func=$66load_global.30, args=[Var($const68.31.2, <string>:6), Var($const70.32.3, <string>:6)], kws=(), vararg=None, varkwarg=None, target=None) ['$66load_global.30', '$72call_function.33', '$const68.31.2', '$const70.32.3']
+    $74binary_subtract.34 = $64binary_subscr.29 - $72call_function.33 ['$64binary_subscr.29', '$72call_function.33', '$74binary_subtract.34']
+    $76call_function.35 = call $48load_global.21($58unary_negative.26, $74binary_subtract.34, func=$48load_global.21, args=[Var($58unary_negative.26, <string>:6), Var($74binary_subtract.34, <string>:6)], kws=(), vararg=None, varkwarg=None, target=None) ['$48load_global.21', '$58unary_negative.26', '$74binary_subtract.34', '$76call_function.35']
+    $78get_iter.36 = getiter(value=$76call_function.35) ['$76call_function.35', '$78get_iter.36']
+    $phi80.0 = $78get_iter.36                ['$78get_iter.36', '$phi80.0']
+    jump 80                                  []
+label 80:
+    $80for_iter.1 = iternext(value=$phi80.0) ['$80for_iter.1', '$phi80.0']
+    $80for_iter.2 = pair_first(value=$80for_iter.1) ['$80for_iter.1', '$80for_iter.2']
+    $80for_iter.3 = pair_second(value=$80for_iter.1) ['$80for_iter.1', '$80for_iter.3']
+    $phi82.1 = $80for_iter.2                 ['$80for_iter.2', '$phi82.1']
+    branch $80for_iter.3, 82, 90             ['$80for_iter.3']
+label 82:
+    index00 = $phi82.1                       ['$phi82.1', 'index00']
+    __sentinel__0 = const(int, 0)            ['__sentinel__0']
+    jump 80                                  []
+label 90:
+    $92return_value.1 = cast(value=out0)     ['$92return_value.1', 'out0']
+    return $92return_value.1                 ['$92return_value.1']
+
+2025-08-23 15:20:12,746 - numba.core.ssa - DEBUG - ==== SSA block analysis pass on 0
+2025-08-23 15:20:12,746 - numba.core.ssa - DEBUG - Running <numba.core.ssa._GatherDefsHandler object at 0x7f7cd4a7c0a0>
+2025-08-23 15:20:12,746 - numba.core.ssa - DEBUG - on stmt: x = arg(0, name=x)
+2025-08-23 15:20:12,746 - numba.core.ssa - DEBUG - on stmt: full_shape0 = getattr(value=x, attr=shape)
+2025-08-23 15:20:12,746 - numba.core.ssa - DEBUG - on stmt: $8load_global.2.1 = global(np: <module 'numpy' from '/home/user/.local/lib/python3.10/site-packages/numpy/__init__.py'>)
+2025-08-23 15:20:12,746 - numba.core.ssa - DEBUG - on stmt: $10load_attr.3.1 = getattr(value=$8load_global.2.1, attr=empty)
+2025-08-23 15:20:12,746 - numba.core.ssa - DEBUG - on stmt: $14load_global.5.1 = global(np: <module 'numpy' from '/home/user/.local/lib/python3.10/site-packages/numpy/__init__.py'>)
+2025-08-23 15:20:12,746 - numba.core.ssa - DEBUG - on stmt: $16load_attr.6.1 = getattr(value=$14load_global.5.1, attr=float64)
+2025-08-23 15:20:12,747 - numba.core.ssa - DEBUG - on stmt: out0 = call $10load_attr.3.1(full_shape0, func=$10load_attr.3.1, args=[Var(full_shape0, <string>:2)], kws=[('dtype', Var($16load_attr.6.1, <string>:3))], vararg=None, varkwarg=None, target=None)
+2025-08-23 15:20:12,747 - numba.core.ssa - DEBUG - on stmt: $const24.9.2.1 = const(int, 0)
+2025-08-23 15:20:12,747 - numba.core.ssa - DEBUG - on stmt: $const28.11.0.1 = const(NoneType, None)
+2025-08-23 15:20:12,747 - numba.core.ssa - DEBUG - on stmt: $const30.12.3.1 = const(int, 1)
+2025-08-23 15:20:12,747 - numba.core.ssa - DEBUG - on stmt: $32build_slice.13.1 = global(slice: <class 'slice'>)
+2025-08-23 15:20:12,747 - numba.core.ssa - DEBUG - on stmt: $32build_slice.14.1 = call $32build_slice.13.1($const28.11.0.1, $const30.12.3.1, func=$32build_slice.13.1, args=(Var($const28.11.0.1, <string>:4), Var($const30.12.3.1, <string>:4)), kws=(), vararg=None, varkwarg=None, target=None)
+2025-08-23 15:20:12,747 - numba.core.ssa - DEBUG - on stmt: out0[$32build_slice.14.1] = $const24.9.2.1
+2025-08-23 15:20:12,747 - numba.core.ssa - DEBUG - on stmt: $const36.15.2.1 = const(int, 0)
+2025-08-23 15:20:12,747 - numba.core.ssa - DEBUG - on stmt: $const40.17.4.1 = const(int, -1)
+2025-08-23 15:20:12,747 - numba.core.ssa - DEBUG - on stmt: $const42.18.0.1 = const(NoneType, None)
+2025-08-23 15:20:12,747 - numba.core.ssa - DEBUG - on stmt: $44build_slice.19.1 = global(slice: <class 'slice'>)
+2025-08-23 15:20:12,747 - numba.core.ssa - DEBUG - on stmt: $44build_slice.20.1 = call $44build_slice.19.1($const40.17.4.1, $const42.18.0.1, func=$44build_slice.19.1, args=(Var($const40.17.4.1, <string>:5), Var($const42.18.0.1, <string>:5)), kws=(), vararg=None, varkwarg=None, target=None)
+2025-08-23 15:20:12,747 - numba.core.ssa - DEBUG - on stmt: out0[$44build_slice.20.1] = $const36.15.2.1
+2025-08-23 15:20:12,748 - numba.core.ssa - DEBUG - on stmt: $48load_global.21.1 = global(range: <class 'range'>)
+2025-08-23 15:20:12,748 - numba.core.ssa - DEBUG - on stmt: $50load_global.22.1 = global(min: <built-in function min>)
+2025-08-23 15:20:12,748 - numba.core.ssa - DEBUG - on stmt: $const52.23.2.1 = const(int, 0)
+2025-08-23 15:20:12,748 - numba.core.ssa - DEBUG - on stmt: $const54.24.4.1 = const(int, -1)
+2025-08-23 15:20:12,748 - numba.core.ssa - DEBUG - on stmt: $56call_function.25.1 = call $50load_global.22.1($const52.23.2.1, $const54.24.4.1, func=$50load_global.22.1, args=[Var($const52.23.2.1, <string>:6), Var($const54.24.4.1, <string>:6)], kws=(), vararg=None, varkwarg=None, target=None)
+2025-08-23 15:20:12,748 - numba.core.ssa - DEBUG - on stmt: $58unary_negative.26.1 = unary(fn=<built-in function neg>, value=$56call_function.25.1)
+2025-08-23 15:20:12,748 - numba.core.ssa - DEBUG - on stmt: $const62.28.2.1 = const(int, 0)
+2025-08-23 15:20:12,748 - numba.core.ssa - DEBUG - on stmt: $64binary_subscr.29.1 = getitem(value=full_shape0, index=$const62.28.2.1, fn=<built-in function getitem>)
+2025-08-23 15:20:12,748 - numba.core.ssa - DEBUG - on stmt: $66load_global.30.1 = global(max: <built-in function max>)
+2025-08-23 15:20:12,748 - numba.core.ssa - DEBUG - on stmt: $const68.31.2.1 = const(int, 0)
+2025-08-23 15:20:12,748 - numba.core.ssa - DEBUG - on stmt: $const70.32.3.1 = const(int, 1)
+2025-08-23 15:20:12,748 - numba.core.ssa - DEBUG - on stmt: $72call_function.33.1 = call $66load_global.30.1($const68.31.2.1, $const70.32.3.1, func=$66load_global.30.1, args=[Var($const68.31.2.1, <string>:6), Var($const70.32.3.1, <string>:6)], kws=(), vararg=None, varkwarg=None, target=None)
+2025-08-23 15:20:12,748 - numba.core.ssa - DEBUG - on stmt: $74binary_subtract.34.1 = $64binary_subscr.29.1 - $72call_function.33.1
+2025-08-23 15:20:12,748 - numba.core.ssa - DEBUG - on stmt: $76call_function.35.1 = call $48load_global.21.1($58unary_negative.26.1, $74binary_subtract.34.1, func=$48load_global.21.1, args=[Var($58unary_negative.26.1, <string>:6), Var($74binary_subtract.34.1, <string>:6)], kws=(), vararg=None, varkwarg=None, target=None)
+2025-08-23 15:20:12,748 - numba.core.ssa - DEBUG - on stmt: $78get_iter.36.1 = getiter(value=$76call_function.35.1)
+2025-08-23 15:20:12,748 - numba.core.ssa - DEBUG - on stmt: $phi80.0.1 = $78get_iter.36.1
+2025-08-23 15:20:12,749 - numba.core.ssa - DEBUG - on stmt: jump 80
+2025-08-23 15:20:12,749 - numba.core.ssa - DEBUG - ==== SSA block analysis pass on 80
+2025-08-23 15:20:12,749 - numba.core.ssa - DEBUG - Running <numba.core.ssa._GatherDefsHandler object at 0x7f7cd4a7c0a0>
+2025-08-23 15:20:12,749 - numba.core.ssa - DEBUG - on stmt: $80for_iter.1.1 = iternext(value=$phi80.0.1)
+2025-08-23 15:20:12,749 - numba.core.ssa - DEBUG - on stmt: $80for_iter.2.1 = pair_first(value=$80for_iter.1.1)
+2025-08-23 15:20:12,749 - numba.core.ssa - DEBUG - on stmt: $80for_iter.3.1 = pair_second(value=$80for_iter.1.1)
+2025-08-23 15:20:12,749 - numba.core.ssa - DEBUG - on stmt: $phi82.1.1 = $80for_iter.2.1
+2025-08-23 15:20:12,749 - numba.core.ssa - DEBUG - on stmt: branch $80for_iter.3.1, 82, 166
+2025-08-23 15:20:12,749 - numba.core.ssa - DEBUG - ==== SSA block analysis pass on 82
+2025-08-23 15:20:12,749 - numba.core.ssa - DEBUG - Running <numba.core.ssa._GatherDefsHandler object at 0x7f7cd4a7c0a0>
+2025-08-23 15:20:12,749 - numba.core.ssa - DEBUG - on stmt: index00 = $phi82.1.1
+2025-08-23 15:20:12,749 - numba.core.ssa - DEBUG - on stmt: jump 90
+2025-08-23 15:20:12,749 - numba.core.ssa - DEBUG - ==== SSA block analysis pass on 166
+2025-08-23 15:20:12,749 - numba.core.ssa - DEBUG - Running <numba.core.ssa._GatherDefsHandler object at 0x7f7cd4a7c0a0>
+2025-08-23 15:20:12,749 - numba.core.ssa - DEBUG - on stmt: $92return_value.1.1 = cast(value=out0)
+2025-08-23 15:20:12,749 - numba.core.ssa - DEBUG - on stmt: return $92return_value.1.1
+2025-08-23 15:20:12,749 - numba.core.ssa - DEBUG - ==== SSA block analysis pass on 90
+2025-08-23 15:20:12,749 - numba.core.ssa - DEBUG - Running <numba.core.ssa._GatherDefsHandler object at 0x7f7cd4a7c0a0>
+2025-08-23 15:20:12,749 - numba.core.ssa - DEBUG - on stmt: $const4.1.1 = const(int, 1)
+2025-08-23 15:20:12,749 - numba.core.ssa - DEBUG - on stmt: stencil_index = $const4.1.1 + index00
+2025-08-23 15:20:12,749 - numba.core.ssa - DEBUG - on stmt: $6binary_subscr.2 = getitem(value=x, index=stencil_index, fn=<built-in function getitem>)
+2025-08-23 15:20:12,750 - numba.core.ssa - DEBUG - on stmt: $const10.4.2 = const(int, -1)
+2025-08-23 15:20:12,750 - numba.core.ssa - DEBUG - on stmt: stencil_index.1 = $const10.4.2 + index00
+2025-08-23 15:20:12,750 - numba.core.ssa - DEBUG - on stmt: $12binary_subscr.5 = getitem(value=x, index=stencil_index.1, fn=<built-in function getitem>)
+2025-08-23 15:20:12,750 - numba.core.ssa - DEBUG - on stmt: $14binary_add.6 = $6binary_subscr.2 + $12binary_subscr.5
+2025-08-23 15:20:12,750 - numba.core.ssa - DEBUG - on stmt: $const16.7.3 = const(int, 2)
+2025-08-23 15:20:12,750 - numba.core.ssa - DEBUG - on stmt: $const20.9.4 = const(int, 0)
+2025-08-23 15:20:12,750 - numba.core.ssa - DEBUG - on stmt: stencil_index.2 = $const20.9.4 + index00
+2025-08-23 15:20:12,750 - numba.core.ssa - DEBUG - on stmt: $22binary_subscr.10 = getitem(value=x, index=stencil_index.2, fn=<built-in function getitem>)
+2025-08-23 15:20:12,750 - numba.core.ssa - DEBUG - on stmt: $24binary_multiply.11 = $const16.7.3 * $22binary_subscr.10
+2025-08-23 15:20:12,750 - numba.core.ssa - DEBUG - on stmt: a = $14binary_add.6 - $24binary_multiply.11
+2025-08-23 15:20:12,750 - numba.core.ssa - DEBUG - on stmt: $const32.14.1 = const(int, 1)
+2025-08-23 15:20:12,750 - numba.core.ssa - DEBUG - on stmt: stencil_index.3 = $const32.14.1 + index00
+2025-08-23 15:20:12,750 - numba.core.ssa - DEBUG - on stmt: $34binary_subscr.15 = getitem(value=x, index=stencil_index.3, fn=<built-in function getitem>)
+2025-08-23 15:20:12,750 - numba.core.ssa - DEBUG - on stmt: $const38.17.2 = const(int, -1)
+2025-08-23 15:20:12,750 - numba.core.ssa - DEBUG - on stmt: stencil_index.4 = $const38.17.2 + index00
+2025-08-23 15:20:12,750 - numba.core.ssa - DEBUG - on stmt: $40binary_subscr.18 = getitem(value=x, index=stencil_index.4, fn=<built-in function getitem>)
+2025-08-23 15:20:12,751 - numba.core.ssa - DEBUG - on stmt: $42binary_subtract.19 = $34binary_subscr.15 - $40binary_subscr.18
+2025-08-23 15:20:12,751 - numba.core.ssa - DEBUG - on stmt: $const44.20.3 = const(int, 2)
+2025-08-23 15:20:12,751 - numba.core.ssa - DEBUG - on stmt: b = $42binary_subtract.19 / $const44.20.3
+2025-08-23 15:20:12,751 - numba.core.ssa - DEBUG - on stmt: $50load_global.22 = global(np: <module 'numpy' from '/home/user/.local/lib/python3.10/site-packages/numpy/__init__.py'>)
+2025-08-23 15:20:12,751 - numba.core.ssa - DEBUG - on stmt: $52load_method.23 = getattr(value=$50load_global.22, attr=abs)
+2025-08-23 15:20:12,751 - numba.core.ssa - DEBUG - on stmt: $56call_method.25 = call $52load_method.23(b, func=$52load_method.23, args=[Var(b, pitch.py:429)], kws=(), vararg=None, varkwarg=None, target=None)
+2025-08-23 15:20:12,751 - numba.core.ssa - DEBUG - on stmt: $58load_global.26 = global(np: <module 'numpy' from '/home/user/.local/lib/python3.10/site-packages/numpy/__init__.py'>)
+2025-08-23 15:20:12,751 - numba.core.ssa - DEBUG - on stmt: $60load_method.27 = getattr(value=$58load_global.26, attr=abs)
+2025-08-23 15:20:12,751 - numba.core.ssa - DEBUG - on stmt: $64call_method.29 = call $60load_method.27(a, func=$60load_method.27, args=[Var(a, pitch.py:428)], kws=(), vararg=None, varkwarg=None, target=None)
+2025-08-23 15:20:12,751 - numba.core.ssa - DEBUG - on stmt: $66compare_op.30 = $56call_method.25 >= $64call_method.29
+2025-08-23 15:20:12,751 - numba.core.ssa - DEBUG - on stmt: bool68 = global(bool: <class 'bool'>)
+2025-08-23 15:20:12,751 - numba.core.ssa - DEBUG - on stmt: $68pred = call bool68($66compare_op.30, func=bool68, args=(Var($66compare_op.30, pitch.py:431),), kws=(), vararg=None, varkwarg=None, target=None)
+2025-08-23 15:20:12,751 - numba.core.ssa - DEBUG - on stmt: branch $68pred, 91, 161
+2025-08-23 15:20:12,751 - numba.core.ssa - DEBUG - ==== SSA block analysis pass on 91
+2025-08-23 15:20:12,751 - numba.core.ssa - DEBUG - Running <numba.core.ssa._GatherDefsHandler object at 0x7f7cd4a7c0a0>
+2025-08-23 15:20:12,752 - numba.core.ssa - DEBUG - on stmt: $const70.0.4 = const(int, 0)
+2025-08-23 15:20:12,752 - numba.core.ssa - DEBUG - on stmt: $72return_value.1 = cast(value=$const70.0.4)
+2025-08-23 15:20:12,752 - numba.core.ssa - DEBUG - on stmt: out0[index00] = $72return_value.1
+2025-08-23 15:20:12,752 - numba.core.ssa - DEBUG - on stmt: jump 165
+2025-08-23 15:20:12,752 - numba.core.ssa - DEBUG - ==== SSA block analysis pass on 161
+2025-08-23 15:20:12,752 - numba.core.ssa - DEBUG - Running <numba.core.ssa._GatherDefsHandler object at 0x7f7cd4a7c0a0>
+2025-08-23 15:20:12,752 - numba.core.ssa - DEBUG - on stmt: $76unary_negative.1 = unary(fn=<built-in function neg>, value=b)
+2025-08-23 15:20:12,752 - numba.core.ssa - DEBUG - on stmt: $80binary_true_divide.3 = $76unary_negative.1 / a
+2025-08-23 15:20:12,752 - numba.core.ssa - DEBUG - on stmt: $82return_value.4 = cast(value=$80binary_true_divide.3)
+2025-08-23 15:20:12,752 - numba.core.ssa - DEBUG - on stmt: out0[index00] = $82return_value.4
+2025-08-23 15:20:12,752 - numba.core.ssa - DEBUG - on stmt: jump 165
+2025-08-23 15:20:12,752 - numba.core.ssa - DEBUG - ==== SSA block analysis pass on 165
+2025-08-23 15:20:12,752 - numba.core.ssa - DEBUG - Running <numba.core.ssa._GatherDefsHandler object at 0x7f7cd4a7c0a0>
+2025-08-23 15:20:12,752 - numba.core.ssa - DEBUG - on stmt: jump 80
+2025-08-23 15:20:12,753 - numba.core.ssa - DEBUG - defs defaultdict(<class 'list'>,
+            {'$10load_attr.3.1': [(<numba.core.ir.Assign object at 0x7f7cc5843430>,
+                                   0)],
+             '$12binary_subscr.5': [(<numba.core.ir.Assign object at 0x7f7cc58411b0>,
+                                     90)],
+             '$14binary_add.6': [(<numba.core.ir.Assign object at 0x7f7cd4261e70>,
+                                  90)],
+             '$14load_global.5.1': [(<numba.core.ir.Assign object at 0x7f7cc5843580>,
+                                     0)],
+             '$16load_attr.6.1': [(<numba.core.ir.Assign object at 0x7f7cc5840700>,
+                                   0)],
+             '$22binary_subscr.10': [(<numba.core.ir.Assign object at 0x7f7cc5840400>,
+                                      90)],
+             '$24binary_multiply.11': [(<numba.core.ir.Assign object at 0x7f7cd470f280>,
+                                        90)],
+             '$32build_slice.13.1': [(<numba.core.ir.Assign object at 0x7f7cc5842680>,
+                                      0)],
+             '$32build_slice.14.1': [(<numba.core.ir.Assign object at 0x7f7cc5841a50>,
+                                      0)],
+             '$34binary_subscr.15': [(<numba.core.ir.Assign object at 0x7f7cc5842110>,
+                                      90)],
+             '$40binary_subscr.18': [(<numba.core.ir.Assign object at 0x7f7cc58424a0>,
+                                      90)],
+             '$42binary_subtract.19': [(<numba.core.ir.Assign object at 0x7f7cd4307550>,
+                                        90)],
+             '$44build_slice.19.1': [(<numba.core.ir.Assign object at 0x7f7cc5841600>,
+                                      0)],
+             '$44build_slice.20.1': [(<numba.core.ir.Assign object at 0x7f7cc58427a0>,
+                                      0)],
+             '$48load_global.21.1': [(<numba.core.ir.Assign object at 0x7f7cc5841150>,
+                                      0)],
+             '$50load_global.22': [(<numba.core.ir.Assign object at 0x7f7cd4585960>,
+                                    90)],
+             '$50load_global.22.1': [(<numba.core.ir.Assign object at 0x7f7cc5840fd0>,
+                                      0)],
+             '$52load_method.23': [(<numba.core.ir.Assign object at 0x7f7cd45869b0>,
+                                    90)],
+             '$56call_function.25.1': [(<numba.core.ir.Assign object at 0x7f7cd4371ab0>,
+                                        0)],
+             '$56call_method.25': [(<numba.core.ir.Assign object at 0x7f7cd4722cb0>,
+                                    90)],
+             '$58load_global.26': [(<numba.core.ir.Assign object at 0x7f7cd47219c0>,
+                                    90)],
+             '$58unary_negative.26.1': [(<numba.core.ir.Assign object at 0x7f7cd4372e00>,
+                                         0)],
+             '$60load_method.27': [(<numba.core.ir.Assign object at 0x7f7cd4a2cdc0>,
+                                    90)],
+             '$64binary_subscr.29.1': [(<numba.core.ir.Assign object at 0x7f7cd4373f70>,
+                                        0)],
+             '$64call_method.29': [(<numba.core.ir.Assign object at 0x7f7cd4aa1fc0>,
+                                    90)],
+             '$66compare_op.30': [(<numba.core.ir.Assign object at 0x7f7cd4a889d0>,
+                                   90)],
+             '$66load_global.30.1': [(<numba.core.ir.Assign object at 0x7f7cd43700a0>,
+                                      0)],
+             '$68pred': [(<numba.core.ir.Assign object at 0x7f7cd4a19480>, 90)],
+             '$6binary_subscr.2': [(<numba.core.ir.Assign object at 0x7f7cc5840d60>,
+                                    90)],
+             '$72call_function.33.1': [(<numba.core.ir.Assign object at 0x7f7cd4372050>,
+                                        0)],
+             '$72return_value.1': [(<numba.core.ir.Assign object at 0x7f7cd4126ad0>,
+                                    91)],
+             '$74binary_subtract.34.1': [(<numba.core.ir.Assign object at 0x7f7cd4373670>,
+                                          0)],
+             '$76call_function.35.1': [(<numba.core.ir.Assign object at 0x7f7cd4372110>,
+                                        0)],
+             '$76unary_negative.1': [(<numba.core.ir.Assign object at 0x7f7cc5a94eb0>,
+                                      161)],
+             '$78get_iter.36.1': [(<numba.core.ir.Assign object at 0x7f7cd4371660>,
+                                   0)],
+             '$80binary_true_divide.3': [(<numba.core.ir.Assign object at 0x7f7cc5a948e0>,
+                                          161)],
+             '$80for_iter.1.1': [(<numba.core.ir.Assign object at 0x7f7cd43701f0>,
+                                  80)],
+             '$80for_iter.2.1': [(<numba.core.ir.Assign object at 0x7f7cd4372770>,
+                                  80)],
+             '$80for_iter.3.1': [(<numba.core.ir.Assign object at 0x7f7cd4371630>,
+                                  80)],
+             '$82return_value.4': [(<numba.core.ir.Assign object at 0x7f7cc5a96350>,
+                                    161)],
+             '$8load_global.2.1': [(<numba.core.ir.Assign object at 0x7f7cc5843190>,
+                                    0)],
+             '$92return_value.1.1': [(<numba.core.ir.Assign object at 0x7f7cd4bd8130>,
+                                      166)],
+             '$const10.4.2': [(<numba.core.ir.Assign object at 0x7f7cd4260d00>,
+                               90)],
+             '$const16.7.3': [(<numba.core.ir.Assign object at 0x7f7cd4261390>,
+                               90)],
+             '$const20.9.4': [(<numba.core.ir.Assign object at 0x7f7cd480e680>,
+                               90)],
+             '$const24.9.2.1': [(<numba.core.ir.Assign object at 0x7f7cc5843b80>,
+                                 0)],
+             '$const28.11.0.1': [(<numba.core.ir.Assign object at 0x7f7cc58421d0>,
+                                  0)],
+             '$const30.12.3.1': [(<numba.core.ir.Assign object at 0x7f7cc5842920>,
+                                  0)],
+             '$const32.14.1': [(<numba.core.ir.Assign object at 0x7f7cd49f2d40>,
+                                90)],
+             '$const36.15.2.1': [(<numba.core.ir.Assign object at 0x7f7cc5841c60>,
+                                  0)],
+             '$const38.17.2': [(<numba.core.ir.Assign object at 0x7f7cd4905990>,
+                                90)],
+             '$const4.1.1': [(<numba.core.ir.Assign object at 0x7f7cd414df60>,
+                              90)],
+             '$const40.17.4.1': [(<numba.core.ir.Assign object at 0x7f7cc5841ab0>,
+                                  0)],
+             '$const42.18.0.1': [(<numba.core.ir.Assign object at 0x7f7cc5842140>,
+                                  0)],
+             '$const44.20.3': [(<numba.core.ir.Assign object at 0x7f7cd473ff40>,
+                                90)],
+             '$const52.23.2.1': [(<numba.core.ir.Assign object at 0x7f7cc5841720>,
+                                  0)],
+             '$const54.24.4.1': [(<numba.core.ir.Assign object at 0x7f7cd4370940>,
+                                  0)],
+             '$const62.28.2.1': [(<numba.core.ir.Assign object at 0x7f7cd4370be0>,
+                                  0)],
+             '$const68.31.2.1': [(<numba.core.ir.Assign object at 0x7f7cd4372350>,
+                                  0)],
+             '$const70.0.4': [(<numba.core.ir.Assign object at 0x7f7cd4124970>,
+                               91)],
+             '$const70.32.3.1': [(<numba.core.ir.Assign object at 0x7f7cd43709a0>,
+                                  0)],
+             '$phi80.0.1': [(<numba.core.ir.Assign object at 0x7f7cc5842ef0>,
+                             0)],
+             '$phi82.1.1': [(<numba.core.ir.Assign object at 0x7f7cd4373340>,
+                             80)],
+             'a': [(<numba.core.ir.Assign object at 0x7f7cd470ff10>, 90)],
+             'b': [(<numba.core.ir.Assign object at 0x7f7cd45866b0>, 90)],
+             'bool68': [(<numba.core.ir.Assign object at 0x7f7cd4bf63b0>, 90)],
+             'full_shape0': [(<numba.core.ir.Assign object at 0x7f7cc5842ce0>,
+                              0)],
+             'index00': [(<numba.core.ir.Assign object at 0x7f7cd4bd8df0>, 82)],
+             'out0': [(<numba.core.ir.Assign object at 0x7f7cc5843c40>, 0)],
+             'stencil_index': [(<numba.core.ir.Assign object at 0x7f7cc5840ee0>,
+                                90)],
+             'stencil_index.1': [(<numba.core.ir.Assign object at 0x7f7cc5840eb0>,
+                                  90)],
+             'stencil_index.2': [(<numba.core.ir.Assign object at 0x7f7cc5840370>,
+                                  90)],
+             'stencil_index.3': [(<numba.core.ir.Assign object at 0x7f7cc5840100>,
+                                  90)],
+             'stencil_index.4': [(<numba.core.ir.Assign object at 0x7f7cc58425c0>,
+                                  90)],
+             'x': [(<numba.core.ir.Assign object at 0x7f7cc5842d70>, 0)]})
+2025-08-23 15:20:12,757 - numba.core.ssa - DEBUG - SSA violators <numba.core.utils.OrderedSet object at 0x7f7cd42f2b30>
+2025-08-23 15:20:13,762 - ml_training.data.dataset_loader - DEBUG - Truncated audio to 8000 samples
+2025-08-23 15:20:13,762 - ml_training.data.dataset_loader - DEBUG - Preprocessing complete: shape=(8000,), dtype=float32
+2025-08-23 15:20:13,764 - ml_training.data.dataset_loader - DEBUG - Truncated audio to 8000 samples
+2025-08-23 15:20:13,767 - ml_training.data.dataset_loader - DEBUG - Preprocessing complete: shape=(8000,), dtype=float32
+2025-08-23 15:20:13,771 - ml_training.pipelines.mfcc_pipeline - DEBUG - MFCC shape: (13, 51)
+2025-08-23 15:20:13,772 - ml_training.pipelines.mfcc_pipeline - DEBUG - MFCC shape: (13, 51)
+2025-08-23 15:20:13,778 - ml_training.pipelines.mfcc_pipeline - DEBUG - Combined features shape: (39, 51)
+2025-08-23 15:20:13,779 - ml_training.pipelines.mfcc_pipeline - DEBUG - Final feature vector shape: (156,)
+2025-08-23 15:20:13,781 - ml_training.inference - DEBUG - Prediction: 4 (confidence: 0.769)
+2025-08-23 15:20:13,781 - audio_processors.ml_mfcc_processor - DEBUG - ML MFCC detailed prediction: '4' (confidence: 0.769, time: 16095.7ms)
+2025-08-23 15:20:13,781 - utils.logging_utils - INFO - {"event": "prediction", "method": "ml_mfcc", "digit": "4", "inference_time": 16.095725297927856, "timestamp": 1755962413.7817369}
+2025-08-23 15:20:13,782 - app - INFO - Processed audio with ml_mfcc: '4' in 16.095725297927856s
+2025-08-23 15:20:13,782 - werkzeug - INFO - 10.16.35.136 - - [23/Aug/2025 15:20:13] "POST /api/process_audio HTTP/1.1" 200 -
+2025-08-23 15:20:13,784 - ml_training.pipelines.mfcc_pipeline - DEBUG - Combined features shape: (39, 51)
+2025-08-23 15:20:13,784 - ml_training.pipelines.mfcc_pipeline - DEBUG - Final feature vector shape: (156,)
+2025-08-23 15:20:13,785 - ml_training.inference - DEBUG - Prediction: 4 (confidence: 0.652)
+2025-08-23 15:20:13,786 - audio_processors.ml_mfcc_processor - DEBUG - ML MFCC detailed prediction: '4' (confidence: 0.652, time: 7169.3ms)
+2025-08-23 15:20:13,786 - utils.logging_utils - INFO - {"event": "prediction", "method": "ml_mfcc", "digit": "4", "inference_time": 7.16928243637085, "timestamp": 1755962413.7864997}
+2025-08-23 15:20:13,786 - app - INFO - Processed audio with ml_mfcc: '4' in 7.16928243637085s
+2025-08-23 15:20:13,787 - werkzeug - INFO - 10.16.0.208 - - [23/Aug/2025 15:20:13] "POST /api/process_audio HTTP/1.1" 200 -
+2025-08-23 15:20:49,339 - werkzeug - INFO - 10.16.26.149 - - [23/Aug/2025 15:20:49] "GET /api/health HTTP/1.1" 200 -
+2025-08-23 15:20:49,477 - werkzeug - INFO - 10.16.0.208 - - [23/Aug/2025 15:20:49] "GET /api/processors HTTP/1.1" 200 -
+2025-08-23 15:21:05,097 - utils.audio_utils - DEBUG - Detected audio format: wav
+2025-08-23 15:21:05,293 - pydub.converter - DEBUG - subprocess.call(['ffmpeg', '-y', '-read_ahead_limit', '-1', '-i', 'cache:pipe:0', '-acodec', 'pcm_s16le', '-vn', '-f', 'wav', '-'])
+2025-08-23 15:21:05,396 - utils.logging_utils - DEBUG - {"event": "audio_input", "duration": 1.536, "format": {"filename": "recording.wav", "size_bytes": 49196, "converted_size": 49196, "method": "ml_mel_cnn"}, "timestamp": 1755962465.3969328}
+2025-08-23 15:21:05,500 - utils.audio_utils - DEBUG - Running ffmpeg conversion: ffmpeg -i /tmp/tmpb36l7bpw.input -ar 8000 -ac 1 -acodec pcm_s16le -f wav -loglevel error -y /tmp/tmpmcssibop.wav
+2025-08-23 15:21:05,616 - utils.audio_utils - DEBUG - ffmpeg conversion successful: 49196 -> 24654 bytes (8000Hz, mono, wav)
+2025-08-23 15:21:05,617 - utils.audio_utils - DEBUG - Used ffmpeg for mel_cnn model audio conversion
+2025-08-23 15:21:05,618 - ml_training.inference - DEBUG - Using provided audio: shape=(12327,)
+2025-08-23 15:21:05,618 - ml_training.data.dataset_loader - DEBUG - Normalized audio: range=[-1.000, 0.860]
+2025-08-23 15:21:05,624 - ml_training.data.dataset_loader - DEBUG - Padded audio to 8000 samples
+2025-08-23 15:21:05,624 - ml_training.data.dataset_loader - DEBUG - Preprocessing complete: shape=(8000,), dtype=float32
+2025-08-23 15:21:05,626 - ml_training.pipelines.mel_cnn_pipeline - DEBUG - Raw mel spectrogram shape: torch.Size([1, 64, 51])
+2025-08-23 15:21:05,627 - ml_training.pipelines.mel_cnn_pipeline - DEBUG - Final mel spectrogram shape: (64, 51)
+2025-08-23 15:21:05,632 - ml_training.inference - DEBUG - Prediction: 3 (confidence: 0.329)
+2025-08-23 15:21:05,633 - audio_processors.ml_mel_cnn_processor - DEBUG - ML Mel CNN detailed prediction: '3' (confidence: 0.329, time: 15.1ms)
+2025-08-23 15:21:05,633 - utils.logging_utils - INFO - {"event": "prediction", "method": "ml_mel_cnn", "digit": "3", "inference_time": 0.015050649642944336, "timestamp": 1755962465.6331458}
+2025-08-23 15:21:05,633 - app - INFO - Processed audio with ml_mel_cnn: '3' in 0.015050649642944336s
+2025-08-23 15:21:05,634 - werkzeug - INFO - 10.16.35.136 - - [23/Aug/2025 15:21:05] "POST /api/process_audio HTTP/1.1" 200 -
+2025-08-23 15:22:38,236 - werkzeug - INFO - 10.16.35.226 - - [23/Aug/2025 15:22:38] "GET /api/health HTTP/1.1" 200 -
+2025-08-23 15:22:38,386 - werkzeug - INFO - 10.16.26.149 - - [23/Aug/2025 15:22:38] "GET /api/processors HTTP/1.1" 200 -
+2025-08-23 15:23:24,782 - werkzeug - INFO - 10.16.35.226 - - [23/Aug/2025 15:23:24] "GET /api/health HTTP/1.1" 200 -
+2025-08-23 15:23:24,884 - werkzeug - INFO - 10.16.35.136 - - [23/Aug/2025 15:23:24] "GET /api/processors HTTP/1.1" 200 -
+2025-08-23 15:23:52,527 - utils.audio_utils - DEBUG - Detected audio format: wav
+2025-08-23 15:23:52,741 - pydub.converter - DEBUG - subprocess.call(['ffmpeg', '-y', '-read_ahead_limit', '-1', '-i', 'cache:pipe:0', '-acodec', 'pcm_s16le', '-vn', '-f', 'wav', '-'])
+2025-08-23 15:23:52,858 - utils.logging_utils - DEBUG - {"event": "audio_input", "duration": 1.536, "format": {"filename": "recording.wav", "size_bytes": 49196, "converted_size": 49196, "method": "ml_mel_cnn"}, "timestamp": 1755962632.8579993}
+2025-08-23 15:23:52,964 - utils.audio_utils - DEBUG - Running ffmpeg conversion: ffmpeg -i /tmp/tmp30yh025c.input -ar 8000 -ac 1 -acodec pcm_s16le -f wav -loglevel error -y /tmp/tmpk8u7i6fe.wav
+2025-08-23 15:23:53,083 - utils.audio_utils - DEBUG - ffmpeg conversion successful: 49196 -> 24654 bytes (8000Hz, mono, wav)
+2025-08-23 15:23:53,084 - utils.audio_utils - DEBUG - Used ffmpeg for mel_cnn model audio conversion
+2025-08-23 15:23:53,085 - ml_training.inference - DEBUG - Using provided audio: shape=(12327,)
+2025-08-23 15:23:53,086 - ml_training.data.dataset_loader - DEBUG - Normalized audio: range=[-1.000, 0.886]
+2025-08-23 15:23:53,091 - ml_training.data.dataset_loader - DEBUG - Padded audio to 8000 samples
+2025-08-23 15:23:53,091 - ml_training.data.dataset_loader - DEBUG - Preprocessing complete: shape=(8000,), dtype=float32
+2025-08-23 15:23:53,092 - ml_training.pipelines.mel_cnn_pipeline - DEBUG - Raw mel spectrogram shape: torch.Size([1, 64, 51])
+2025-08-23 15:23:53,093 - ml_training.pipelines.mel_cnn_pipeline - DEBUG - Final mel spectrogram shape: (64, 51)
+2025-08-23 15:23:53,098 - ml_training.inference - DEBUG - Prediction: 2 (confidence: 0.191)
+2025-08-23 15:23:53,098 - audio_processors.ml_mel_cnn_processor - DEBUG - ML Mel CNN detailed prediction: '2' (confidence: 0.191, time: 12.7ms)
+2025-08-23 15:23:53,098 - utils.logging_utils - INFO - {"event": "prediction", "method": "ml_mel_cnn", "digit": "2", "inference_time": 0.012714624404907227, "timestamp": 1755962633.0985377}
+2025-08-23 15:23:53,098 - app - INFO - Processed audio with ml_mel_cnn: '2' in 0.012714624404907227s
+2025-08-23 15:23:53,099 - werkzeug - INFO - 10.16.35.226 - - [23/Aug/2025 15:23:53] "POST /api/process_audio HTTP/1.1" 200 -

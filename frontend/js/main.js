@@ -165,6 +165,8 @@ class AudioDigitApp {
         };
         }
         
+        addLogEntry('[INFO] VAD Audio Recorder initialized', 'info');
+        
         // Initialize audio visualizer
         this.audioVisualizer = new AudioVisualizer(this.elements.audioCanvas, {
             waveColor: '#00ff00',
@@ -173,10 +175,12 @@ class AudioDigitApp {
             showText: true,
             retroGlow: true
         });
+        addLogEntry('[INFO] Audio Visualizer initialized', 'info');
         
         // Initialize noise generator
         this.noiseGenerator = new NoiseGenerator();
         await this.noiseGenerator.initialize();
+        addLogEntry('[INFO] Noise Generator initialized', 'info');
         
         addLogEntry('[INFO] Core components initialized', 'info');
     }
@@ -462,16 +466,27 @@ class AudioDigitApp {
     /**
      * Stop audio recording
      */
-    stopRecording() {
-        if (!this.state.isRecording) return;
-        
-        this.audioRecorder.stopListening();
-        this.audioVisualizer.stop();
-        
-        // Update state and UI
-        this.state.isRecording = false;
-        this.updateRecordingState();
-        addLogEntry('[INFO] Recording stopped manually', 'info');
+    async stopRecording() {
+        try {
+            if (!this.state.isRecording) return;
+            
+            // Stop the audio recorder
+            await this.audioRecorder.stopListening();
+            this.audioVisualizer.stop();
+            
+            // Update state and UI
+            this.state.isRecording = false;
+            this.updateRecordingState();
+            addLogEntry('[INFO] Recording stopped manually', 'info');
+            
+        } catch (error) {
+            console.error('Failed to stop recording:', error);
+            addLogEntry(`[ERROR] Failed to stop recording: ${error.message}`, 'error');
+            
+            // Force update UI state even if stop failed
+            this.state.isRecording = false;
+            this.updateRecordingState();
+        }
     }
     
     /**
