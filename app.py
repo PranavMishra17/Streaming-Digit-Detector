@@ -45,8 +45,18 @@ def allowed_file(filename: str) -> bool:
     """Check if file extension is allowed."""
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
+# Global processor cache for model persistence
+_processor_cache = {}
+
 def initialize_processors():
-    """Initialize audio processors optimized for HF Spaces deployment."""
+    """Initialize audio processors optimized for HF Spaces deployment with caching."""
+    global _processor_cache
+    
+    # Return cached processors if already initialized
+    if _processor_cache:
+        app.logger.info(f"Using cached processors: {len(_processor_cache)} available")
+        return _processor_cache
+    
     procs = {}
     
     # ML-trained processors (high priority - use best models only)
@@ -59,11 +69,13 @@ def initialize_processors():
     ml_working_count = 0
     for proc_key, proc_class, proc_name in ml_processors:
         try:
+            # Initialize once and cache
+            app.logger.info(f"Loading {proc_name}...")
             processor = proc_class()
             if processor.is_configured():
                 procs[proc_key] = processor
                 ml_working_count += 1
-                app.logger.info(f"[OK] {proc_name} loaded successfully")
+                app.logger.info(f"[OK] {proc_name} loaded successfully (cached)")
             else:
                 app.logger.warning(f"[WARN] {proc_name} not configured (model files missing)")
         except Exception as e:
@@ -74,7 +86,7 @@ def initialize_processors():
         external_processor = ExternalAPIProcessor()
         if external_processor.is_configured():
             procs['external_api'] = external_processor
-            app.logger.info("[OK] External API processor initialized")
+            app.logger.info("[OK] External API processor initialized (cached)")
         else:
             app.logger.warning("[WARN] External API not configured")
     except Exception as e:
@@ -85,16 +97,20 @@ def initialize_processors():
         whisper_processor = WhisperDigitProcessor()
         if whisper_processor.is_configured():
             procs['whisper_digit'] = whisper_processor
-            app.logger.info("[OK] Whisper digit processor initialized")
+            app.logger.info("[OK] Whisper digit processor initialized (cached)")
     except Exception as e:
         app.logger.error(f"[FAIL] Failed to initialize Whisper: {str(e)}")
     
+    # Cache the processors globally
+    _processor_cache = procs
+    
     app.logger.info(f"Processor initialization complete:")
     app.logger.info(f"  ML Models loaded: {ml_working_count}/3")
-    app.logger.info(f"  Total processors: {len(procs)}")
+    app.logger.info(f"  Total processors cached: {len(procs)}")
     
     return procs
 
+# Initialize processors on startup (cached globally)
 processors = initialize_processors()
 
 @app.route('/')

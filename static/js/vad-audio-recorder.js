@@ -93,7 +93,12 @@ class VADAudioRecorder {
             }
             
             console.log('Starting VAD listening...');
-            await this.vad.start();
+            
+            // If VAD was previously paused, restart it
+            if (this.vad) {
+                await this.vad.start();
+            }
+            
             this.isListening = true;
             this.recordingStartTime = Date.now();
             

@@ -10542,3 +10542,92 @@ Error opening input files: Invalid data found when processing input
 2025-08-16 13:10:43,206 - app - INFO - Processed audio with ml_mel_cnn: '6' in 0.03630661964416504s
 2025-08-16 13:10:43,207 - utils.session_manager - DEBUG - Saved WAV chunk: output\session1755364227_0ef54ce7\chunks\005.wav
 2025-08-16 13:10:43,213 - werkzeug - INFO - 127.0.0.1 - - [16/Aug/2025 13:10:43] "POST /process_audio HTTP/1.1" 200 -
+2025-08-23 11:31:09,330 - app - INFO - Audio Digit Classifier startup
+2025-08-23 11:31:10,067 - ml_training.data.dataset_loader - INFO - ffmpeg detected - will use for high-quality audio resampling
+2025-08-23 11:31:10,067 - ml_training.data.dataset_loader - INFO - Initialized DataLoader - SR: 8000Hz, Max Length: 8000 samples
+2025-08-23 11:31:10,067 - ml_training.inference - INFO - Loading model from models\mfcc_classifier\best_model.pt
+2025-08-23 11:31:10,262 - ml_training.pipelines.mfcc_pipeline - DEBUG - MFCC Extractor initialized - Features: 156
+2025-08-23 11:31:10,279 - ml_training.pipelines.mfcc_pipeline - INFO - MFCC Classifier initialized:
+2025-08-23 11:31:10,280 - ml_training.pipelines.mfcc_pipeline - INFO -   Architecture: 156 -> 256 -> 128 -> 64 -> 10
+2025-08-23 11:31:10,280 - ml_training.pipelines.mfcc_pipeline - INFO -   Total parameters: 82,890
+2025-08-23 11:31:10,280 - ml_training.pipelines.mfcc_pipeline - INFO -   Dropout: 0.3
+2025-08-23 11:31:10,280 - ml_training.inference - INFO - Loading scaler from models\mfcc_classifier\scaler.pkl
+2025-08-23 11:31:10,302 - ml_training.inference - INFO - Model loaded successfully
+2025-08-23 11:31:10,302 - ml_training.inference - INFO - Digit Classifier initialized:
+2025-08-23 11:31:10,303 - ml_training.inference - INFO -   Pipeline: mfcc
+2025-08-23 11:31:10,303 - ml_training.inference - INFO -   Device: cuda
+2025-08-23 11:31:10,303 - ml_training.inference - INFO -   Model: MFCCClassifier
+2025-08-23 11:31:10,303 - ml_training.inference - INFO -   Parameters: 82,890
+2025-08-23 11:31:10,303 - audio_processors.ml_mfcc_processor - INFO - ML MFCC classifier loaded successfully
+2025-08-23 11:31:10,304 - audio_processors.ml_mfcc_processor - INFO -   Model device: cuda
+2025-08-23 11:31:10,304 - audio_processors.ml_mfcc_processor - INFO -   Parameters: 82,890
+2025-08-23 11:31:10,304 - audio_processors.ml_mfcc_processor - INFO - ML MFCC Processor initialized (configured: True)
+2025-08-23 11:31:10,304 - app - INFO - [OK] ML MFCC + Dense NN (Best - 98.52%) loaded successfully
+2025-08-23 11:31:10,343 - ml_training.data.dataset_loader - INFO - ffmpeg detected - will use for high-quality audio resampling
+2025-08-23 11:31:10,343 - ml_training.data.dataset_loader - INFO - Initialized DataLoader - SR: 8000Hz, Max Length: 8000 samples
+2025-08-23 11:31:10,343 - ml_training.inference - INFO - Loading model from models\mel_cnn_classifier\best_model.pt
+2025-08-23 11:31:10,465 - ml_training.pipelines.mel_cnn_pipeline - INFO - Mel Spectrogram Extractor initialized:
+2025-08-23 11:31:10,466 - ml_training.pipelines.mel_cnn_pipeline - INFO -   Expected output shape: (64, 51)
+2025-08-23 11:31:10,466 - ml_training.pipelines.mel_cnn_pipeline - INFO -   Device: cuda
+2025-08-23 11:31:10,466 - ml_training.pipelines.mel_cnn_pipeline - INFO -   Frequency range: 0-4000 Hz
+2025-08-23 11:31:10,483 - ml_training.pipelines.mel_cnn_pipeline - INFO - Mel Spectrogram CNN initialized:
+2025-08-23 11:31:10,483 - ml_training.pipelines.mel_cnn_pipeline - INFO -   Input shape: (1, 64, 51)
+2025-08-23 11:31:10,484 - ml_training.pipelines.mel_cnn_pipeline - INFO -   Architecture: Conv(32->64->128->256) -> Global Pool -> FC(512->256->10)
+2025-08-23 11:31:10,484 - ml_training.pipelines.mel_cnn_pipeline - INFO -   Total parameters: 653,802
+2025-08-23 11:31:10,488 - ml_training.inference - INFO - Model loaded successfully
+2025-08-23 11:31:10,490 - ml_training.inference - INFO - Digit Classifier initialized:
+2025-08-23 11:31:10,490 - ml_training.inference - INFO -   Pipeline: mel_cnn
+2025-08-23 11:31:10,491 - ml_training.inference - INFO -   Device: cuda
+2025-08-23 11:31:10,491 - ml_training.inference - INFO -   Model: MelSpectrogramCNN
+2025-08-23 11:31:10,491 - ml_training.inference - INFO -   Parameters: 653,802
+2025-08-23 11:31:10,491 - audio_processors.ml_mel_cnn_processor - INFO - ML Mel CNN classifier loaded successfully
+2025-08-23 11:31:10,492 - audio_processors.ml_mel_cnn_processor - INFO -   Model device: cuda
+2025-08-23 11:31:10,492 - audio_processors.ml_mel_cnn_processor - INFO -   Parameters: 653,802
+2025-08-23 11:31:10,492 - audio_processors.ml_mel_cnn_processor - INFO - ML Mel CNN Processor initialized (configured: True)
+2025-08-23 11:31:10,492 - app - INFO - [OK] ML Mel CNN (Good - 97.22%) loaded successfully
+2025-08-23 11:31:10,547 - ml_training.data.dataset_loader - INFO - ffmpeg detected - will use for high-quality audio resampling
+2025-08-23 11:31:10,547 - ml_training.data.dataset_loader - INFO - Initialized DataLoader - SR: 8000Hz, Max Length: 8000 samples
+2025-08-23 11:31:10,548 - ml_training.inference - INFO - Loading model from models\raw_cnn_classifier\best_model.pt
+2025-08-23 11:31:10,614 - ml_training.pipelines.raw_cnn_pipeline - INFO - Raw Waveform CNN initialized:
+2025-08-23 11:31:10,615 - ml_training.pipelines.raw_cnn_pipeline - INFO -   Input length: 8000 samples
+2025-08-23 11:31:10,615 - ml_training.pipelines.raw_cnn_pipeline - INFO -   Architecture: Conv1D(64->128->128->256->256) -> Global Pool -> FC(512->256->10)
+2025-08-23 11:31:10,615 - ml_training.pipelines.raw_cnn_pipeline - INFO -   Total parameters: 640,906
+2025-08-23 11:31:10,615 - ml_training.pipelines.raw_cnn_pipeline - INFO -   Receptive field: 128 samples
+2025-08-23 11:31:10,620 - ml_training.inference - INFO - Model loaded successfully
+2025-08-23 11:31:10,620 - ml_training.inference - INFO - Digit Classifier initialized:
+2025-08-23 11:31:10,621 - ml_training.inference - INFO -   Pipeline: raw_cnn
+2025-08-23 11:31:10,621 - ml_training.inference - INFO -   Device: cuda
+2025-08-23 11:31:10,621 - ml_training.inference - INFO -   Model: RawWaveformCNN
+2025-08-23 11:31:10,621 - ml_training.inference - INFO -   Parameters: 640,906
+2025-08-23 11:31:10,621 - audio_processors.ml_raw_cnn_processor - INFO - ML Raw CNN classifier loaded successfully
+2025-08-23 11:31:10,622 - audio_processors.ml_raw_cnn_processor - INFO -   Model device: cuda
+2025-08-23 11:31:10,622 - audio_processors.ml_raw_cnn_processor - INFO -   Parameters: 640,906
+2025-08-23 11:31:10,622 - audio_processors.ml_raw_cnn_processor - INFO - ML Raw CNN Processor initialized (configured: True)
+2025-08-23 11:31:10,622 - app - INFO - [OK] ML Raw CNN (Fair - 91.30%) loaded successfully
+2025-08-23 11:31:10,622 - app - INFO - [OK] External API processor initialized
+2025-08-23 11:31:10,623 - audio_processors.whisper_digit_processor - INFO - Initializing Whisper model for digit recognition...
+2025-08-23 11:31:10,652 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): huggingface.co:443
+2025-08-23 11:31:10,850 - urllib3.connectionpool - DEBUG - https://huggingface.co:443 "HEAD /openai/whisper-tiny/resolve/main/config.json HTTP/1.1" 307 0
+2025-08-23 11:31:11,053 - urllib3.connectionpool - DEBUG - https://huggingface.co:443 "HEAD /api/resolve-cache/models/openai/whisper-tiny/169d4a4341b33bc18d8881c4b69c2e104e1cc0af/config.json HTTP/1.1" 200 0
+2025-08-23 11:31:14,065 - tensorflow - WARNING - From C:\Users\prana\AppData\Roaming\Python\Python312\site-packages\tf_keras\src\losses.py:2976: The name tf.losses.sparse_softmax_cross_entropy is deprecated. Please use tf.compat.v1.losses.sparse_softmax_cross_entropy instead.
+
+2025-08-23 11:31:15,037 - urllib3.connectionpool - DEBUG - https://huggingface.co:443 "HEAD /openai/whisper-tiny/resolve/main/generation_config.json HTTP/1.1" 307 0
+2025-08-23 11:31:15,104 - urllib3.connectionpool - DEBUG - https://huggingface.co:443 "HEAD /api/resolve-cache/models/openai/whisper-tiny/169d4a4341b33bc18d8881c4b69c2e104e1cc0af/generation_config.json HTTP/1.1" 200 0
+2025-08-23 11:31:15,965 - urllib3.connectionpool - DEBUG - https://huggingface.co:443 "HEAD /openai/whisper-tiny/resolve/main/preprocessor_config.json HTTP/1.1" 307 0
+2025-08-23 11:31:15,999 - urllib3.connectionpool - DEBUG - https://huggingface.co:443 "HEAD /api/resolve-cache/models/openai/whisper-tiny/169d4a4341b33bc18d8881c4b69c2e104e1cc0af/preprocessor_config.json HTTP/1.1" 200 0
+2025-08-23 11:31:16,053 - audio_processors.whisper_digit_processor - INFO - Whisper model initialized successfully on device: 0
+2025-08-23 11:31:18,503 - audio_processors.whisper_digit_processor - INFO - Model test successful
+2025-08-23 11:31:18,503 - app - INFO - [OK] Whisper digit processor initialized
+2025-08-23 11:31:18,504 - app - INFO - Processor initialization complete:
+2025-08-23 11:31:18,504 - app - INFO -   ML Models loaded: 3/3
+2025-08-23 11:31:18,504 - app - INFO -   Total processors: 5
+2025-08-23 11:31:18,507 - utils.logging_utils - INFO - {"event": "system_info", "timestamp": 1755963078.5074193, "python_version": "3.12.6 (tags/v3.12.6:a4a2d2b, Sep  6 2024, 20:11:23) [MSC v.1940 64 bit (AMD64)]", "flask_version": "3.1.0", "processors_loaded": ["ml_mfcc", "ml_mel_cnn", "ml_raw_cnn", "external_api", "whisper_digit"], "max_audio_duration": 10, "max_file_size": 10485760, "deployment": "huggingface-spaces"}
+2025-08-23 11:31:18,507 - app - INFO - Starting Audio Digit Classifier API on port 7860
+2025-08-23 11:31:18,507 - app - INFO - Deployment: Hugging Face Spaces
+2025-08-23 11:31:18,542 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:7860
+ * Running on http://192.168.1.96:7860
+2025-08-23 11:31:18,542 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2025-08-23 11:31:42,191 - werkzeug - INFO - 127.0.0.1 - - [23/Aug/2025 11:31:42] "GET / HTTP/1.1" 200 -
+2025-08-23 11:31:42,562 - werkzeug - INFO - 127.0.0.1 - - [23/Aug/2025 11:31:42] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -

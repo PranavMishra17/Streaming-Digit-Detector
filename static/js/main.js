@@ -466,16 +466,27 @@ class AudioDigitApp {
     /**
      * Stop audio recording
      */
-    stopRecording() {
-        if (!this.state.isRecording) return;
-        
-        this.audioRecorder.stopListening();
-        this.audioVisualizer.stop();
-        
-        // Update state and UI
-        this.state.isRecording = false;
-        this.updateRecordingState();
-        addLogEntry('[INFO] Recording stopped manually', 'info');
+    async stopRecording() {
+        try {
+            if (!this.state.isRecording) return;
+            
+            // Stop the audio recorder
+            await this.audioRecorder.stopListening();
+            this.audioVisualizer.stop();
+            
+            // Update state and UI
+            this.state.isRecording = false;
+            this.updateRecordingState();
+            addLogEntry('[INFO] Recording stopped manually', 'info');
+            
+        } catch (error) {
+            console.error('Failed to stop recording:', error);
+            addLogEntry(`[ERROR] Failed to stop recording: ${error.message}`, 'error');
+            
+            // Force update UI state even if stop failed
+            this.state.isRecording = false;
+            this.updateRecordingState();
+        }
     }
     
     /**
