@@ -1,0 +1,1072 @@
+/**
+ * Main Application Controller
+ * Coordinates all components and manages the UI state
+ */
+
+class AudioDigitApp {
+    constructor() {
+        // Core components
+        this.audioRecorder = null;
+        this.audioVisualizer = null;
+        this.noiseGenerator = null;
+        
+        // UI elements (only existing ones after redesign)
+        this.elements = {
+            startRecording: document.getElementById('startRecording'),
+            stopRecording: document.getElementById('stopRecording'),
+            clearCanvas: document.getElementById('clearCanvas'),
+            
+            // Status displays
+            recordingStatus: document.getElementById('recordingStatus'),
+            audioInfo: document.getElementById('audioInfo'),
+            
+            // Performance stats
+            totalPredictions: document.getElementById('totalPredictions'),
+            fastestMethod: document.getElementById('fastestMethod'),
+            successRate: document.getElementById('successRate'),
+            sessionTime: document.getElementById('sessionTime'),
+            
+            // Canvas
+            audioCanvas: document.getElementById('audioCanvas')
+        };
+        
+        // Application state
+        this.state = {
+            isRecording: false,
+            hasRecordedAudio: false,
+            currentAudioBlob: null,
+            selectedMethod: 'ml_mfcc',
+            totalPredictions: 0,
+            methodStats: {},
+            sessionStartTime: Date.now(),
+            streamingErrors: 0,
+            maxStreamingErrors: 5,
+            lastErrorTime: 0,
+            
+            // Session management
+            currentSession: null,
+            sessionId: null,
+            chunksRecorded: 0,
+            autoCreateSession: true
+        };
+        
+        // Initialize
+        this.initialize();
+    }
+    
+    /**
+     * Initialize the application
+     */
+    async initialize() {
+        try {
+            addLogEntry('[INFO] Initializing Audio Digit Classifier...', 'info');
+            
+            // Initialize components
+            await this.initializeComponents();
+            
+            // Setup event listeners
+            this.setupEventListeners();
+            
+            // Initialize UI state
+            this.updateUIState();
+            
+            addLogEntry('[SUCCESS] Application initialized successfully', 'success');
+            
+        } catch (error) {
+            console.error('Failed to initialize application:', error);
+            addLogEntry(`[ERROR] Initialization failed: ${error.message}`, 'error');
+        }
+    }
+    
+    /**
+     * Initialize core components
+     */
+    async initializeComponents() {
+        // Initialize VAD-based audio recorder
+        this.audioRecorder = new VADAudioRecorder();
+        
+        // Set up VAD audio recorder callbacks
+        this.audioRecorder.onSpeechStart = () => {
+            this.state.isRecording = true;
+            this.updateRecordingState();
+            addLogEntry('[INFO] Speech detected - recording started', 'info');
+        };
+        
+        this.audioRecorder.onSpeechEnd = (audioBlob, duration) => {
+            this.state.hasRecordedAudio = true;
+            this.state.currentAudioBlob = audioBlob;
+            this.updateAudioInfo(duration);
+            this.updateUIState();
+            addLogEntry(`[SUCCESS] Speech ended - ${(audioBlob.size/1024).toFixed(1)}KB captured`, 'success');
+        };
+        
+        this.audioRecorder.onError = (error) => {
+            addLogEntry(`[ERROR] VAD Recording error: ${error.message}`, 'error');
+            this.state.isRecording = false;
+            this.updateRecordingState();
+        };
+        
+        this.audioRecorder.onChunkReady = (audioBlob, duration) => {
+            console.log(`[DEBUG] Chunk received: ${audioBlob.size} bytes, ${duration}ms`);
+            this.state.currentAudioBlob = audioBlob;
+            this.processAudioChunk(audioBlob, duration);
+            addLogEntry(`[INFO] Streaming chunk ready - ${(duration/1000).toFixed(1)}s`, 'info');
+        };
+        
+        // VAD result callback (optional for new VAD recorder)
+        if (this.audioRecorder.onVADResult !== undefined) {
+            this.audioRecorder.onVADResult = (vadResult) => {
+            console.log('VAD Result:', vadResult);
+            
+            // Track chunks saved
+            if (vadResult.chunks_saved && vadResult.chunks_saved > 0) {
+                this.state.chunksRecorded += vadResult.chunks_saved;
+                this.updateSessionDisplay();
+            }
+            
+            if (vadResult.segments_detected > 0) {
+                const chunkInfo = vadResult.chunks_saved ? ` (${vadResult.chunks_saved} saved)` : '';
+                addLogEntry(`[VAD] ${vadResult.segments_detected} speech segments detected${chunkInfo}`, 'info');
+            }
+        };
+        }
+        
+        // Digit detection callback (optional for new VAD recorder)  
+        if (this.audioRecorder.onDigitDetected !== undefined) {
+            this.audioRecorder.onDigitDetected = (digitResult) => {
+            console.log('Digit Detected:', digitResult);
+            
+            // Update UI with prediction
+            this.updatePredictionDisplay({
+                predicted_digit: digitResult.predicted_digit,
+                confidence_score: digitResult.confidence_score || 1.0,
+                inference_time: digitResult.inference_time,
+                method: digitResult.method || 'whisper_digit',
+                success: digitResult.success,
+                timestamp: digitResult.timestamp
+            });
+            
+            // Track chunk if it has session info
+            if (digitResult.chunks_saved && digitResult.chunks_saved > 0) {
+                this.state.chunksRecorded += digitResult.chunks_saved;
+                this.updateSessionDisplay();
+            }
+            
+            // Log the detection
+            if (digitResult.success && digitResult.predicted_digit !== 'unknown') {
+                const sessionInfo = this.state.sessionId ? ` [Session: ${this.state.sessionId.split('_')[0]}...]` : '';
+                addLogEntry(`[DETECTION] Digit "${digitResult.predicted_digit}" detected (${(digitResult.inference_time * 1000).toFixed(0)}ms)${sessionInfo}`, 'success');
+                
+                // Visual feedback
+                this.showDigitDetectionEffect(digitResult.predicted_digit);
+            } else {
+                addLogEntry(`[DETECTION] Unclear speech detected`, 'warning');
+            }
+        };
+        }
+        
+        // Initialize audio visualizer
+        this.audioVisualizer = new AudioVisualizer(this.elements.audioCanvas, {
+            waveColor: '#00ff00',
+            backgroundColor: '#001100',
+            showGrid: true,
+            showText: true,
+            retroGlow: true
+        });
+        
+        // Initialize noise generator
+        this.noiseGenerator = new NoiseGenerator();
+        await this.noiseGenerator.initialize();
+        
+        addLogEntry('[INFO] Core components initialized', 'info');
+    }
+    
+    /**
+     * Session Management Methods
+     */
+    
+    /**
+     * Create a new recording session
+     */
+    async createSession(customSessionId = null) {
+        try {
+            const response = await fetch('/session/create', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    session_id: customSessionId,
+                    cleanup_old_sessions: 24 // Clean up sessions older than 24 hours
+                })
+            });
+            
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+            
+            const result = await response.json();
+            
+            this.state.sessionId = result.session_id;
+            this.state.currentSession = result;
+            this.state.chunksRecorded = 0;
+            
+            addLogEntry(`[SESSION] Created session: ${result.session_id}`, 'info');
+            this.updateSessionDisplay();
+            
+            return result.session_id;
+            
+        } catch (error) {
+            console.error('Failed to create session:', error);
+            addLogEntry(`[ERROR] Failed to create session: ${error.message}`, 'error');
+            return null;
+        }
+    }
+    
+    /**
+     * Close the current session
+     */
+    async closeSession() {
+        if (!this.state.sessionId) {
+            return;
+        }
+        
+        try {
+            const response = await fetch(`/session/${this.state.sessionId}/close`, {
+                method: 'POST'
+            });
+            
+            if (response.ok) {
+                const result = await response.json();
+                addLogEntry(`[SESSION] Closed session: ${this.state.sessionId} (${this.state.chunksRecorded} chunks)`, 'info');
+                
+                // Reset session state
+                this.state.sessionId = null;
+                this.state.currentSession = null;
+                this.state.chunksRecorded = 0;
+                
+                this.updateSessionDisplay();
+            } else {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+            
+        } catch (error) {
+            console.error('Failed to close session:', error);
+            addLogEntry(`[ERROR] Failed to close session: ${error.message}`, 'error');
+        }
+    }
+    
+    /**
+     * Get session information
+     */
+    async getSessionInfo(sessionId = null) {
+        const targetSessionId = sessionId || this.state.sessionId;
+        if (!targetSessionId) {
+            return null;
+        }
+        
+        try {
+            const response = await fetch(`/session/${targetSessionId}/info`);
+            
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+            
+            return await response.json();
+            
+        } catch (error) {
+            console.error('Failed to get session info:', error);
+            return null;
+        }
+    }
+    
+    /**
+     * Auto-create session if needed
+     */
+    async ensureSession() {
+        if (!this.state.sessionId && this.state.autoCreateSession) {
+            await this.createSession();
+        }
+        return this.state.sessionId;
+    }
+    
+    /**
+     * Update session display in UI
+     */
+    updateSessionDisplay() {
+        // Add session info to the UI if there are session display elements
+        // For now, we'll add it to the activity log
+        if (this.state.sessionId) {
+            const sessionInfo = `Session: ${this.state.sessionId} | Chunks: ${this.state.chunksRecorded}`;
+            // Update a session display element if it exists
+            const sessionDisplay = document.getElementById('sessionInfo');
+            if (sessionDisplay) {
+                sessionDisplay.textContent = sessionInfo;
+            }
+        }
+    }
+    
+    /**
+     * Setup event listeners
+     */
+    setupEventListeners() {
+        // Recording controls
+        this.elements.startRecording.addEventListener('click', () => this.startRecording());
+        this.elements.stopRecording.addEventListener('click', () => this.stopRecording());
+        this.elements.clearCanvas.addEventListener('click', () => this.clearVisualization());
+        
+        // Processing controls - removed (now handled automatically by VAD)
+        
+        // Method selection - Override the global selectMethod function
+        window.originalSelectMethod = window.selectMethod;
+        window.selectMethod = (methodName) => {
+            // Call original UI function
+            if (window.originalSelectMethod) {
+                window.originalSelectMethod(methodName);
+            }
+            
+            // Update application state
+            this.state.selectedMethod = methodName;
+            this.updateMethodSelection();
+            this.initializeSelectedMethod(methodName);
+            addLogEntry(`[INFO] Selected method: ${this.getMethodName(methodName)}`, 'info');
+        };
+        
+        // Noise controls are now in popup - handled by HTML functions
+        
+        // Keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            if (e.key === ' ' && e.target.tagName !== 'INPUT' && e.target.tagName !== 'SELECT') {
+                e.preventDefault();
+                if (!this.state.isRecording) {
+                    this.startRecording();
+                } else {
+                    this.stopRecording();
+                }
+            }
+        });
+        
+        // Cabinet visual feedback
+        const cabinets = document.querySelectorAll('.radio-cabinet');
+        cabinets.forEach(cabinet => {
+            cabinet.addEventListener('click', () => {
+                const radio = cabinet.querySelector('input[type=\"radio\"]');
+                radio.checked = true;
+                radio.dispatchEvent(new Event('change'));
+            });
+        });
+        
+        addLogEntry('[INFO] Event listeners registered', 'info');
+    }
+    
+    /**
+     * Initialize selected method (lazy loading)
+     */
+    async initializeSelectedMethod(method) {
+        try {
+            addLogEntry(`[INFO] Initializing ${this.getMethodName(method)}...`, 'info');
+            
+            // Show loading indicator
+            const cabinet = document.querySelector(`[data-method="${method}"]`);
+            if (cabinet) {
+                cabinet.classList.add('loading');
+            }
+            
+            // Pre-warm the model by making a test request with valid WAV header
+            const testAudio = this.createMinimalWAVData();
+            const testBlob = new Blob([testAudio], { type: 'audio/wav' });
+            
+            const formData = new FormData();
+            formData.append('audio', testBlob, 'init_test.wav');
+            formData.append('method', method);
+            
+            const response = await fetch('/process_audio', {
+                method: 'POST',
+                body: formData
+            });
+            
+            // Remove loading indicator
+            if (cabinet) {
+                cabinet.classList.remove('loading');
+            }
+            
+            if (response.ok) {
+                addLogEntry(`[SUCCESS] ${this.getMethodName(method)} ready`, 'success');
+                this.updateCabinetStatus(method, 'ready');
+            } else {
+                addLogEntry(`[WARNING] ${this.getMethodName(method)} may have issues`, 'warning');
+                this.updateCabinetStatus(method, 'error');
+            }
+            
+        } catch (error) {
+            console.error(`Failed to initialize ${method}:`, error);
+            addLogEntry(`[ERROR] Failed to initialize ${this.getMethodName(method)}`, 'error');
+            
+            const cabinet = document.querySelector(`[data-method="${method}"]`);
+            if (cabinet) {
+                cabinet.classList.remove('loading');
+            }
+            this.updateCabinetStatus(method, 'error');
+        }
+    }
+    
+    /**
+     * Start audio recording
+     */
+    async startRecording() {
+        try {
+            if (this.state.isRecording) return;
+            
+            // Check if selected method is initialized
+            if (!this.isMethodReady(this.state.selectedMethod)) {
+                addLogEntry(`[INFO] Initializing ${this.getMethodName(this.state.selectedMethod)} first...`, 'info');
+                await this.initializeSelectedMethod(this.state.selectedMethod);
+            }
+            
+            // Ensure we have a session for this recording
+            await this.ensureSession();
+            
+            // Set session ID on audio recorder for chunk saving
+            if (this.state.sessionId) {
+                this.audioRecorder.setSessionId(this.state.sessionId);
+            }
+            
+            // Start VAD listening
+            await this.audioRecorder.startListening();
+            
+            // Start visualization
+            this.audioVisualizer.start(this.audioRecorder);
+            
+        } catch (error) {
+            console.error('Failed to start recording:', error);
+            addLogEntry(`[ERROR] Failed to start recording: ${error.message}`, 'error');
+            
+            // Handle permission denied
+            if (error.message.includes('Permission denied') || error.message.includes('NotAllowedError')) {
+                this.showMicrophonePermissionHelp();
+            }
+        }
+    }
+    
+    /**
+     * Check if method is ready for use
+     */
+    isMethodReady(method) {
+        const cabinet = document.querySelector(`[data-method="${method}"]`);
+        if (!cabinet) return false;
+        
+        const indicator = cabinet.querySelector('.status-indicator');
+        return indicator && (indicator.classList.contains('ready') || indicator.classList.contains('working'));
+    }
+    
+    /**
+     * Stop audio recording
+     */
+    stopRecording() {
+        if (!this.state.isRecording) return;
+        
+        this.audioRecorder.stopListening();
+        this.audioVisualizer.stop();
+        
+        // Update state and UI
+        this.state.isRecording = false;
+        this.updateRecordingState();
+        addLogEntry('[INFO] Recording stopped manually', 'info');
+    }
+    
+    /**
+     * Clear visualization
+     */
+    clearVisualization() {
+        this.audioVisualizer.clear();
+        addLogEntry('[INFO] Visualization cleared', 'info');
+    }
+    
+    /**
+     * Process audio chunk automatically (streaming mode)
+     */
+    async processAudioChunk(audioBlob, duration) {
+        // Check for error backoff
+        const now = Date.now();
+        if (this.state.streamingErrors >= this.state.maxStreamingErrors) {
+            const timeSinceLastError = now - this.state.lastErrorTime;
+            if (timeSinceLastError < 10000) { // 10 second backoff
+                console.log('Skipping chunk due to error backoff');
+                return;
+            } else {
+                // Reset error count after backoff period
+                this.state.streamingErrors = 0;
+                addLogEntry('[INFO] Resuming streaming after error backoff', 'info');
+            }
+        }
+        
+        try {
+            // Apply noise if configured (from popup)
+            const noiseType = document.getElementById('noiseType')?.value || 'none';
+            const noiseLevel = parseFloat(document.getElementById('noiseLevel')?.value || '0');
+            
+            let processedBlob = audioBlob;
+            if (noiseType !== 'none' && noiseLevel > 0) {
+                processedBlob = await this.noiseGenerator.mixNoiseWithAudio(audioBlob, noiseType, noiseLevel);
+            }
+            
+            // Use the selected method from UI
+            let selectedMethod = this.state.selectedMethod;
+
+            // Prepare form data
+            const formData = new FormData();
+            formData.append('audio', processedBlob, 'streaming_chunk.wav');
+            formData.append('method', selectedMethod);
+            formData.append('noise_type', noiseType);
+            formData.append('noise_level', noiseLevel.toString());
+            
+            // Add session ID if available
+            if (this.state.sessionId) {
+                formData.append('session_id', this.state.sessionId);
+            }
+            
+            // Send to server
+            const response = await fetch('/process_audio', {
+                method: 'POST',
+                body: formData
+            });
+            
+            const result = await response.json();
+            
+            if (response.ok && result.success !== false) {
+                // Reset error count on success
+                this.state.streamingErrors = 0;
+                
+                // Display streaming result
+                this.displayStreamingResult(result);
+                this.updateStats(result);
+                
+                addLogEntry(`[SUCCESS] Streaming: ${result.predicted_digit} (${result.inference_time}s)`, 'success');
+            } else {
+                throw new Error(result.error || `HTTP ${response.status}`);
+            }
+            
+        } catch (error) {
+            this.state.streamingErrors++;
+            this.state.lastErrorTime = now;
+            
+            console.error('Streaming chunk processing failed:', error);
+            addLogEntry(`[ERROR] Streaming error (${this.state.streamingErrors}/${this.state.maxStreamingErrors}): ${error.message}`, 'error');
+            
+            if (this.state.streamingErrors >= this.state.maxStreamingErrors) {
+                addLogEntry('[WARNING] Too many streaming errors - entering backoff mode', 'warning');
+            }
+        }
+    }
+    
+    /**
+     * Process recorded audio with selected method (manual mode)
+     */
+    async processAudio() {
+        if (!this.state.hasRecordedAudio || !this.state.currentAudioBlob) {
+            addLogEntry('[WARNING] No audio to process', 'warning');
+            return;
+        }
+        
+        try {
+            // Update UI for processing state
+            console.log('Processing audio...');
+            
+            // Apply noise if configured (from popup)
+            let audioBlob = this.state.currentAudioBlob;
+            const noiseType = document.getElementById('noiseType')?.value || 'none';
+            const noiseLevel = parseFloat(document.getElementById('noiseLevel')?.value || '0');
+            
+            if (noiseType !== 'none' && noiseLevel > 0) {
+                addLogEntry(`[INFO] Applying ${noiseType} noise (level: ${noiseLevel})`, 'info');
+                audioBlob = await this.noiseGenerator.mixNoiseWithAudio(audioBlob, noiseType, noiseLevel);
+            }
+            
+            // Prepare form data
+            const formData = new FormData();
+            formData.append('audio', audioBlob, 'recording.wav');
+            formData.append('method', this.state.selectedMethod);
+            formData.append('noise_type', noiseType);
+            formData.append('noise_level', noiseLevel.toString());
+            
+            addLogEntry(`[INFO] Processing with ${this.getMethodName(this.state.selectedMethod)}...`, 'info');
+            
+            // Send to server
+            const response = await fetch('/process_audio', {
+                method: 'POST',
+                body: formData
+            });
+            
+            const result = await response.json();
+            
+            if (response.ok && result.success !== false) {
+                // Update UI with results
+                this.displayResults(result);
+                this.updateStats(result);
+                
+                addLogEntry(`[SUCCESS] Predicted digit: ${result.predicted_digit} (${result.inference_time}s)`, 'success');
+            } else {
+                throw new Error(result.error || 'Processing failed');
+            }
+            
+        } catch (error) {
+            console.error('Audio processing failed:', error);
+            addLogEntry(`[ERROR] Processing failed: ${error.message}`, 'error');
+            
+            // Show error in UI
+            this.elements.predictedDigit.textContent = 'ERROR';
+            this.elements.predictedDigit.style.color = '#ff0000';
+            
+        } finally {
+            // Processing complete
+            console.log('Audio processing finished');
+        }
+    }
+    
+    /**
+     * Display streaming result (non-intrusive)
+     */
+    displayStreamingResult(result) {
+        // Debug logging to see what we're getting
+        console.log('Streaming result received:', {
+            method: result.method,
+            selectedMethod: this.state.selectedMethod,
+            predicted_digit: result.predicted_digit,
+            confidence: result.confidence,
+            confidence_score: result.confidence_score,
+            inference_time: result.inference_time
+        });
+        
+        // Normalize the result object to ensure consistent field names
+        const normalizedResult = {
+            predicted_digit: result.predicted_digit,
+            confidence: result.confidence_score || result.confidence, // Try both field names
+            inference_time: result.inference_time,
+            method: result.method || this.state.selectedMethod
+        };
+        
+        console.log('Normalized result:', normalizedResult);
+        
+        // Use the new UI's method-specific display for streaming results
+        if (typeof window.updatePredictionDisplay === 'function') {
+            window.updatePredictionDisplay(normalizedResult.method, normalizedResult);
+        }
+        
+        // Update session info if available
+        if (result.session_id) {
+            this.state.sessionId = result.session_id;
+        }
+        if (result.chunks_saved) {
+            this.state.chunksRecorded = result.chunks_saved;
+        }
+        
+        // Brief visual feedback for method cabinet
+        this.updateCabinetStatus(normalizedResult.method, 'working');
+        setTimeout(() => {
+            this.updateCabinetStatus(normalizedResult.method, 'ready');
+        }, 1000);
+    }
+    
+    /**
+     * Display processing results in UI
+     */
+    displayResults(result) {
+        // Normalize the result object to ensure consistent field names
+        const normalizedResult = {
+            predicted_digit: result.predicted_digit,
+            confidence: result.confidence_score || result.confidence, // Try both field names
+            inference_time: result.inference_time,
+            method: result.method || this.state.selectedMethod
+        };
+        
+        // Use the new UI's method-specific display
+        if (typeof window.updatePredictionDisplay === 'function') {
+            window.updatePredictionDisplay(normalizedResult.method, normalizedResult);
+        }
+        
+        // Update session info if available
+        if (result.session_id) {
+            this.state.sessionId = result.session_id;
+        }
+        if (result.chunks_saved) {
+            this.state.chunksRecorded = result.chunks_saved;
+        }
+        
+        // Visual feedback for method cabinet
+        this.updateCabinetStatus(normalizedResult.method, result.success !== false ? 'working' : 'error');
+        
+        setTimeout(() => {
+            this.updateCabinetStatus(normalizedResult.method, 'ready');
+        }, 2000);
+    }
+    
+    /**
+     * Update prediction display (alias for displayResults for compatibility)
+     */
+    updatePredictionDisplay(result) {
+        this.displayResults(result);
+        this.updateStats(result);
+    }
+    
+    /**
+     * Show visual effect for digit detection
+     */
+    showDigitDetectionEffect(digit) {
+        // Flash the predicted digit display
+        const digitElement = this.elements.predictedDigit;
+        if (digitElement) {
+            digitElement.style.transform = 'scale(1.2)';
+            digitElement.style.textShadow = '0 0 20px #ffe66d';
+            
+            setTimeout(() => {
+                digitElement.style.transform = 'scale(1)';
+                digitElement.style.textShadow = '0 0 10px #ffe66d';
+            }, 300);
+        }
+        
+        // Play a brief success sound (if available)
+        try {
+            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            oscillator.frequency.setValueAtTime(800, audioContext.currentTime);
+            gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.1);
+            
+            oscillator.start(audioContext.currentTime);
+            oscillator.stop(audioContext.currentTime + 0.1);
+        } catch (e) {
+            // Ignore audio context errors
+        }
+    }
+    
+    /**
+     * Update application statistics
+     */
+    updateStats(result) {
+        this.state.totalPredictions++;
+        this.elements.totalPredictions.textContent = this.state.totalPredictions;
+        
+        // Update method stats
+        if (!this.state.methodStats[result.method]) {
+            this.state.methodStats[result.method] = {
+                predictions: 0,
+                totalTime: 0,
+                errors: 0
+            };
+        }
+        
+        const methodStats = this.state.methodStats[result.method];
+        methodStats.predictions++;
+        methodStats.totalTime += result.inference_time;
+        
+        if (result.success === false) {
+            methodStats.errors++;
+        }
+        
+        // Find fastest method
+        let fastestMethod = null;
+        let fastestTime = Infinity;
+        
+        for (const [method, stats] of Object.entries(this.state.methodStats)) {
+            const avgTime = stats.totalTime / stats.predictions;
+            if (avgTime < fastestTime) {
+                fastestTime = avgTime;
+                fastestMethod = method;
+            }
+        }
+        
+        if (fastestMethod) {
+            this.elements.fastestMethod.textContent = this.getMethodName(fastestMethod);
+        }
+        
+        // Calculate success rate
+        const totalErrors = Object.values(this.state.methodStats).reduce((sum, stats) => sum + stats.errors, 0);
+        const successRate = ((this.state.totalPredictions - totalErrors) / this.state.totalPredictions * 100).toFixed(1);
+        this.elements.successRate.textContent = `${successRate}%`;
+    }
+    
+    /**
+     * Show detailed statistics
+     */
+    async showStats() {
+        try {
+            const response = await fetch('/stats');
+            const stats = await response.json();
+            
+            console.log('Detailed Statistics:', stats);
+            addLogEntry('[INFO] Statistics retrieved - Check console for details', 'info');
+            
+            // Create stats popup (simple alert for now)
+            let statsText = 'Performance Statistics:\n\n';
+            for (const [method, methodStats] of Object.entries(stats)) {
+                statsText += `${this.getMethodName(method)}:\n`;
+                statsText += `  Predictions: ${methodStats.total_calls}\n`;
+                statsText += `  Success Rate: ${(100 - methodStats.error_rate).toFixed(1)}%\n`;
+                statsText += `  Avg Time: ${methodStats.avg_inference_time}s\n\n`;
+            }
+            
+            alert(statsText);
+            
+        } catch (error) {
+            console.error('Failed to get stats:', error);
+            addLogEntry('[ERROR] Failed to retrieve statistics', 'error');
+        }
+    }
+    
+    /**
+     * Test API connection
+     */
+    async testAPIConnection() {
+        try {
+            addLogEntry('[INFO] Testing API connection...', 'info');
+            
+            const response = await fetch('/health');
+            const health = await response.json();
+            
+            if (response.ok) {
+                addLogEntry('[SUCCESS] API connection test passed', 'success');
+                
+                // Test specific processors
+                for (const [method, status] of Object.entries(health.processors)) {
+                    const statusText = status.configured ? 'Ready' : 'Not configured';
+                    const logLevel = status.configured ? 'success' : 'warning';
+                    addLogEntry(`[${logLevel.toUpperCase()}] ${this.getMethodName(method)}: ${statusText}`, logLevel);
+                }
+            } else {
+                throw new Error(health.error || 'Connection test failed');
+            }
+            
+        } catch (error) {
+            console.error('API connection test failed:', error);
+            addLogEntry(`[ERROR] API connection test failed: ${error.message}`, 'error');
+        }
+    }
+    
+    /**
+     * Update recording state UI
+     */
+    updateRecordingState() {
+        if (this.state.isRecording) {
+            this.elements.startRecording.disabled = true;
+            this.elements.stopRecording.disabled = false;
+            this.elements.recordingStatus.textContent = 'Streaming... (Press SPACE or click stop)';
+            this.elements.recordingStatus.style.color = '#ff0000';
+            
+            // Add recording class for visual effects
+            document.body.classList.add('recording');
+        } else {
+            this.elements.startRecording.disabled = false;
+            this.elements.stopRecording.disabled = true;
+            this.elements.recordingStatus.textContent = 'Ready to stream... (Press SPACE or click start)';
+            this.elements.recordingStatus.style.color = '#00ff00';
+            
+            // Remove recording class
+            document.body.classList.remove('recording');
+        }
+    }
+    
+    /**
+     * Update audio information display
+     */
+    updateAudioInfo(duration) {
+        this.elements.audioInfo.textContent = `Duration: ${(duration / 1000).toFixed(1)}s`;
+    }
+    
+    /**
+     * Update UI state based on application state
+     */
+    updateUIState() {
+        // UI state is now managed by the new method cabinet system
+        // No need to enable/disable buttons since audio is processed automatically
+        console.log('UI state updated:', {
+            hasRecordedAudio: this.state.hasRecordedAudio,
+            isRecording: this.state.isRecording,
+            selectedMethod: this.state.selectedMethod
+        });
+    }
+    
+    /**
+     * Update method selection visual feedback
+     */
+    updateMethodSelection() {
+        const cabinets = document.querySelectorAll('.radio-cabinet');
+        cabinets.forEach(cabinet => {
+            const method = cabinet.dataset.method;
+            if (method === this.state.selectedMethod) {
+                cabinet.classList.add('selected');
+            } else {
+                cabinet.classList.remove('selected');
+            }
+        });
+    }
+    
+    /**
+     * Update cabinet status indicators
+     */
+    updateCabinetStatus(method, status) {
+        const cabinet = document.querySelector(`[data-method=\"${method}\"]`);
+        if (cabinet) {
+            const indicator = cabinet.querySelector('.status-indicator');
+            if (indicator) {
+                indicator.className = `status-indicator ${status}`;
+            }
+        }
+    }
+    
+    /**
+     * Create minimal valid WAV data for testing
+     */
+    createMinimalWAVData() {
+        // Create a minimal WAV file with 0.1 second of silence
+        const sampleRate = 16000;
+        const numChannels = 1;
+        const bitsPerSample = 16;
+        const duration = 0.1; // 100ms
+        const numSamples = Math.floor(sampleRate * duration);
+        const dataSize = numSamples * numChannels * bitsPerSample / 8;
+        const totalSize = 36 + dataSize;
+        
+        const buffer = new ArrayBuffer(44 + dataSize);
+        const view = new DataView(buffer);
+        
+        // WAV header
+        const writeString = (offset, string) => {
+            for (let i = 0; i < string.length; i++) {
+                view.setUint8(offset + i, string.charCodeAt(i));
+            }
+        };
+        
+        writeString(0, 'RIFF');
+        view.setUint32(4, totalSize, true);
+        writeString(8, 'WAVE');
+        writeString(12, 'fmt ');
+        view.setUint32(16, 16, true);
+        view.setUint16(20, 1, true);
+        view.setUint16(22, numChannels, true);
+        view.setUint32(24, sampleRate, true);
+        view.setUint32(28, sampleRate * numChannels * bitsPerSample / 8, true);
+        view.setUint16(32, numChannels * bitsPerSample / 8, true);
+        view.setUint16(34, bitsPerSample, true);
+        writeString(36, 'data');
+        view.setUint32(40, dataSize, true);
+        
+        // Write silence (zeros) for audio data
+        for (let i = 44; i < buffer.byteLength; i += 2) {
+            view.setInt16(i, 0, true);
+        }
+        
+        return buffer;
+    }
+
+    /**
+     * Show microphone permission help
+     */
+    showMicrophonePermissionHelp() {
+        const helpText = `
+Microphone Access Required
+
+To use the audio digit classifier, please:
+
+1. Click on the microphone icon in your browser's address bar
+2. Select "Allow" for microphone access
+3. Refresh the page and try again
+
+Note: HTTPS is required for microphone access in most browsers.
+        `;
+        
+        alert(helpText);
+        addLogEntry('[INFO] Microphone permission help displayed', 'info');
+    }
+    
+    /**
+     * Get friendly method name
+     */
+    getMethodName(method) {
+        const names = {
+            external_api: 'External API (Whisper)',
+            raw_spectrogram: 'Raw Spectrogram',
+            mel_spectrogram: 'Mel Spectrogram',
+            mfcc: 'MFCC Features'
+        };
+        return names[method] || method;
+    }
+    
+    /**
+     * Clean up resources
+     */
+    cleanup() {
+        if (this.audioRecorder) {
+            this.audioRecorder.cleanup();
+        }
+        
+        if (this.audioVisualizer) {
+            this.audioVisualizer.stop();
+        }
+        
+        if (this.noiseGenerator) {
+            this.noiseGenerator.cleanup();
+        }
+    }
+}
+
+/**
+ * Utility function to add entries to the activity log
+ */
+function addLogEntry(message, level = 'info') {
+    const logContainer = document.getElementById('activityLog');
+    if (!logContainer) return;
+    
+    const entry = document.createElement('div');
+    entry.className = `log-entry log-${level}`;
+    entry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+    
+    logContainer.appendChild(entry);
+    
+    // Auto-scroll to bottom
+    logContainer.scrollTop = logContainer.scrollHeight;
+    
+    // Limit log entries (keep last 50)
+    const entries = logContainer.querySelectorAll('.log-entry');
+    if (entries.length > 50) {
+        entries[0].remove();
+    }
+}
+
+/**
+ * Global error handler
+ */
+window.addEventListener('error', (event) => {
+    console.error('Global error:', event.error);
+    addLogEntry(`[ERROR] ${event.error.message}`, 'error');
+});
+
+window.addEventListener('unhandledrejection', (event) => {
+    console.error('Unhandled promise rejection:', event.reason);
+    addLogEntry(`[ERROR] Promise rejection: ${event.reason}`, 'error');
+    event.preventDefault();
+});
+
+// Initialize application when DOM is loaded
+let app = null;
+
+document.addEventListener('DOMContentLoaded', () => {
+    app = new AudioDigitApp();
+    
+    // Make app globally available for debugging
+    window.audioDigitApp = app;
+});
+
+// Cleanup on page unload
+window.addEventListener('beforeunload', () => {
+    if (app) {
+        app.cleanup();
+    }
+});
+
+// Export app class for testing
+window.AudioDigitApp = AudioDigitApp;

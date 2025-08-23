@@ -6,7 +6,9 @@
       "WebFetch(domain:raw.githubusercontent.com)",
       "Bash(python -m pip install:*)",
       "Bash(python:*)",
-      "Bash(curl:*)"
+      "Bash(curl:*)",
+      "Bash(touch:*)",
+      "Bash(cp:*)"
     ],
     "deny": [],
     "ask": []

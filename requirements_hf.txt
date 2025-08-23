@@ -1,0 +1,26 @@
+# HF Spaces Requirements - Essential packages only
+# Core Flask API
+Flask==2.3.3
+Flask-CORS==4.0.0
+requests==2.31.0
+python-dotenv==1.0.0
+
+# Audio Processing Core
+numpy==1.24.3
+librosa==0.10.1
+scipy==1.11.4
+soundfile==0.12.1
+
+# ML Models - PyTorch (CPU optimized for HF Spaces)
+torch==2.0.1+cpu --extra-index-url https://download.pytorch.org/whl/cpu
+torchaudio==2.0.2+cpu --extra-index-url https://download.pytorch.org/whl/cpu
+
+# Essential ML utilities  
+scikit-learn==1.3.2
+transformers==4.35.2
+
+# Audio format handling
+webrtcvad==2.0.10
+
+# Logging and utilities
+tqdm==4.66.1
