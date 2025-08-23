@@ -291,20 +291,15 @@ class AudioDigitApp {
         };
         
         this.audioRecorder.onSpeechEnd = (audioBlob, duration) => {
-            this.state.isRecording = false;
+            // DON'T set isRecording = false! VAD should keep listening
             this.state.hasRecordedAudio = true;
             this.state.currentAudioBlob = audioBlob;
-            this.updateRecordingState();
             this.updateAudioInfo(duration);
             
-            // Stop audio visualization
-            if (this.audioVisualizer && typeof this.audioVisualizer.stop === 'function') {
-                this.audioVisualizer.stop();
-            }
-            
+            // Keep visualization running - don't stop it!
             // Auto-process the recorded audio
             this.processRecordedAudio();
-            console.log(`🔇 Speech ended - processing ${duration}ms of audio`);
+            console.log(`🔇 Speech ended - processing ${duration}ms of audio, continuing to listen...`);
         };
         
         this.audioRecorder.onError = (error) => {
