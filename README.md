@@ -45,7 +45,7 @@ The Streaming Digit Classifier is a comprehensive web application that demonstra
 - **External Pre-trained API**: Wav2Vec2 speech-to-text transformer model
 
 ### 🎤 **Advanced Audio Processing**
-- Real-time Voice Activity Detection using [@ricky0123/vad-web](https://github.com/ricky0123/vad-web)
+- Real-time Voice Activity Detection using [@ricky0123/vad-web](https://github.com/ricky0123/vad)
 - Streaming audio visualization with live waveform display
 - Automatic speech segmentation and silence detection
 - Multi-format audio support (WebM, WAV, OGG)
